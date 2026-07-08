@@ -20,7 +20,6 @@ button{font-size:24px;font-weight:900;background:#f6c744;border:5px solid #111;b
 .big{font-size:54px;font-weight:900}
 .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:20px}
 .tile{background:#fff8df;border:4px solid #111;border-radius:20px;padding:20px;font-size:26px;font-weight:900;cursor:pointer}
-.teacher{background:#eaf7ff;border:4px dashed #174ea6;border-radius:18px;padding:14px;margin:14px 0;text-align:left;font-size:18px;font-weight:800}
 .words{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
 .word{background:#fff8df;border:4px solid #111;border-radius:18px;padding:12px 18px;font-size:30px;font-weight:900}
 @media(max-width:800px){.grid{grid-template-columns:1fr}h1{font-size:38px}.big{font-size:40px}header{flex-direction:column;text-align:center}}
@@ -37,10 +36,7 @@ button{font-size:24px;font-weight:900;background:#f6c744;border:5px solid #111;b
 <section class="stage" id="stage">
   <img class="fritz" src="assets/ElevenLabs_image_GPT%20Image%202_Full%20body%20portrait%20of%20Captain%20.png" alt="Captain Fritz">
   <h1>Week 1 · Lesson 1</h1>
-  <p><b>Focus:</b> greetings, names, alphabet awareness, and first sight words.</p>
-  <div class="teacher">
-    Teacher objective: Student will respond to “hello,” practice “My name is ___,” recognize A/B/C as letters, and read simple high-frequency sentence frames with support.
-  </div>
+  <p><b>Today:</b> Hello, names, letter A, and first reading words.</p>
   <button onclick="welcome()">Start Lesson</button>
 </section>
 </main>
@@ -56,6 +52,7 @@ function speak(t){
   u.pitch=1.05;
   speechSynthesis.speak(u);
 }
+
 function set(x){document.getElementById("stage").innerHTML=x}
 
 function welcome(){
@@ -63,9 +60,6 @@ set(`
 ${img}
 <h1>Welcome, Academite!</h1>
 <p>Today we learn English with Captain Fritz.</p>
-<div class="teacher">
-Teacher: You lead this part. Say hello, ask the student’s name, and explain that Fritz will help with songs, games, and reading.
-</div>
 <button onclick="speak('Hello Academite. Welcome to Fritz Academy.')">Fritz Says Hello</button>
 <button onclick="song()">Next</button>
 `);
@@ -75,10 +69,7 @@ function song(){
 set(`
 <h1>🎵 Alphabet Song</h1>
 ${img}
-<p>Play the current ElevenLabs alphabet song from your computer for now.</p>
-<div class="teacher">
-Teacher note: This video is temporary. Later version must show large letters A-Z, correct “Captain,” use Nola, add Tony, and sing the letter name “A.”
-</div>
+<p>Let’s sing the alphabet song together.</p>
 <button onclick="letterA()">Next</button>
 `);
 }
@@ -87,14 +78,11 @@ function letterA(){
 set(`
 <h1>Letter A</h1>
 <p class="big">A</p>
-<p>This is the letter A. We say its name: A.</p>
+<p>This is the letter A.</p>
 <div class="words">
   <div class="word" onclick="speak('A')">A</div>
   <div class="word" onclick="speak('apple')">apple</div>
   <div class="word" onclick="speak('Academy')">Academy</div>
-</div>
-<div class="teacher">
-Teacher: Have the student point to A. Then say: “A. Apple. Academy.” Do not overteach vowel sounds yet.
 </div>
 <button onclick="vocab()">Next</button>
 `);
@@ -103,7 +91,7 @@ Teacher: Have the student point to A. Then say: “A. Apple. Academy.” Do not 
 function vocab(){
 set(`
 <h1>Vocabulary Warm-Up</h1>
-<p>Click each word. Student listens and repeats.</p>
+<p>Click each word. Listen and repeat.</p>
 <div class="grid">
 <div class="tile" onclick="speak('hello')">hello</div>
 <div class="tile" onclick="speak('I')">I</div>
@@ -112,16 +100,13 @@ set(`
 <div class="tile" onclick="speak('name')">name</div>
 <div class="tile" onclick="speak('letter')">letter</div>
 </div>
-<div class="teacher">
-Teacher prompts: “Point to hello.” “Say hello.” “My name is Pam. What is your name?”
-</div>
 <button onclick="story1()">Next</button>
 `);
 }
 
 function story1(){
 set(`
-<h1>Teacher Story</h1>
+<h1>Story Time</h1>
 ${img}
 <p class="big">Captain Fritz opens the gate.</p>
 <p>“Hello, Academites! Welcome to Fritz Academy.”</p>
@@ -132,12 +117,9 @@ ${img}
 
 function story2(){
 set(`
-<h1>Teacher Story</h1>
+<h1>Story Time</h1>
 <p class="big">Bash sees a letter.</p>
 <p>Bash says, “I see A.” Bear says, “I see B.”</p>
-<div class="teacher">
-Comprehension check: Who sees A? What letter does Bear see?
-</div>
 <button onclick="speak('Bash sees a letter. Bash says, I see A. Bear says, I see B.')">Read Page</button>
 <button onclick="story3()">Next Page</button>
 `);
@@ -145,12 +127,9 @@ Comprehension check: Who sees A? What letter does Bear see?
 
 function story3(){
 set(`
-<h1>Teacher Story</h1>
+<h1>Story Time</h1>
 <p class="big">Rascal runs to the blocks.</p>
 <p>Rascal wants to play. Captain Fritz says, “First we learn. Then we play.”</p>
-<div class="teacher">
-Language practice: “First learn. Then play.” Have the student repeat with gestures.
-</div>
 <button onclick="speak('Rascal runs to the blocks. First we learn. Then we play.')">Read Page</button>
 <button onclick="reader1()">Little Reader 1</button>
 `);
@@ -165,9 +144,6 @@ set(`
 <button onclick="speak('My name is Fritz.')">Read</button>
 <p class="big">I am Fritz.</p>
 <button onclick="speak('I am Fritz.')">Read</button>
-<div class="teacher">
-Student goal: repeat each page after teacher. Do not require independent reading yet.
-</div>
 <button onclick="reader2()">Little Reader 2</button>
 `);
 }
@@ -181,9 +157,6 @@ set(`
 <button onclick="speak('I see B.')">Read</button>
 <p class="big">I see a letter.</p>
 <button onclick="speak('I see a letter.')">Read</button>
-<div class="teacher">
-Student goal: identify A and B visually; repeat “I see...” sentence frame.
-</div>
 <button onclick="wordGame()">Game</button>
 `);
 }
@@ -210,9 +183,6 @@ set(`
 <div class="tile" onclick="speak('B')">B</div>
 <div class="tile" onclick="speak('C')">C</div>
 </div>
-<div class="teacher">
-Assessment: Student can point to at least 2 of 3 letters with teacher support.
-</div>
 <button onclick="worksheet()">Worksheet</button>
 `);
 }
@@ -220,14 +190,8 @@ Assessment: Student can point to at least 2 of 3 letters with teacher support.
 function worksheet(){
 set(`
 <h1>Worksheet Time</h1>
-<p>For today, use paper or whiteboard practice.</p>
-<div class="teacher">
-Teacher directions:
-1. Write A three times.<br>
-2. Circle the word “my.”<br>
-3. Draw Captain Fritz at the Academy.<br>
-4. Student says: “I am ___.”
-</div>
+<p>Practice on paper or the whiteboard.</p>
+<p>Write A. Circle “my.” Draw Captain Fritz.</p>
 <button onclick="reward()">Sticker Time</button>
 `);
 }
