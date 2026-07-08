@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Fritz Academy Save System</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:linear-gradient(#79d9ff 0 45%,#eafaff 46%,#72bf58 47%);color:#102342}
+header,main{max-width:1120px;margin:16px auto}
+header{background:#102342;color:white;border:6px solid #111;border-radius:28px;padding:18px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 10px 0 #111}
+.logo{font-size:34px;font-weight:900}
+a{color:white;font-size:20px;font-weight:900}
+main{background:#fff8df;border:6px solid #111;border-radius:32px;padding:24px;box-shadow:0 12px 0 #111}
+.card{background:white;border:5px solid #111;border-radius:26px;padding:22px;box-shadow:0 8px 0 #111;margin-bottom:18px}
+h1{font-size:48px;margin:0 0 12px}
+h2{font-size:34px;margin:0 0 12px}
+p,label{font-size:22px;font-weight:800}
+input{font-size:24px;padding:12px;border:4px solid #111;border-radius:16px;width:100%;max-width:420px}
+button{font-size:22px;font-weight:900;background:#f6c744;border:5px solid #111;border-radius:18px;padding:14px 22px;box-shadow:0 7px 0 #111;cursor:pointer;margin:8px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.tile{background:#fff8df;border:4px solid #111;border-radius:20px;padding:18px;font-size:22px;font-weight:900;text-align:center}
+.progress{height:32px;background:white;border:4px solid #111;border-radius:20px;overflow:hidden}
+.bar{height:100%;background:#f6c744;width:0%}
+@media(max-width:800px){.grid{grid-template-columns:1fr}h1{font-size:38px}header{flex-direction:column;text-align:center}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Fritz Academy · Save Engine</div>
+  <a href="index.html">Home</a>
+</header>
+
+<main>
+  <section class="card">
+    <h1>Student Save System</h1>
+    <p>This page proves Fritz Academy can remember each student’s Academy, inventory, lesson progress, and building progress.</p>
+
+    <label>Student Name</label><br>
+    <input id="studentName" placeholder="Student name" />
+    <br><br>
+    <button onclick="createSave()">Create / Load Save</button>
+    <button onclick="resetSave()">Reset This Student</button>
+  </section>
+
+  <section class="card" id="dashboard" style="display:none;"></section>
+</main>
+
+<script>
+let currentStudent = "";
+
+function saveKey(name){
+  return "fritz_academy_save_" + name.trim().toLowerCase().replaceAll(" ","_");
+}
+
+function defaultSave(name){
+  return {
+    studentName: name,
+    currentLesson: 1,
+    totalStars: 0,
+    builderPack: {
+      books: 0,
+      bricks: 0,
+      blueprints: 0,
+      keys: 0,
+      seeds: 0,
+      tools: 0
+    },
+    academy: {
+      frontGate: 100,
+      mainHall: 25,
+      library: 0,
+      garden: 0,
+      workshop: 0,
+      musicHall: 0
+    },
+    friends: {
+      captainFritz: 1,
+      bash: 0,
+      bear: 0,
+      nola: 0,
+      rascal: 0
+    }
+  };
+}
+
+function createSave(){
+  const name = document.getElementById("studentName").value.trim();
+  if(!name){
+    alert("Enter a student name first.");
+    return;
+  }
+
+  currentStudent = name;
+  const key = saveKey(name);
+  let data = localStorage.getItem(key);
+
+  if(!data){
+    data = JSON.stringify(defaultSave(name));
+    localStorage.setItem(key,data);
+  }
+
+  render();
+}
+
+function getSave(){
+  return JSON.parse(localStorage.getItem(saveKey(currentStudent)));
+}
+
+function setSave(data){
+  localStorage.setItem(saveKey(currentStudent), JSON.stringify(data));
+}
+
+function addReward(type){
+  const data = getSave();
+
+  if(type === "books") data.builderPack.books += 1;
+  if(type === "bricks") data.builderPack.bricks += 1;
+  if(type === "blueprints") data.builderPack.blueprints += 1;
+  if(type === "keys") data.builderPack.keys += 1;
+  if(type === "seeds") data.builderPack.seeds += 1;
+  if(type === "tools") data.builderPack.tools += 1;
+
+  data.totalStars += 1;
+
+  if(data.builderPack.books >= 3) data.academy.library = Math.min(100, data.academy.library + 20);
+  if(data.builderPack.bricks >= 3) data.academy.mainHall = Math.min(100, data.academy.mainHall + 15);
+  if(data.builderPack.seeds >= 2) data.academy.garden = Math.min(100, data.academy.garden + 25);
+
+  setSave(data);
+  render();
+}
+
+function completeLesson(){
+  const data = getSave();
+  data.currentLesson += 1;
+  data.totalStars += 3;
+  data.friends.captainFritz += 1;
+  setSave(data);
+  render();
+}
+
+function resetSave(){
+  const name = document.getElementById("studentName").value.trim();
+  if(!name){
+    alert("Enter the student name to reset.");
+    return;
+  }
+  localStorage.removeItem(saveKey(name));
+  document.getElementById("dashboard").style.display = "none";
+  alert("Save reset for " + name);
+}
+
+function progressBar(label, value){
+  return `
+    <p><b>${label}</b> · ${value}%</p>
+    <div class="progress"><div class="bar" style="width:${value}%"></div></div>
+  `;
+}
+
+function render(){
+  const data = getSave();
+  const d = document.getElementById("dashboard");
+  d.style.display = "block";
+
+  d.innerHTML = `
+    <h2>Welcome back, ${data.studentName}!</h2>
+    <p><b>Current Lesson:</b> ${data.currentLesson}</p>
+    <p><b>Total Stars:</b> ${data.totalStars}</p>
+
+    <h2>Builder's Pack</h2>
+    <div class="grid">
+      <div class="tile">📘 Books<br>${data.builderPack.books}</div>
+      <div class="tile">🧱 Bricks<br>${data.builderPack.bricks}</div>
+      <div class="tile">📜 Blueprints<br>${data.builderPack.blueprints}</div>
+      <div class="tile">🔑 Keys<br>${data.builderPack.keys}</div>
+      <div class="tile">🌱 Seeds<br>${data.builderPack.seeds}</div>
+      <div class="tile">🔧 Tools<br>${data.builderPack.tools}</div>
+    </div>
+
+    <h2>Academy Progress</h2>
+    ${progressBar("Front Gate", data.academy.frontGate)}
+    ${progressBar("Main Hall", data.academy.mainHall)}
+    ${progressBar("Library", data.academy.library)}
+    ${progressBar("Garden", data.academy.garden)}
+    ${progressBar("Workshop", data.academy.workshop)}
+    ${progressBar("Music Hall", data.academy.musicHall)}
+
+    <h2>Test Rewards</h2>
+    <button onclick="addReward('books')">Earn Book</button>
+    <button onclick="addReward('bricks')">Earn Brick</button>
+    <button onclick="addReward('blueprints')">Earn Blueprint</button>
+    <button onclick="addReward('keys')">Earn Key</button>
+    <button onclick="addReward('seeds')">Earn Seed</button>
+    <button onclick="addReward('tools')">Earn Tool</button>
+    <button onclick="completeLesson()">Complete Lesson</button>
+  `;
+}
+</script>
+</body>
+</html>
