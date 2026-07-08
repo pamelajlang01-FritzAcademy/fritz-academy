@@ -14,11 +14,11 @@ main{max-width:1100px;margin:auto;background:#fff8df;border:6px solid #111;borde
 h1{font-size:64px;margin:0;color:#102342}
 p{font-size:24px;font-weight:800}
 .card{background:white;border:5px solid #111;border-radius:24px;padding:22px;text-align:center;box-shadow:0 8px 0 #111}
-.dog{font-size:150px}
+.fritz{max-width:100%;max-height:340px;object-fit:contain}
 button{font-size:24px;font-weight:900;background:#f6c744;border:5px solid #111;border-radius:20px;padding:16px 28px;box-shadow:0 7px 0 #111;cursor:pointer}
 .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:24px}
 .tile{background:white;border:5px solid #111;border-radius:22px;padding:18px;text-align:center;font-size:22px;font-weight:900;box-shadow:0 7px 0 #111}
-@media(max-width:800px){.hero,.grid{grid-template-columns:1fr}h1{font-size:44px}.dog{font-size:110px}header{flex-direction:column;text-align:center}}
+@media(max-width:800px){.hero,.grid{grid-template-columns:1fr}h1{font-size:44px}header{flex-direction:column;text-align:center}}
 </style>
 </head>
 <body>
@@ -34,8 +34,9 @@ button{font-size:24px;font-weight:900;background:#f6c744;border:5px solid #111;b
       <p>Original English lessons with songs, stories, games, readers, worksheets, and rewards.</p>
       <button onclick="document.getElementById('week1').scrollIntoView({behavior:'smooth'})">Start Week 1</button>
     </div>
+
     <div class="card">
-      <div class="dog">🐶</div>
+      <img class="fritz" src="assets/ElevenLabs_image_GPT%20Image%202_Full%20body%20portrait%20of%20Captain%20.png" alt="Captain Fritz">
       <p>Captain Fritz is ready.</p>
     </div>
   </section>
