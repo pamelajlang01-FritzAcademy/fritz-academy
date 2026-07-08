@@ -35,12 +35,13 @@ function setSave(s){localStorage.setItem(SAVE_KEY,JSON.stringify(s));}
 class World extends Phaser.Scene{
 constructor(){super("World")}
 preload(){
- this.load.image("fritz","assets/captain-fritz.png");
+ this.load.image("campus","assets/fa_master_campus_v1.png");
+ this.load.image("fritz","assets/captain_fritz.png");
  this.load.image("bash","assets/bash.png");
  this.load.image("bear","assets/bear.png");
  this.load.image("nola","assets/nola.png");
+ this.load.image("tony","assets/tony.png");
  this.load.image("rascal","assets/rascal.png");
- this.load.image("academy","assets/academy.png");
 }
 create(){
  this.save=getSave();
@@ -60,10 +61,9 @@ create(){
 }
 
 drawWorld(){
- this.add.rectangle(800,500,1600,1000,0x72bf58);
- this.add.rectangle(800,110,1600,220,0x79d9ff);
+ this.add.image(800,500,"campus");
  this.add.text(520,40,"FRITZ ACADEMY",{
-   fontSize:"54px",fontStyle:"bold",color:"#102342"
+   fontSize:"54px",fontStyle:"bold",color:"#ffffff",backgroundColor:"#000000cc",padding:{x:12,y:8}
  });
 
  this.path(800,180,120,760);
@@ -93,7 +93,7 @@ createPlayer(){
  this.player=this.add.circle(800,870,24,0x174ea6).setStrokeStyle(5,0xffffff);
  this.physics.add.existing(this.player);
  this.player.body.setCollideWorldBounds(true);
- this.add.text(800,905,"YOU",{fontSize:"18px",fontStyle:"bold",color:"#102342"}).setOrigin(.5);
+ this.add.text(800,905,"YOU",{fontSize:"18px",fontStyle:"bold",color:"#ffffff",backgroundColor:"#000000cc",padding:{x:8,y:4}}).setOrigin(.5);
 }
 
 createCharacters(){
