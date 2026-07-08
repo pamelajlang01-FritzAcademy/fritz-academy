@@ -3,133 +3,138 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Fritz Academy Week 1</title>
+<title>Fritz Academy · Week 1 Lesson</title>
 <style>
 *{box-sizing:border-box}
 body{margin:0;font-family:Arial,sans-serif;background:linear-gradient(#79d9ff 0 45%,#eafaff 46%,#72bf58 47%);color:#102342}
 header,main{max-width:1100px;margin:16px auto}
 header{background:#102342;color:white;border:6px solid #111;border-radius:28px;padding:18px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 10px 0 #111}
-.logo{font-size:38px;font-weight:900}
+.logo{font-size:36px;font-weight:900}
+a{color:white;font-size:20px;font-weight:900}
 main{background:#fff8df;border:6px solid #111;border-radius:32px;padding:24px;box-shadow:0 12px 0 #111}
-h1{font-size:52px;margin:0 0 10px}
+.stage{background:white;border:5px solid #111;border-radius:26px;padding:24px;text-align:center;box-shadow:0 8px 0 #111;min-height:560px}
+h1{font-size:48px;margin:0 0 12px}
 h2{font-size:34px}
-p{font-size:22px;font-weight:800}
-button{font-size:22px;font-weight:900;background:#f6c744;border:5px solid #111;border-radius:18px;padding:14px 22px;box-shadow:0 7px 0 #111;cursor:pointer;margin:8px}
-.stage{background:white;border:5px solid #111;border-radius:26px;padding:24px;text-align:center;box-shadow:0 8px 0 #111;min-height:520px}
+p{font-size:23px;font-weight:800;line-height:1.25}
+button{font-size:24px;font-weight:900;background:#f6c744;border:5px solid #111;border-radius:20px;padding:16px 28px;box-shadow:0 7px 0 #111;cursor:pointer;margin:10px}
 .fritz{max-height:260px;max-width:100%;object-fit:contain}
+.big{font-size:52px;font-weight:900}
 .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:20px}
-.tile{background:#fff8df;border:4px solid #111;border-radius:20px;padding:20px;font-size:24px;font-weight:900;cursor:pointer}
-.bigtext{font-size:52px;font-weight:900}
-@media(max-width:800px){.grid{grid-template-columns:1fr}h1{font-size:40px}header{flex-direction:column;text-align:center}}
+.tile{background:#fff8df;border:4px solid #111;border-radius:20px;padding:20px;font-size:26px;font-weight:900;cursor:pointer}
+.teacher{background:#eaf7ff;border:4px dashed #174ea6;border-radius:18px;padding:14px;margin:14px 0;text-align:left;font-size:18px;font-weight:800}
+@media(max-width:800px){.grid{grid-template-columns:1fr}h1{font-size:38px}.big{font-size:40px}header{flex-direction:column;text-align:center}}
 </style>
 </head>
 <body>
 
 <header>
   <div class="logo">Fritz Academy · Week 1</div>
-  <a href="index.html" style="color:white;font-weight:bold;font-size:20px;">Home</a>
+  <a href="index.html">Home</a>
 </header>
 
 <main>
-  <section class="stage" id="stage">
-    <img class="fritz" src="assets/ElevenLabs_image_GPT%20Image%202_Full%20body%20portrait%20of%20Captain%20.png" alt="Captain Fritz">
-    <h1>Welcome to Week 1!</h1>
-    <p>Today we learn greetings, names, and letters.</p>
-    <button onclick="showSong()">Start Lesson</button>
-  </section>
+<section class="stage" id="stage">
+  <img class="fritz" src="assets/ElevenLabs_image_GPT%20Image%202_Full%20body%20portrait%20of%20Captain%20.png">
+  <h1>Week 1 · Lesson 1</h1>
+  <p>Focus: greetings, names, alphabet awareness, and first sight words.</p>
+  <div class="teacher">
+    Teacher objective: Student will respond to “hello,” practice “My name is ___,” recognize A/B/C as letters, and read simple high-frequency sentence frames with support.
+  </div>
+  <button onclick="song()">Start Lesson</button>
+</section>
 </main>
 
 <script>
-function speak(text){
-  speechSynthesis.cancel();
-  const u=new SpeechSynthesisUtterance(text);
-  u.rate=.75; u.pitch=1.05; u.lang="en-US";
-  speechSynthesis.speak(u);
-}
-function set(html){document.getElementById("stage").innerHTML=html}
+const fritz=`<img class="fritz" src="assets/ElevenLabs_image_GPT%20Image%202_Full%20body%20portrait%20of%20Captain%20.png">`;
+function speak(t){speechSynthesis.cancel();let u=new SpeechSynthesisUtterance(t);u.lang="en-US";u.rate=.72;u.pitch=1.05;speechSynthesis.speak(u)}
+function set(x){document.getElementById("stage").innerHTML=x}
 
-function showSong(){
-set(`
-<h1>🎵 Song Time</h1>
-<p>Play the Alphabet Adventure song here.</p>
-<img class="fritz" src="assets/ElevenLabs_image_GPT%20Image%202_Full%20body%20portrait%20of%20Captain%20.png">
-<br>
+function song(){
+set(`<h1>🎵 Song Time</h1>${fritz}
+<p>Play the Alphabet Adventure song from ElevenLabs.</p>
+<div class="teacher">Teacher: Let the student listen first. Second time, invite clapping. Third time, have the student repeat A, B, C.</div>
 <button onclick="speak('Hello Academites. Welcome to Fritz Academy.')">Fritz Greeting</button>
-<button onclick="showVocab()">Next</button>
-`);
+<button onclick="vocab()">Next</button>`);
 }
 
-function showVocab(){
-set(`
-<h1>Vocabulary Warm-Up</h1>
+function vocab(){
+set(`<h1>Vocabulary Warm-Up</h1>
 <p>Click each word. Student listens and repeats.</p>
 <div class="grid">
-<div class="tile" onclick="speak('hello')">Hello</div>
+<div class="tile" onclick="speak('hello')">hello</div>
 <div class="tile" onclick="speak('I')">I</div>
 <div class="tile" onclick="speak('am')">am</div>
 <div class="tile" onclick="speak('my')">my</div>
 <div class="tile" onclick="speak('name')">name</div>
 <div class="tile" onclick="speak('letter')">letter</div>
 </div>
-<button onclick="showStory()">Next</button>
-`);
+<div class="teacher">Teacher prompt: “Point to hello.” “Say hello.” “My name is Pam. What is your name?”</div>
+<button onclick="story1()">Next</button>`);
 }
 
-function showStory(){
-set(`
-<h1>Teacher Story</h1>
-<p class="bigtext">Captain Fritz opens the gate to Fritz Academy.</p>
-<img class="fritz" src="assets/ElevenLabs_image_GPT%20Image%202_Full%20body%20portrait%20of%20Captain%20.png">
-<br>
-<button onclick="speak('Captain Fritz opens the gate to Fritz Academy.')">Read Page</button>
-<button onclick="showReader1()">Next</button>
-`);
+function story1(){
+set(`<h1>Teacher Read-Aloud</h1>${fritz}
+<p class="big">Captain Fritz opens the gate.</p>
+<p>“Hello, Academites! Welcome to Fritz Academy.”</p>
+<button onclick="speak('Captain Fritz opens the gate. Hello Academites. Welcome to Fritz Academy.')">Read Page</button>
+<button onclick="story2()">Next</button>`);
 }
 
-function showReader1(){
-set(`
-<h1>Little Reader 1</h1>
-<p class="bigtext">Hello!</p>
-<button onclick="speak('Hello')">Read</button>
-<p class="bigtext">My name is Fritz.</p>
-<button onclick="speak('My name is Fritz.')">Read</button>
-<br>
-<button onclick="showReader2()">Next</button>
-`);
+function story2(){
+set(`<h1>Teacher Read-Aloud</h1>
+<p class="big">Bash sees a letter.</p>
+<p>Bash says, “I see A.” Bear says, “I see B.”</p>
+<div class="teacher">Comprehension check: Who sees A? What letter does Bear see?</div>
+<button onclick="speak('Bash sees a letter. Bash says, I see A. Bear says, I see B.')">Read Page</button>
+<button onclick="reader1()">Little Reader 1</button>`);
 }
 
-function showReader2(){
-set(`
-<h1>Little Reader 2</h1>
-<p class="bigtext">I see A.</p>
-<button onclick="speak('I see A.')">Read</button>
-<p class="bigtext">I see a letter.</p>
-<button onclick="speak('I see a letter.')">Read</button>
-<br>
-<button onclick="showGame()">Next</button>
-`);
+function reader1(){
+set(`<h1>Little Reader 1</h1>
+<p class="big">Hello!</p><button onclick="speak('Hello')">Read</button>
+<p class="big">My name is Fritz.</p><button onclick="speak('My name is Fritz.')">Read</button>
+<p class="big">I am Fritz.</p><button onclick="speak('I am Fritz.')">Read</button>
+<div class="teacher">Student goal: repeat each page after teacher. Do not require independent reading yet.</div>
+<button onclick="reader2()">Little Reader 2</button>`);
 }
 
-function showGame(){
-set(`
-<h1>Game: Find the Word</h1>
-<p>Find: <b>my</b></p>
+function reader2(){
+set(`<h1>Little Reader 2</h1>
+<p class="big">I see A.</p><button onclick="speak('I see A.')">Read</button>
+<p class="big">I see B.</p><button onclick="speak('I see B.')">Read</button>
+<p class="big">I see a letter.</p><button onclick="speak('I see a letter.')">Read</button>
+<div class="teacher">Student goal: identify A and B visually; repeat “I see...” sentence frame.</div>
+<button onclick="game()">Game</button>`);
+}
+
+function game(){
+set(`<h1>Game: Find the Word</h1>
+<p>Find the word: <b>my</b></p>
 <div class="grid">
-<div class="tile" onclick="speak('Try again')">I</div>
-<div class="tile" onclick="speak('Great job. My.')">my</div>
-<div class="tile" onclick="speak('Try again')">am</div>
+<div class="tile" onclick="speak('Try again. This says I.')">I</div>
+<div class="tile" onclick="speak('Great job. This says my.')">my</div>
+<div class="tile" onclick="speak('Try again. This says am.')">am</div>
 </div>
-<button onclick="showReward()">Next</button>
-`);
+<button onclick="alphabet()">Next Game</button>`);
 }
 
-function showReward(){
-set(`
-<h1>⭐ Sticker Time!</h1>
-<img class="fritz" src="assets/ElevenLabs_image_GPT%20Image%202_Full%20body%20portrait%20of%20Captain%20.png">
-<p>You earned an Academy Block.</p>
-<button onclick="location.href='index.html'">Finish Lesson</button>
-`);
+function alphabet(){
+set(`<h1>Alphabet Check</h1>
+<p>Click A, then B, then C.</p>
+<div class="grid">
+<div class="tile" onclick="speak('A')">A</div>
+<div class="tile" onclick="speak('B')">B</div>
+<div class="tile" onclick="speak('C')">C</div>
+</div>
+<div class="teacher">Assessment: Student can point to at least 2 of 3 letters with teacher support.</div>
+<button onclick="reward()">Sticker Time</button>`);
+}
+
+function reward(){
+set(`<h1>⭐ Sticker Time!</h1>${fritz}
+<p>You earned your first Academy Block.</p>
+<p>Today you practiced: hello, I, am, my, name, letter, A, B, C.</p>
+<button onclick="location.href='index.html'">Finish Lesson</button>`);
 }
 </script>
 </body>
