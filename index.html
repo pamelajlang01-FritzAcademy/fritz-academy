@@ -15,12 +15,10 @@ h1{font-size:64px;margin:0;color:#102342}
 p{font-size:24px;font-weight:800}
 .card{background:white;border:5px solid #111;border-radius:24px;padding:22px;text-align:center;box-shadow:0 8px 0 #111}
 .fritz{max-width:100%;max-height:340px;object-fit:contain}
-<button id="startWeekBtn" class="primary-button">
-    Start Week 1
-</button>
+.startBtn{display:inline-block;background:#f6c744;color:#102342;border:6px solid #111;border-radius:24px;padding:22px 44px;font-size:34px;font-weight:900;box-shadow:0 8px 0 #111;cursor:pointer;margin-top:22px;min-width:360px}
 .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:24px}
 .tile{background:white;border:5px solid #111;border-radius:22px;padding:18px;text-align:center;font-size:22px;font-weight:900;box-shadow:0 7px 0 #111}
-@media(max-width:800px){.hero,.grid{grid-template-columns:1fr}h1{font-size:44px}header{flex-direction:column;text-align:center}}
+@media(max-width:800px){.hero,.grid{grid-template-columns:1fr}h1{font-size:44px}header{flex-direction:column;text-align:center}.startBtn{width:100%;min-width:0}}
 </style>
 </head>
 <body>
@@ -34,7 +32,7 @@ p{font-size:24px;font-weight:800}
     <div>
       <h1>Welcome, Academites!</h1>
       <p>Original English lessons with songs, stories, games, readers, worksheets, and rewards.</p>
-      <button onclick="document.getElementById('week1').scrollIntoView({behavior:'smooth'})">Start Week 1</button>
+      <button class="startBtn" onclick="location.href='week1.html'">🚀 Start Week 1</button>
     </div>
 
     <div class="card">
