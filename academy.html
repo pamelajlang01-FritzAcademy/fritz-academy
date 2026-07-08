@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Fritz Academy · Academy World</title>
+
+<script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
+
+<style>
+body{
+  margin:0;
+  background:#102342;
+  font-family:Arial,sans-serif;
+}
+#game{
+  width:100vw;
+  height:100vh;
+}
+</style>
+</head>
+
+<body>
+<div id="game"></div>
+
+<script>
+const SAVE_KEY = "fritz_academy_world_save_demo";
+
+function getSave(){
+  const saved = localStorage.getItem(SAVE_KEY);
+  if(saved) return JSON.parse(saved);
+
+  const fresh = {
+    studentName:"Student",
+    builderPack:{books:0,bricks:0,blueprints:0,keys:0,seeds:0,tools:0},
+    academy:{frontGate:100,mainHall:25,library:0,garden:0,workshop:0,musicHall:0},
+    currentGoal:"Help Captain Fritz start building the Library."
+  };
+
+  localStorage.setItem(SAVE_KEY, JSON.stringify(fresh));
+  return fresh;
+}
+
+function setSave(data){
+  localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+}
+
+class AcademyScene extends Phaser.Scene{
+  constructor(){ super("AcademyScene"); }
+
+  preload(){
+    this.load.image("fritz","assets/captain-fritz.png");
+    this.load.image("bash","assets/bash.png");
+    this.load.image("bear","assets/bear.png");
+    this.load.image("nola","assets/nola.png");
+    this.load.image("rascal","assets/rascal.png");
+    this.load.image("academy","assets/academy.png");
+    this.load.image("alphabet","assets/alphabet-blocks.png");
+  }
+
+  create(){
+    this.save = getSave();
+
+    this.cameras.main.setBackgroundColor("#7edcff");
+
+    this.add.rectangle(400,300,800,600,0x8bd36a);
+    this.add.rectangle(400,110,760,160,0x94ddff);
+    this.add.text(30,25,"Fritz Academy World",{
+      fontSize:"30px",
+      fontFamily:"Arial",
+      color:"#102342",
+      fontStyle:"bold"
+    });
+
+    this.add.text(30,65,this.save.currentGoal,{
+      fontSize:"18px",
+      fontFamily:"Arial",
+      color:"#102342",
+      fontStyle:"bold",
+      wordWrap:{width:720}
+    });
+
+    this.createBuilding("🏫 Main Hall",170,250,"mainHall");
+    this.createBuilding("📚 Library",400,210,"library");
+    this.createBuilding("🌱 Garden",625,260,"garden");
+    this.createBuilding("🎵 Music Hall",205,430,"musicHall");
+    this.createBuilding("🔧 Workshop",590,430,"workshop");
+
+    this.fritz = this.add.image(400,360,"fritz").setScale(.22);
+    this.fritz.setInteractive({useHandCursor:true});
+    this.fritz.on("pointerdown",()=>this.showMessage("Captain Fritz","Welcome back! We need books, bricks, and a blueprint to start the Library."));
+
+    this.add.image(110,355,"bash").setScale(.18).setInteractive({useHandCursor:true})
+      .on("pointerdown",()=>this.showMessage("Bash","I can help build, but we need more bricks."));
+
+    this.add.image(690,355,"bear").setScale(.18).setInteractive({useHandCursor:true})
+      .on("pointerdown",()=>this.showMessage("Bear","I found a book! Click the book crate."));
+
+    this.createCollectible("📘",300,505,"books","Book");
+    this.createCollectible("🧱",400,505,"bricks","Brick");
+    this.createCollectible("📜",500,505,"blueprints","Blueprint");
+
+    this.drawHUD();
+  }
+
+  createBuilding(label,x,y,key){
+    const progress = this.save.academy[key] || 0;
+    const box = this.add.rectangle(x,y,170,90,0xfff4d2).setStrokeStyle(5,0x111111);
+    box.setInteractive({useHandCursor:true});
+    const txt = this.add.text(x,y-25,label,{
+      fontSize:"20px",
+      color:"#102342",
+      fontStyle:"bold"
+    }).setOrigin(.5);
+
+    const pct = this.add.text(x,y+15,progress + "% built",{
+      fontSize:"17px",
+      color:"#102342",
+      fontStyle:"bold"
+    }).setOrigin(.5);
+
+    box.on("pointerdown",()=>{
+      if(key==="library"){
+        this.showMessage("Library",`Library progress: ${this.save.academy.library}%\\nNeeded: books, bricks, and blueprints.`);
+      } else {
+        this.showMessage(label,`${label} progress: ${progress}%`);
+      }
+    });
+  }
+
+  createCollectible(icon,x,y,type,label){
+    const item = this.add.text(x,y,icon,{
+      fontSize:"48px"
+    }).setOrigin(.5);
+
+    item.setInteractive({useHandCursor:true});
+
+    item.on("pointerdown",()=>{
+      this.save.builderPack[type] += 1;
+
+      if(this.save.builderPack.books >= 1 &&
+         this.save.builderPack.bricks >= 1 &&
+         this.save.builderPack.blueprints >= 1){
+        this.save.academy.library = Math.min(100,this.save.academy.library + 25);
+        this.save.currentGoal = "Great work! The Library construction has started.";
+      }
+
+      setSave(this.save);
+      this.showMessage("Builder's Pack",`You collected 1 ${label}.`);
+      this.scene.restart();
+    });
+  }
+
+  drawHUD(){
+    const pack = this.save.builderPack;
+
+    this.add.rectangle(400,575,760,42,0x102342);
+    this.add.text(40,563,`📘 ${pack.books}   🧱 ${pack.bricks}   📜 ${pack.blueprints}   🔑 ${pack.keys}   🌱 ${pack.seeds}   🔧 ${pack.tools}`,{
+      fontSize:"22px",
+      color:"#ffffff",
+      fontStyle:"bold"
+    });
+  }
+
+  showMessage(title,msg){
+    if(this.popup){ this.popup.destroy(); }
+
+    this.popup = this.add.container(400,300);
+
+    const bg = this.add.rectangle(0,0,560,250,0xffffff)
+      .setStrokeStyle(6,0x111111);
+
+    const titleText = this.add.text(0,-90,title,{
+      fontSize:"30px",
+      color:"#102342",
+      fontStyle:"bold"
+    }).setOrigin(.5);
+
+    const bodyText = this.add.text(0,-25,msg,{
+      fontSize:"22px",
+      color:"#102342",
+      fontStyle:"bold",
+      align:"center",
+      wordWrap:{width:500}
+    }).setOrigin(.5);
+
+    const close = this.add.text(0,82,"Close",{
+      fontSize:"24px",
+      color:"#102342",
+      backgroundColor:"#f6c744",
+      padding:{x:22,y:10},
+      fontStyle:"bold"
+    }).setOrigin(.5).setInteractive({useHandCursor:true});
+
+    close.on("pointerdown",()=>this.popup.destroy());
+
+    this.popup.add([bg,titleText,bodyText,close]);
+  }
+}
+
+const config = {
+  type: Phaser.AUTO,
+  parent:"game",
+  width:800,
+  height:600,
+  scale:{
+    mode:Phaser.Scale.FIT,
+    autoCenter:Phaser.Scale.CENTER_BOTH
+  },
+  scene:AcademyScene
+};
+
+new Phaser.Game(config);
+</script>
+</body>
+</html>
