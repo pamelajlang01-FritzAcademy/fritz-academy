@@ -10,203 +10,353 @@ body{margin:0;background:#071426;font-family:Arial,sans-serif}
 #game{width:100vw;height:100vh}
 </style>
 </head>
+
 <body>
 <div id="game"></div>
 
 <script>
-const SAVE_KEY="fritz_academy_world_v2";
+const SAVE_KEY = "fritz_academy_world_v3";
 
 function getSave(){
-  let s=localStorage.getItem(SAVE_KEY);
-  if(s) return JSON.parse(s);
-  let fresh={
+  const existing = localStorage.getItem(SAVE_KEY);
+  if(existing) return JSON.parse(existing);
+
+  const fresh = {
     studentName:"Student",
     currentStory:"The Academy Begins",
-    xp:0,stars:0,
+    xp:0,
+    stars:0,
     pack:{books:0,bricks:0,blueprints:0,seeds:0,tools:0,keys:0},
-    academy:{library:{stage:"foundation",progress:0},garden:{stage:"empty",progress:0}},
+    academy:{
+      library:{stage:"foundation",progress:0},
+      garden:{stage:"empty",progress:0}
+    },
     collected:{}
   };
-  localStorage.setItem(SAVE_KEY,JSON.stringify(fresh));
+
+  localStorage.setItem(SAVE_KEY, JSON.stringify(fresh));
   return fresh;
 }
-function setSave(s){localStorage.setItem(SAVE_KEY,JSON.stringify(s));}
+
+function setSave(data){
+  localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+}
 
 class World extends Phaser.Scene{
-constructor(){super("World")}
-preload(){
- this.load.image("campus","assets/fa_master_campus_v1.png");
- this.load.image("fritz","assets/captain_fritz.png");
- this.load.image("bash","assets/bash.png");
- this.load.image("bear","assets/bear.png");
- this.load.image("nola","assets/nola.png");
- this.load.image("tony","assets/tony.png");
- this.load.image("rascal","assets/rascal.png");
-}
-create(){
- this.save=getSave();
- this.worldW=1600; this.worldH=1000;
- this.cameras.main.setBounds(0,0,this.worldW,this.worldH);
- this.physics.world.setBounds(0,0,this.worldW,this.worldH);
+  constructor(){super("World");}
 
- this.drawWorld();
- this.createPlayer();
- this.createCharacters();
- this.createCollectibles();
- this.createHUD();
- this.createMobileControls();
+  preload(){
+    this.load.image("campus","assets/fritz_academy_world_map.png");
+    this.load.image("fritz","assets/captain_fritz.png");
+    this.load.image("bash","assets/bash.png");
+    this.load.image("bear","assets/bear.png");
+    this.load.image("nola","assets/nola.png");
+    this.load.image("tony","assets/tony.png");
+    this.load.image("rascal","assets/rascal.png");
+  }
 
- this.cameras.main.startFollow(this.player,true,.08,.08);
- this.keys=this.input.keyboard.addKeys("W,A,S,D,UP,DOWN,LEFT,RIGHT");
-}
+  create(){
+    this.save = getSave();
 
-drawWorld(){
- this.add.image(800,500,"campus");
- this.add.text(520,40,"FRITZ ACADEMY",{
-   fontSize:"54px",fontStyle:"bold",color:"#ffffff",backgroundColor:"#000000cc",padding:{x:12,y:8}
- });
+    this.worldW = 2048;
+    this.worldH = 2048;
 
- this.path(800,180,120,760);
- this.path(400,500,900,90);
- this.path(1100,500,900,90);
- this.path(800,650,1200,90);
+    this.cameras.main.setBounds(0,0,this.worldW,this.worldH);
+    this.physics.world.setBounds(0,0,this.worldW,this.worldH);
 
- this.building("🏫 Main Hall",800,310,240,135,0xfff8df,()=>this.msg("Main Hall","This is where every Academy day begins."));
- this.building("📚 Library",520,505,250,135,0xd9b16f,()=>this.libraryInfo());
- this.building("🌱 Garden",1080,500,250,135,0x9fe27d,()=>this.msg("Garden","The Garden needs seeds and tools before it can grow."));
- this.building("🔧 Workshop",385,740,250,135,0xd8d8d8,()=>this.msg("Workshop","Rascal is building something here."));
- this.building("🎵 Music Hall 🔒",820,790,270,135,0x999999,()=>this.msg("Locked","Keep building the Academy to open Music Hall."));
- this.building("🔬 Science Lab 🔒",1210,740,270,135,0x999999,()=>this.msg("Locked","The Science Lab is locked for now."));
- this.building("🌲 Adventure Forest 🔒",1350,310,310,135,0x5f8f4e,()=>this.msg("Locked","The forest trail opens later."));
- this.building("🚪 Front Gate",800,920,260,100,0xf6c744,()=>this.msg("Front Gate","Welcome back to your Academy."));
-}
+    this.drawCampus();
+    this.createPlayer();
+    this.createCharacters();
+    this.createCollectibles();
+    this.createInteractionZones();
+    this.createHUD();
+    this.createMobileControls();
 
-path(x,y,w,h){this.add.rectangle(x,y,w,h,0xe6c98a).setStrokeStyle(3,0x8b6a2b)}
+    this.keys = this.input.keyboard.addKeys("W,A,S,D,UP,DOWN,LEFT,RIGHT,SPACE");
+    this.cameras.main.startFollow(this.player,true,.08,.08);
 
-building(label,x,y,w,h,color,cb){
- let b=this.add.rectangle(x,y,w,h,color).setStrokeStyle(6,0x111111).setInteractive({useHandCursor:true});
- this.add.text(x,y-18,label,{fontSize:"25px",fontStyle:"bold",color:"#102342"}).setOrigin(.5);
- b.on("pointerdown",cb);
-}
+    this.currentZone = null;
+    this.interactionPrompt = null;
+  }
 
-createPlayer(){
- this.player=this.add.circle(800,870,24,0x174ea6).setStrokeStyle(5,0xffffff);
- this.physics.add.existing(this.player);
- this.player.body.setCollideWorldBounds(true);
- this.add.text(800,905,"YOU",{fontSize:"18px",fontStyle:"bold",color:"#ffffff",backgroundColor:"#000000cc",padding:{x:8,y:4}}).setOrigin(.5);
-}
+  drawCampus(){
+    const bg = this.add.image(this.worldW/2,this.worldH/2,"campus");
+    bg.setDisplaySize(this.worldW,this.worldH);
+  }
 
-createCharacters(){
- this.npc("Captain Fritz","fritz",760,360,.17,"Welcome back! The Academy remembers what you build.");
- this.npc("Bash","bash",430,585,.17,"The Library still needs books, bricks, and a blueprint.");
- this.npc("Bear","bear",930,430,.17,"I found something near the path.");
- this.npc("Nola","nola",1160,590,.17,"The Garden will grow when we find seeds.");
- this.npc("Rascal","rascal",310,820,.17,"I may have hidden a tool somewhere.");
-}
+  createPlayer(){
+    this.player = this.add.image(1000,1780,"fritz").setScale(.12);
+    this.physics.add.existing(this.player);
+    this.player.body.setCollideWorldBounds(true);
+    this.player.body.setSize(120,220);
+  }
 
-npc(name,key,x,y,scale,line){
- let img=this.add.image(x,y,key).setScale(scale).setInteractive({useHandCursor:true});
- this.add.text(x,y-88,"💬",{fontSize:"30px"}).setOrigin(.5);
- img.on("pointerdown",()=>this.msg(name,line));
-}
+  createCharacters(){
+    this.npc("Bash","bash",560,840,.14,"The Library still needs books, bricks, and a blueprint.");
+    this.npc("Bear","bear",1470,760,.14,"I found something near the path.");
+    this.npc("Nola","nola",1620,1350,.13,"The Garden will grow when we find seeds.");
+    this.npc("Tony","tony",1320,1320,.12,"I hear music coming from the Academy!");
+    this.npc("Rascal","rascal",1210,1020,.13,"I may have hidden a tool somewhere.");
+  }
 
-createCollectibles(){
- this.collect("book","📘",620,655,"books","Book");
- this.collect("brick","🧱",720,600,"bricks","Brick");
- this.collect("blueprint","📜",920,590,"blueprints","Blueprint");
- this.collect("seed","🌱",1120,640,"seeds","Seed");
- this.collect("tool","🔧",360,640,"tools","Tool");
-}
+  npc(name,key,x,y,scale,line){
+    const img = this.add.image(x,y,key).setScale(scale).setInteractive({useHandCursor:true});
+    this.add.text(x,y-115,"💬",{fontSize:"34px"}).setOrigin(.5);
+    img.on("pointerdown",()=>this.msg(name,line));
+  }
 
-collect(id,icon,x,y,type,label){
- if(this.save.collected[id]) return;
- let item=this.add.text(x,y,icon,{fontSize:"48px"}).setOrigin(.5).setInteractive({useHandCursor:true});
- item.on("pointerdown",()=>{
-   this.save.pack[type]++;
-   this.save.collected[id]=true;
-   this.checkBuild();
-   setSave(this.save);
-   this.msg("Builder's Pack",`You collected: ${label}`);
-   item.destroy();
-   this.refreshHUD();
- });
-}
+  createCollectibles(){
+    this.collect("book","📘",850,1160,"books","Book");
+    this.collect("brick","🧱",1050,1240,"bricks","Brick");
+    this.collect("blueprint","📜",1200,1110,"blueprints","Blueprint");
+    this.collect("seed","🌱",1500,1510,"seeds","Seed");
+    this.collect("tool","🔧",760,1380,"tools","Tool");
+  }
 
-checkBuild(){
- let p=this.save.pack;
- if(p.books>=1 && p.bricks>=1 && p.blueprints>=1 && this.save.academy.library.progress<25){
-   this.save.academy.library.progress=25;
-   this.save.academy.library.stage="walls started";
-   this.save.xp+=10;
-   this.save.stars+=1;
- }
-}
+  collect(id,icon,x,y,type,label){
+    if(this.save.collected[id]) return;
 
-libraryInfo(){
- let l=this.save.academy.library;
- this.msg("Library",`Stage: ${l.stage}\nProgress: ${l.progress}%\nNeeded now: books, bricks, and blueprints.`);
-}
+    const item = this.add.text(x,y,icon,{fontSize:"54px"})
+      .setOrigin(.5)
+      .setInteractive({useHandCursor:true});
 
-createHUD(){
- this.hud=this.add.container(0,0).setScrollFactor(0);
- this.hudBg=this.add.rectangle(400,38,780,70,0x102342).setStrokeStyle(5,0x111111);
- this.hudText=this.add.text(25,18,"",{fontSize:"21px",fontStyle:"bold",color:"#ffffff"});
- this.packBg=this.add.rectangle(400,562,780,62,0x102342).setStrokeStyle(5,0x111111);
- this.packText=this.add.text(25,542,"",{fontSize:"23px",fontStyle:"bold",color:"#ffffff"});
- this.hud.add([this.hudBg,this.hudText,this.packBg,this.packText]);
- this.refreshHUD();
-}
+    item.on("pointerdown",()=>{
+      this.save.pack[type]++;
+      this.save.collected[id]=true;
+      this.checkBuild();
+      setSave(this.save);
+      this.refreshHUD();
+      this.msg("Builder's Pack",`You collected: ${label}`);
+      item.destroy();
+    });
+  }
 
-refreshHUD(){
- let s=this.save,p=s.pack;
- this.hudText.setText(`${s.studentName} | ${s.currentStory} | XP ${s.xp} | Stars ${s.stars}`);
- this.packText.setText(`Builder's Pack: 📘 ${p.books}  🧱 ${p.bricks}  📜 ${p.blueprints}  🌱 ${p.seeds}  🔧 ${p.tools}  🔑 ${p.keys}`);
-}
+  checkBuild(){
+    const p = this.save.pack;
 
-createMobileControls(){
- let y=455,x=75;
- let make=(txt,dx,dy)=>{
-  let b=this.add.text(x+dx,y+dy,txt,{fontSize:"34px",backgroundColor:"#f6c744",color:"#102342",padding:{x:14,y:8},fontStyle:"bold"})
-   .setScrollFactor(0).setInteractive({useHandCursor:true});
-  b.dir={x:dx===-45?-1:dx===45?1:0,y:dy===-45?-1:dy===45?1:0};
-  b.on("pointerdown",()=>this.mobileDir=b.dir);
-  b.on("pointerup",()=>this.mobileDir=null);
-  b.on("pointerout",()=>this.mobileDir=null);
- };
- make("↑",0,-45); make("↓",0,45); make("←",-45,0); make("→",45,0);
-}
+    if(
+      p.books >= 1 &&
+      p.bricks >= 1 &&
+      p.blueprints >= 1 &&
+      this.save.academy.library.progress < 25
+    ){
+      this.save.academy.library.progress = 25;
+      this.save.academy.library.stage = "walls started";
+      this.save.xp += 10;
+      this.save.stars += 1;
+    }
+  }
 
-update(){
- let speed=210, vx=0, vy=0;
- if(this.keys.LEFT.isDown||this.keys.A.isDown) vx=-speed;
- if(this.keys.RIGHT.isDown||this.keys.D.isDown) vx=speed;
- if(this.keys.UP.isDown||this.keys.W.isDown) vy=-speed;
- if(this.keys.DOWN.isDown||this.keys.S.isDown) vy=speed;
- if(this.mobileDir){vx=this.mobileDir.x*speed;vy=this.mobileDir.y*speed;}
- this.player.body.setVelocity(vx,vy);
-}
+  createInteractionZones(){
+    this.zones = [];
 
-msg(title,body){
- if(this.popup)this.popup.destroy();
- this.popup=this.add.container(400,300).setScrollFactor(0);
- let bg=this.add.rectangle(0,0,610,290,0xffffff).setStrokeStyle(7,0x111111);
- let t=this.add.text(0,-105,title,{fontSize:"34px",fontStyle:"bold",color:"#102342"}).setOrigin(.5);
- let b=this.add.text(0,-30,body,{fontSize:"24px",fontStyle:"bold",color:"#102342",align:"center",wordWrap:{width:540}}).setOrigin(.5);
- let close=this.add.text(0,92,"Close",{fontSize:"26px",fontStyle:"bold",color:"#102342",backgroundColor:"#f6c744",padding:{x:26,y:12}})
-   .setOrigin(.5).setInteractive({useHandCursor:true});
- close.on("pointerdown",()=>this.popup.destroy());
- this.popup.add([bg,t,b,close]);
-}
+    this.zone("Main Hall",1030,770,260,240,"This is where every Academy day begins.");
+    this.zone("Library",520,760,300,260,()=>this.libraryInfo());
+    this.zone("Science Lab",1420,560,300,260,"The Science Lab is locked for now.");
+    this.zone("Music Hall",1420,910,300,240,"The Music Hall is locked for now.");
+    this.zone("Greenhouse",950,1570,330,240,"The Greenhouse needs seeds and tools.");
+    this.zone("Workshop",1640,980,330,260,"Rascal works on inventions here.");
+    this.zone("History Castle",350,1050,330,270,"The History Castle opens later.");
+    this.zone("Canine Training Academy",1570,1570,420,300,"Training games will open here.");
+  }
+
+  zone(name,x,y,w,h,message){
+    const z = this.add.zone(x,y,w,h);
+    this.physics.world.enable(z);
+    z.name = name;
+    z.message = message;
+    this.zones.push(z);
+  }
+
+  update(){
+    const speed = 230;
+    let vx = 0;
+    let vy = 0;
+
+    if(this.keys.LEFT.isDown || this.keys.A.isDown) vx = -speed;
+    if(this.keys.RIGHT.isDown || this.keys.D.isDown) vx = speed;
+    if(this.keys.UP.isDown || this.keys.W.isDown) vy = -speed;
+    if(this.keys.DOWN.isDown || this.keys.S.isDown) vy = speed;
+
+    if(this.mobileDir){
+      vx = this.mobileDir.x * speed;
+      vy = this.mobileDir.y * speed;
+    }
+
+    this.player.body.setVelocity(vx,vy);
+    this.checkZones();
+
+    if(Phaser.Input.Keyboard.JustDown(this.keys.SPACE) && this.currentZone){
+      if(typeof this.currentZone.message === "function"){
+        this.currentZone.message();
+      }else{
+        this.msg(this.currentZone.name,this.currentZone.message);
+      }
+    }
+  }
+
+  checkZones(){
+    let found = null;
+    const playerRect = new Phaser.Geom.Rectangle(this.player.x-40,this.player.y-60,80,120);
+
+    for(const z of this.zones){
+      if(Phaser.Geom.Rectangle.Overlaps(z.getBounds(),playerRect)){
+        found = z;
+        break;
+      }
+    }
+
+    if(found && found !== this.currentZone){
+      this.currentZone = found;
+      this.showInteractionPrompt(found.name);
+    }
+
+    if(!found && this.currentZone){
+      this.currentZone = null;
+      this.hideInteractionPrompt();
+    }
+  }
+
+  showInteractionPrompt(name){
+    this.hideInteractionPrompt();
+
+    this.interactionPrompt = this.add.container(400,485).setScrollFactor(0);
+
+    const bg = this.add.rectangle(0,0,500,58,0xffffff)
+      .setStrokeStyle(5,0x111111);
+
+    const txt = this.add.text(0,0,`Press SPACE to enter ${name}`,{
+      fontSize:"22px",
+      fontStyle:"bold",
+      color:"#102342"
+    }).setOrigin(.5);
+
+    this.interactionPrompt.add([bg,txt]);
+  }
+
+  hideInteractionPrompt(){
+    if(this.interactionPrompt){
+      this.interactionPrompt.destroy();
+      this.interactionPrompt = null;
+    }
+  }
+
+  libraryInfo(){
+    const l = this.save.academy.library;
+    this.msg("Library",`Stage: ${l.stage}\nProgress: ${l.progress}%\nNeeded: books, bricks, and blueprints.`);
+  }
+
+  createHUD(){
+    this.hud = this.add.container(0,0).setScrollFactor(0);
+
+    this.topBg = this.add.rectangle(400,38,790,70,0x102342)
+      .setStrokeStyle(5,0x111111);
+
+    this.hudText = this.add.text(20,18,"",{
+      fontSize:"21px",
+      fontStyle:"bold",
+      color:"#ffffff"
+    });
+
+    this.bottomBg = this.add.rectangle(400,562,790,62,0x102342)
+      .setStrokeStyle(5,0x111111);
+
+    this.packText = this.add.text(20,542,"",{
+      fontSize:"22px",
+      fontStyle:"bold",
+      color:"#ffffff"
+    });
+
+    this.hud.add([this.topBg,this.hudText,this.bottomBg,this.packText]);
+    this.refreshHUD();
+  }
+
+  refreshHUD(){
+    const s = this.save;
+    const p = s.pack;
+
+    this.hudText.setText(`${s.studentName} | ${s.currentStory} | XP ${s.xp} | Stars ${s.stars}`);
+    this.packText.setText(`Builder's Pack: 📘 ${p.books}  🧱 ${p.bricks}  📜 ${p.blueprints}  🌱 ${p.seeds}  🔧 ${p.tools}  🔑 ${p.keys}`);
+  }
+
+  createMobileControls(){
+    const x = 78;
+    const y = 455;
+
+    const make = (txt,dx,dy)=>{
+      const b = this.add.text(x+dx,y+dy,txt,{
+        fontSize:"34px",
+        backgroundColor:"#f6c744",
+        color:"#102342",
+        padding:{x:14,y:8},
+        fontStyle:"bold"
+      }).setScrollFactor(0).setInteractive({useHandCursor:true});
+
+      b.dir = {
+        x: dx === -45 ? -1 : dx === 45 ? 1 : 0,
+        y: dy === -45 ? -1 : dy === 45 ? 1 : 0
+      };
+
+      b.on("pointerdown",()=>this.mobileDir=b.dir);
+      b.on("pointerup",()=>this.mobileDir=null);
+      b.on("pointerout",()=>this.mobileDir=null);
+    };
+
+    make("↑",0,-45);
+    make("↓",0,45);
+    make("←",-45,0);
+    make("→",45,0);
+  }
+
+  msg(title,body){
+    if(this.popup) this.popup.destroy();
+
+    this.popup = this.add.container(400,300).setScrollFactor(0);
+
+    const bg = this.add.rectangle(0,0,630,300,0xffffff)
+      .setStrokeStyle(7,0x111111);
+
+    const titleText = this.add.text(0,-108,title,{
+      fontSize:"34px",
+      fontStyle:"bold",
+      color:"#102342"
+    }).setOrigin(.5);
+
+    const bodyText = this.add.text(0,-25,body,{
+      fontSize:"24px",
+      fontStyle:"bold",
+      color:"#102342",
+      align:"center",
+      wordWrap:{width:550}
+    }).setOrigin(.5);
+
+    const close = this.add.text(0,98,"Close",{
+      fontSize:"26px",
+      fontStyle:"bold",
+      color:"#102342",
+      backgroundColor:"#f6c744",
+      padding:{x:26,y:12}
+    }).setOrigin(.5).setInteractive({useHandCursor:true});
+
+    close.on("pointerdown",()=>this.popup.destroy());
+
+    this.popup.add([bg,titleText,bodyText,close]);
+  }
 }
 
 new Phaser.Game({
- type:Phaser.AUTO,
- parent:"game",
- width:800,
- height:600,
- scale:{mode:Phaser.Scale.FIT,autoCenter:Phaser.Scale.CENTER_BOTH},
- physics:{default:"arcade"},
- scene:World
+  type: Phaser.AUTO,
+  parent: "game",
+  width: 800,
+  height: 600,
+  scale: {
+    mode: Phaser.Scale.FIT,
+    autoCenter: Phaser.Scale.CENTER_BOTH
+  },
+  physics: {
+    default: "arcade"
+  },
+  scene: World
 });
 </script>
 </body>
