@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Fritz Academy World</title>
+<title>Fritz Academy World v21</title>
 <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
 <style>
 body{margin:0;background:#071426;font-family:Arial,sans-serif}
@@ -14,81 +14,64 @@ body{margin:0;background:#071426;font-family:Arial,sans-serif}
 <div id="game"></div>
 
 <script>
-const SAVE_KEY="fritz_academy_world_engine_v20";
+const SAVE_KEY="fritz_academy_world_v21";
 
 const MONTH_ONE={
   week1:{
     title:"Week 1: Welcome to Fritz Academy",
-    focus:"hello, name, I am, A B C",
+    focus:"Hello / I am / A B C",
+    vocab:["hello","Fritz","I","am","A","B","C"],
+    song:"Hello, hello, hello my friend. I am Fritz. Let’s begin!",
     story:[
-      "Captain Fritz opens the gate.",
-      "The Academy is quiet.",
-      "He needs help to wake it up.",
-      "Say hello. Find the first letter. Begin the Academy."
+      "Captain Fritz opens the Academy gate.",
+      "The school is quiet.",
+      "He waves and says, Hello!",
+      "The first letters are waiting: A, B, and C."
     ],
-    reader:[
-      "Hello.",
-      "I am Fritz.",
-      "I see A.",
-      "I see B.",
-      "I see C.",
-      "Welcome to Fritz Academy."
-    ],
-    challenge:"Find 3 Academy items and open the Main Hall."
+    reader:["Hello.","I am Fritz.","I see A.","I see B.","I see C.","Hello, friend."],
+    game:"Find the book, brick, and blueprint. Then enter Main Hall."
   },
   week2:{
-    title:"Week 2: The Lost Backpack",
-    focus:"book, bag, pencil, key, where",
+    title:"Week 2: Bear’s Lost Backpack",
+    focus:"book / bag / pencil / where",
+    vocab:["book","bag","pencil","key","where","here","there"],
+    song:"Where is the bag? Here, here, here. Where is the book? Near, near, near.",
     story:[
-      "Bear lost his backpack.",
-      "Bash sees a clue near the path.",
-      "The backpack has books for the Library.",
-      "Find the school things and help Bear."
+      "Bear lost his backpack near the path.",
+      "Bash sees a clue.",
+      "Captain Fritz helps Bear look.",
+      "Inside the backpack are books for the Library."
     ],
-    reader:[
-      "I see a bag.",
-      "I see a book.",
-      "I see a pencil.",
-      "Bear has a bag.",
-      "The bag is here."
-    ],
-    challenge:"Collect school items for Bear."
+    reader:["I see a bag.","I see a book.","I see a pencil.","The bag is here.","Bear has a book."],
+    game:"Collect school items and bring them to the Training Grounds."
   },
   week3:{
     title:"Week 3: Nola’s Garden Gate",
-    focus:"seed, water, flower, green, grow",
+    focus:"seed / water / green / grow",
+    vocab:["seed","water","flower","green","grow","garden","gate"],
+    song:"Seed and water, grow, grow, grow. Green little garden, go, go, go!",
     story:[
-      "Nola finds an empty garden.",
-      "The gate will not open.",
+      "Nola finds the Garden Gate.",
+      "The gate is closed.",
       "The garden needs seeds and water.",
-      "Help Nola make the garden grow."
+      "Captain Fritz helps make the garden grow."
     ],
-    reader:[
-      "I see a seed.",
-      "I see water.",
-      "The seed is green.",
-      "Nola has a flower.",
-      "The garden can grow."
-    ],
-    challenge:"Find seeds and tools for the Garden."
+    reader:["I see a seed.","I see water.","The seed is green.","The flower can grow.","Nola has a garden."],
+    game:"Find seeds and tools near the Greenhouse."
   },
   week4:{
     title:"Week 4: The Library Light",
-    focus:"read, page, word, light, open",
+    focus:"read / page / word / open",
+    vocab:["read","page","word","light","open","library","book"],
+    song:"Open the book. Read the page. Words light up on every stage.",
     story:[
       "The Library is dark.",
       "Captain Fritz sees a small light.",
       "Rascal finds a tool.",
-      "The first books are ready."
+      "The first books are ready to read."
     ],
-    reader:[
-      "I see a book.",
-      "I see a page.",
-      "I see a word.",
-      "The light is on.",
-      "The Library is open."
-    ],
-    challenge:"Collect books, bricks, and a blueprint."
+    reader:["I see a book.","I see a page.","I see a word.","The light is on.","The Library is open."],
+    game:"Collect books, bricks, and a blueprint to start the Library."
   }
 };
 
@@ -97,7 +80,6 @@ function getSave(){
   if(old) return JSON.parse(old);
   const fresh={
     studentName:"Student",
-    currentStory:"The Academy Begins",
     currentWeek:"week1",
     xp:0,
     stars:0,
@@ -140,14 +122,15 @@ class World extends Phaser.Scene{
     this.createZones();
     this.createHUD();
     this.createMobileControls();
+    this.createMenuButton();
 
-    this.keys=this.input.keyboard.addKeys("W,A,S,D,UP,DOWN,LEFT,RIGHT,SPACE,ONE,TWO,THREE,FOUR,F");
+    this.keys=this.input.keyboard.addKeys("W,A,S,D,UP,DOWN,LEFT,RIGHT,SPACE,ONE,TWO,THREE,FOUR,M");
+    this.input.keyboard.on("keydown-D",()=>this.toggleDebug());
+
     this.cameras.main.startFollow(this.player,true,.08,.08);
     this.cameras.main.setZoom(1.05);
 
     this.currentZone=null;
-
-    this.input.keyboard.on("keydown-D",()=>this.toggleDebug());
   }
 
   makeCleanSprite(sourceKey,newKey,whiteCutoff){
@@ -196,8 +179,8 @@ class World extends Phaser.Scene{
   }
 
   createPlayer(){
-    this.shadow=this.add.ellipse(980,1745,30,12,0x000000,.28).setDepth(19);
-    this.player=this.physics.add.image(980,1730,"fritz").setScale(.052).setDepth(20);
+    this.shadow=this.add.ellipse(980,1845,30,12,0x000000,.28).setDepth(19);
+    this.player=this.physics.add.image(980,1830,"fritz").setScale(.052).setDepth(20);
     this.player.body.setCollideWorldBounds(true);
     this.player.body.setSize(42,64);
     this.physics.add.collider(this.player,this.walls);
@@ -208,19 +191,19 @@ class World extends Phaser.Scene{
     this.debugRects=[];
 
     const wallData=[
-      [1020,735,350,240,"Main Hall"],
-      [520,760,310,250,"Library"],
-      [1270,425,330,260,"Science"],
-      [1435,650,330,260,"Music"],
-      [925,1515,330,230,"Greenhouse"],
-      [1645,970,360,270,"Workshop"],
-      [350,1040,330,270,"Castle"],
-      [1510,1700,530,290,"Training"],
-      [760,1325,260,160,"Water"],
-      [1180,1510,240,120,"Water"]
+      [1020,735,350,240],
+      [520,760,310,250],
+      [1270,425,330,260],
+      [1435,650,330,260],
+      [925,1515,330,230],
+      [1645,970,360,270],
+      [350,1040,330,270],
+      [1510,1700,530,290],
+      [760,1325,260,160],
+      [1180,1510,240,120]
     ];
 
-    wallData.forEach(([x,y,w,h,label])=>{
+    wallData.forEach(([x,y,w,h])=>{
       const zone=this.add.zone(x,y,w,h);
       this.physics.world.enable(zone);
       zone.body.setImmovable(true);
@@ -263,10 +246,10 @@ class World extends Phaser.Scene{
   createZones(){
     this.zones=[];
     this.zone("Main Hall",1020,925,270,160,"week1");
-    this.zone("Library",520,925,280,160,"week4");
-    this.zone("Greenhouse",930,1700,320,160,"week3");
-    this.zone("Workshop",1640,1180,320,160,"week4");
     this.zone("Training Grounds",1600,1850,420,160,"week2");
+    this.zone("Greenhouse",930,1700,320,160,"week3");
+    this.zone("Library",520,925,280,160,"week4");
+    this.zone("Workshop",1640,1180,320,160,"week4");
   }
 
   zone(name,x,y,w,h,week){
@@ -292,6 +275,7 @@ class World extends Phaser.Scene{
     }
 
     this.player.body.setVelocity(vx,vy);
+
     if(vx<0)this.player.setFlipX(true);
     if(vx>0)this.player.setFlipX(false);
 
@@ -308,6 +292,7 @@ class World extends Phaser.Scene{
     if(Phaser.Input.Keyboard.JustDown(this.keys.TWO))this.openLesson("week2","Quick Start");
     if(Phaser.Input.Keyboard.JustDown(this.keys.THREE))this.openLesson("week3","Quick Start");
     if(Phaser.Input.Keyboard.JustDown(this.keys.FOUR))this.openLesson("week4","Quick Start");
+    if(Phaser.Input.Keyboard.JustDown(this.keys.M))this.showMonthMenu();
   }
 
   checkZones(){
@@ -335,6 +320,7 @@ class World extends Phaser.Scene{
   openLesson(weekKey,place){
     const lesson=MONTH_ONE[weekKey];
     if(!lesson)return;
+
     this.save.currentWeek=weekKey;
     saveGame(this.save);
 
@@ -351,29 +337,31 @@ class World extends Phaser.Scene{
     const steps=[
       {title:l.title,body:`Place: ${this.activePlace}\nFocus: ${l.focus}`},
       {title:"Story",body:l.story.join("\n")},
-      {title:"Read",body:l.reader.join("\n")},
-      {title:"Challenge",body:l.challenge},
-      {title:"Complete",body:"Great work. You earned XP and helped build Fritz Academy."}
+      {title:"Read With Me",body:l.reader.join("\n")},
+      {title:"Vocabulary",body:l.vocab.join("   •   ")},
+      {title:"Song",body:l.song},
+      {title:"Game Challenge",body:l.game},
+      {title:"Complete",body:"Great work. Save this lesson and continue next class."}
     ];
 
     const step=steps[this.lessonStep];
 
     this.lessonPanel=this.add.container(640,360).setScrollFactor(0).setDepth(400);
 
-    const bg=this.add.rectangle(0,0,760,500,0xfffbef,.98).setStrokeStyle(6,0x102342);
-    const title=this.add.text(0,-205,step.title,{fontSize:"32px",fontStyle:"bold",color:"#102342"}).setOrigin(.5);
-    const body=this.add.text(0,-40,step.body,{fontSize:"25px",fontStyle:"bold",color:"#102342",align:"center",wordWrap:{width:680}}).setOrigin(.5);
+    const bg=this.add.rectangle(0,0,800,540,0xfffbef,.98).setStrokeStyle(6,0x102342);
+    const title=this.add.text(0,-230,step.title,{fontSize:"32px",fontStyle:"bold",color:"#102342"}).setOrigin(.5);
+    const body=this.add.text(0,-35,step.body,{fontSize:"25px",fontStyle:"bold",color:"#102342",align:"center",wordWrap:{width:710}}).setOrigin(.5);
 
-    const next=this.add.text(160,190,this.lessonStep<4?"Next":"Finish",{
+    const next=this.add.text(170,220,this.lessonStep<6?"Next":"Finish",{
       fontSize:"24px",fontStyle:"bold",color:"#102342",backgroundColor:"#f6c744",padding:{x:26,y:12}
     }).setOrigin(.5).setInteractive({useHandCursor:true});
 
-    const close=this.add.text(-160,190,"Close",{
+    const close=this.add.text(-170,220,"Close",{
       fontSize:"24px",fontStyle:"bold",color:"#102342",backgroundColor:"#ffffff",padding:{x:26,y:12}
     }).setOrigin(.5).setInteractive({useHandCursor:true});
 
     next.on("pointerdown",()=>{
-      if(this.lessonStep<4){
+      if(this.lessonStep<6){
         this.lessonStep++;
         this.showLessonPanel();
       }else{
@@ -397,10 +385,70 @@ class World extends Phaser.Scene{
       if(week==="week3")this.save.pack.seeds++;
       if(week==="week4")this.save.pack.blueprints++;
     }
+
     saveGame(this.save);
     this.refreshHUD();
+
     if(this.lessonPanel)this.lessonPanel.destroy();
-    this.msg("Saved","Progress saved. The Academy will remember this next class.");
+    this.msg("Saved","Progress saved. Fritz Academy will remember this next class.");
+  }
+
+  createMenuButton(){
+    const b=this.add.text(1115,670,"Month 1 Menu",{
+      fontSize:"18px",
+      fontStyle:"bold",
+      color:"#102342",
+      backgroundColor:"#f6c744",
+      padding:{x:16,y:8}
+    }).setScrollFactor(0).setDepth(260).setInteractive({useHandCursor:true});
+
+    b.on("pointerdown",()=>this.showMonthMenu());
+  }
+
+  showMonthMenu(){
+    if(this.menuPanel)this.menuPanel.destroy();
+
+    this.menuPanel=this.add.container(640,360).setScrollFactor(0).setDepth(420);
+
+    const bg=this.add.rectangle(0,0,720,430,0xfffbef,.98).setStrokeStyle(6,0x102342);
+    const title=this.add.text(0,-180,"Fritz Academy Month 1",{fontSize:"32px",fontStyle:"bold",color:"#102342"}).setOrigin(.5);
+
+    const buttons=[];
+    const rows=[
+      ["1","week1",-90],
+      ["2","week2",-30],
+      ["3","week3",30],
+      ["4","week4",90]
+    ];
+
+    rows.forEach(([num,key,y])=>{
+      const l=MONTH_ONE[key];
+      const done=this.save.completed[key]?" ✅":"";
+      const row=this.add.text(0,y,`${num}. ${l.title}${done}`,{
+        fontSize:"23px",
+        fontStyle:"bold",
+        color:"#102342",
+        backgroundColor:"#ffffff",
+        padding:{x:18,y:8}
+      }).setOrigin(.5).setInteractive({useHandCursor:true});
+      row.on("pointerdown",()=>{
+        this.menuPanel.destroy();
+        this.openLesson(key,"Month Menu");
+      });
+      buttons.push(row);
+    });
+
+    const close=this.add.text(0,170,"Close",{
+      fontSize:"22px",
+      fontStyle:"bold",
+      color:"#102342",
+      backgroundColor:"#f6c744",
+      padding:{x:24,y:8}
+    }).setOrigin(.5).setInteractive({useHandCursor:true});
+
+    close.on("pointerdown",()=>this.menuPanel.destroy());
+
+    this.menuPanel.add([bg,title,...buttons,close]);
   }
 
   showPrompt(name){
@@ -456,7 +504,14 @@ class World extends Phaser.Scene{
     const bg=this.add.rectangle(0,0,620,240,0xffffff,.97).setStrokeStyle(5,0x102342);
     const t=this.add.text(0,-78,title,{fontSize:"28px",fontStyle:"bold",color:"#102342"}).setOrigin(.5);
     const b=this.add.text(0,-10,body,{fontSize:"22px",fontStyle:"bold",color:"#102342",align:"center",wordWrap:{width:540}}).setOrigin(.5);
-    const close=this.add.text(0,74,"Close",{fontSize:"22px",fontStyle:"bold",color:"#102342",backgroundColor:"#f6c744",padding:{x:24,y:8}}).setOrigin(.5).setInteractive({useHandCursor:true});
+
+    const close=this.add.text(0,74,"Close",{
+      fontSize:"22px",
+      fontStyle:"bold",
+      color:"#102342",
+      backgroundColor:"#f6c744",
+      padding:{x:24,y:8}
+    }).setOrigin(.5).setInteractive({useHandCursor:true});
 
     close.on("pointerdown",()=>this.popup.destroy());
     this.popup.add([bg,t,b,close]);
