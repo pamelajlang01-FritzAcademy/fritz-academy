@@ -14,7 +14,7 @@ body{margin:0;background:#071426;font-family:Arial,sans-serif}
 <div id="game"></div>
 
 <script>
-const SAVE_KEY="fritz_academy_world_v5";
+const SAVE_KEY="fritz_academy_world_v6";
 
 function getSave(){
   const old=localStorage.getItem(SAVE_KEY);
@@ -50,6 +50,7 @@ class World extends Phaser.Scene{
 
   create(){
     this.save=getSave();
+
     this.worldW=2048;
     this.worldH=2048;
 
@@ -58,12 +59,12 @@ class World extends Phaser.Scene{
 
     this.add.image(this.worldW/2,this.worldH/2,"campus").setDisplaySize(this.worldW,this.worldH);
 
-    this.makeWhiteTransparent("fritz_raw","fritz");
-    this.makeWhiteTransparent("bash_raw","bash");
-    this.makeWhiteTransparent("bear_raw","bear");
-    this.makeWhiteTransparent("nola_raw","nola");
-    this.makeWhiteTransparent("tony_raw","tony");
-    this.makeWhiteTransparent("rascal_raw","rascal");
+    this.makeCleanSprite("fritz_raw","fritz",238);
+    this.makeCleanSprite("bash_raw","bash",245);
+    this.makeCleanSprite("bear_raw","bear",245);
+    this.makeCleanSprite("nola_raw","nola",245);
+    this.makeCleanSprite("tony_raw","tony",245);
+    this.makeCleanSprite("rascal_raw","rascal",245);
 
     this.createPlayer();
     this.createNPCs();
@@ -77,45 +78,75 @@ class World extends Phaser.Scene{
     this.currentZone=null;
   }
 
-  makeWhiteTransparent(sourceKey,newKey){
+  makeCleanSprite(sourceKey,newKey,whiteCutoff){
     const src=this.textures.get(sourceKey).getSourceImage();
-    const canvas=this.textures.createCanvas(newKey,src.width,src.height);
-    const ctx=canvas.getContext();
-    ctx.drawImage(src,0,0);
 
-    const img=ctx.getImageData(0,0,src.width,src.height);
+    const temp=document.createElement("canvas");
+    temp.width=src.width;
+    temp.height=src.height;
+    const tctx=temp.getContext("2d");
+    tctx.drawImage(src,0,0);
+
+    const img=tctx.getImageData(0,0,temp.width,temp.height);
     const d=img.data;
 
-    for(let i=0;i<d.length;i+=4){
-      const r=d[i],g=d[i+1],b=d[i+2];
+    let minX=temp.width, minY=temp.height, maxX=0, maxY=0;
 
-      if(r>238 && g>238 && b>238){
-        d[i+3]=0;
+    for(let y=0;y<temp.height;y++){
+      for(let x=0;x<temp.width;x++){
+        const i=(y*temp.width+x)*4;
+        const r=d[i],g=d[i+1],b=d[i+2],a=d[i+3];
+
+        if(r>whiteCutoff && g>whiteCutoff && b>whiteCutoff){
+          d[i+3]=0;
+        }
+
+        if(d[i+3]>20){
+          if(x<minX)minX=x;
+          if(y<minY)minY=y;
+          if(x>maxX)maxX=x;
+          if(y>maxY)maxY=y;
+        }
       }
     }
 
-    ctx.putImageData(img,0,0);
+    tctx.putImageData(img,0,0);
+
+    const pad=8;
+    minX=Math.max(0,minX-pad);
+    minY=Math.max(0,minY-pad);
+    maxX=Math.min(temp.width,maxX+pad);
+    maxY=Math.min(temp.height,maxY+pad);
+
+    const cropW=maxX-minX;
+    const cropH=maxY-minY;
+
+    const canvas=this.textures.createCanvas(newKey,cropW,cropH);
+    const ctx=canvas.getContext();
+    ctx.drawImage(temp,minX,minY,cropW,cropH,0,0,cropW,cropH);
     canvas.refresh();
   }
 
   createPlayer(){
-    this.player=this.add.image(1110,1860,"fritz").setScale(.045);
+    this.player=this.add.image(1025,1645,"fritz").setScale(.075);
+    this.player.setDepth(20);
     this.physics.add.existing(this.player);
     this.player.body.setCollideWorldBounds(true);
-    this.player.body.setSize(90,130);
+    this.player.body.setSize(50,80);
   }
 
   createNPCs(){
-    this.npc("Bash","bash",560,850,.055,"Bash: The Library needs books and bricks.");
-    this.npc("Bear","bear",1510,820,.055,"Bear: I found something near the path.");
-    this.npc("Nola","nola",1600,1510,.05,"Nola: Seeds will help the Garden grow.");
-    this.npc("Tony","tony",1320,1440,.05,"Tony: I hear music coming from the Academy!");
-    this.npc("Rascal","rascal",770,1510,.05,"Rascal: I hid a tool nearby.");
+    this.npc("Bash","bash",600,850,.075,"Bash: The Library needs books and bricks.");
+    this.npc("Bear","bear",1500,820,.075,"Bear: I found something near the path.");
+    this.npc("Nola","nola",1585,1515,.07,"Nola: Seeds will help the Garden grow.");
+    this.npc("Tony","tony",1320,1435,.07,"Tony: I hear music coming from the Academy!");
+    this.npc("Rascal","rascal",760,1510,.07,"Rascal: I hid a tool nearby.");
   }
 
   npc(name,key,x,y,scale,line){
     const img=this.add.image(x,y,key).setScale(scale).setInteractive({useHandCursor:true});
-    this.add.text(x,y-70,"💬",{fontSize:"24px"}).setOrigin(.5);
+    img.setDepth(18);
+    this.add.text(x,y-80,"💬",{fontSize:"24px"}).setOrigin(.5).setDepth(30);
     img.on("pointerdown",()=>this.msg(name,line));
   }
 
@@ -130,6 +161,7 @@ class World extends Phaser.Scene{
   item(id,icon,x,y,type,label){
     if(this.save.collected[id]) return;
     const item=this.add.text(x,y,icon,{fontSize:"40px"}).setOrigin(.5).setInteractive({useHandCursor:true});
+    item.setDepth(25);
     item.on("pointerdown",()=>{
       this.save.pack[type]++;
       this.save.collected[id]=true;
@@ -176,6 +208,10 @@ class World extends Phaser.Scene{
     }
 
     this.player.body.setVelocity(vx,vy);
+
+    if(vx<0)this.player.setFlipX(true);
+    if(vx>0)this.player.setFlipX(false);
+
     this.checkZones();
 
     if(Phaser.Input.Keyboard.JustDown(this.keys.SPACE)&&this.currentZone){
@@ -207,7 +243,7 @@ class World extends Phaser.Scene{
 
   showPrompt(name){
     this.hidePrompt();
-    this.prompt=this.add.container(400,500).setScrollFactor(0);
+    this.prompt=this.add.container(400,500).setScrollFactor(0).setDepth(100);
     const bg=this.add.rectangle(0,0,520,58,0xffffff).setStrokeStyle(5,0x111111);
     const txt=this.add.text(0,0,`Press SPACE to enter ${name}`,{
       fontSize:"22px",
@@ -225,7 +261,7 @@ class World extends Phaser.Scene{
   }
 
   createHUD(){
-    this.hud=this.add.container(0,0).setScrollFactor(0);
+    this.hud=this.add.container(0,0).setScrollFactor(0).setDepth(200);
 
     const top=this.add.rectangle(400,38,790,70,0x102342).setStrokeStyle(5,0x111111);
     this.hudText=this.add.text(20,18,"",{fontSize:"21px",fontStyle:"bold",color:"#ffffff"});
@@ -252,7 +288,7 @@ class World extends Phaser.Scene{
         color:"#102342",
         padding:{x:14,y:8},
         fontStyle:"bold"
-      }).setScrollFactor(0).setInteractive({useHandCursor:true});
+      }).setScrollFactor(0).setInteractive({useHandCursor:true}).setDepth(250);
 
       b.dir={x:dx===-45?-1:dx===45?1:0,y:dy===-45?-1:dy===45?1:0};
       b.on("pointerdown",()=>this.mobileDir=b.dir);
@@ -269,7 +305,7 @@ class World extends Phaser.Scene{
   msg(title,body){
     if(this.popup)this.popup.destroy();
 
-    this.popup=this.add.container(400,300).setScrollFactor(0);
+    this.popup=this.add.container(400,300).setScrollFactor(0).setDepth(300);
     const bg=this.add.rectangle(0,0,630,300,0xffffff).setStrokeStyle(7,0x111111);
     const t=this.add.text(0,-108,title,{fontSize:"34px",fontStyle:"bold",color:"#102342"}).setOrigin(.5);
     const b=this.add.text(0,-25,body,{fontSize:"24px",fontStyle:"bold",color:"#102342",align:"center",wordWrap:{width:550}}).setOrigin(.5);
