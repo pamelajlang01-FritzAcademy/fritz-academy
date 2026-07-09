@@ -14,11 +14,12 @@ body{margin:0;background:#071426;font-family:Arial,sans-serif}
 <div id="game"></div>
 
 <script>
-const SAVE_KEY="fritz_academy_world_v7";
+const SAVE_KEY="fritz_academy_world_v8";
 
 function getSave(){
   const old=localStorage.getItem(SAVE_KEY);
   if(old) return JSON.parse(old);
+
   const fresh={
     studentName:"Student",
     currentStory:"The Academy Begins",
@@ -27,6 +28,7 @@ function getSave(){
     pack:{books:0,bricks:0,blueprints:0,seeds:0,tools:0,keys:0},
     collected:{}
   };
+
   localStorage.setItem(SAVE_KEY,JSON.stringify(fresh));
   return fresh;
 }
@@ -41,13 +43,15 @@ class World extends Phaser.Scene{
 
   create(){
     this.save=getSave();
+
     this.worldW=2048;
     this.worldH=2048;
 
     this.physics.world.setBounds(0,0,this.worldW,this.worldH);
     this.cameras.main.setBounds(0,0,this.worldW,this.worldH);
 
-    this.add.image(this.worldW/2,this.worldH/2,"campus").setDisplaySize(this.worldW,this.worldH);
+    this.add.image(this.worldW/2,this.worldH/2,"campus")
+      .setDisplaySize(this.worldW,this.worldH);
 
     this.makeCleanSprite("fritz_raw","fritz",238);
 
@@ -58,6 +62,8 @@ class World extends Phaser.Scene{
 
     this.keys=this.input.keyboard.addKeys("W,A,S,D,UP,DOWN,LEFT,RIGHT,SPACE");
     this.cameras.main.startFollow(this.player,true,.08,.08);
+    this.cameras.main.setZoom(1.05);
+
     this.currentZone=null;
   }
 
@@ -110,21 +116,25 @@ class World extends Phaser.Scene{
   }
 
   createPlayer(){
-    this.player=this.add.image(1025,1645,"fritz").setScale(.065);
+    this.shadow=this.add.ellipse(980,1745,34,14,0x000000,.28).setDepth(19);
+
+    this.player=this.add.image(980,1730,"fritz").setScale(.052);
     this.player.setDepth(20);
+
     this.physics.add.existing(this.player);
     this.player.body.setCollideWorldBounds(true);
-    this.player.body.setSize(45,70);
+    this.player.body.setSize(42,64);
   }
 
   createZones(){
     this.zones=[];
-    this.zone("Main Hall",1050,760,270,230,"This is where every Academy day begins.");
+
+    this.zone("Main Hall",1050,760,270,230,"Main Hall will hold the welcome story and daily mission.");
     this.zone("Library",520,760,300,260,"The Library opens soon.");
     this.zone("Science Lab",1270,430,330,260,"The Science Lab is locked for now.");
     this.zone("Music Hall",1435,650,330,260,"The Music Hall is locked for now.");
     this.zone("Greenhouse",930,1525,360,260,"The Greenhouse needs seeds and tools.");
-    this.zone("Workshop",1640,970,360,270,"Rascal builds inventions here.");
+    this.zone("Workshop",1640,970,360,270,"The Workshop opens when Rascal has the first tool.");
     this.zone("History Castle",360,1040,330,280,"The History Castle opens later.");
     this.zone("Canine Training Academy",1600,1620,430,300,"Training games will open here.");
   }
@@ -138,7 +148,7 @@ class World extends Phaser.Scene{
   }
 
   update(){
-    const speed=220;
+    const speed=210;
     let vx=0,vy=0;
 
     if(this.keys.LEFT.isDown||this.keys.A.isDown) vx=-speed;
@@ -156,6 +166,9 @@ class World extends Phaser.Scene{
     if(vx<0)this.player.setFlipX(true);
     if(vx>0)this.player.setFlipX(false);
 
+    this.shadow.x=this.player.x;
+    this.shadow.y=this.player.y+38;
+
     this.checkZones();
 
     if(Phaser.Input.Keyboard.JustDown(this.keys.SPACE)&&this.currentZone){
@@ -165,7 +178,7 @@ class World extends Phaser.Scene{
 
   checkZones(){
     let found=null;
-    const playerBox=new Phaser.Geom.Rectangle(this.player.x-30,this.player.y-45,60,90);
+    const playerBox=new Phaser.Geom.Rectangle(this.player.x-24,this.player.y-35,48,70);
 
     for(const z of this.zones){
       if(Phaser.Geom.Rectangle.Overlaps(z.getBounds(),playerBox)){
@@ -185,15 +198,79 @@ class World extends Phaser.Scene{
     }
   }
 
+  createHUD(){
+    this.hud=this.add.container(0,0).setScrollFactor(0).setDepth(200);
+
+    const topBg=this.add.rectangle(220,32,410,46,0x102342,.92)
+      .setStrokeStyle(3,0xffffff,.45);
+
+    this.hudText=this.add.text(28,18,"",{
+      fontFamily:"Arial",
+      fontSize:"18px",
+      fontStyle:"bold",
+      color:"#ffffff"
+    });
+
+    const packBg=this.add.rectangle(1060,32,390,46,0x102342,.92)
+      .setStrokeStyle(3,0xffffff,.45);
+
+    this.packText=this.add.text(885,18,"",{
+      fontFamily:"Arial",
+      fontSize:"18px",
+      fontStyle:"bold",
+      color:"#ffffff"
+    });
+
+    this.hud.add([topBg,this.hudText,packBg,this.packText]);
+    this.refreshHUD();
+  }
+
+  refreshHUD(){
+    const s=this.save,p=s.pack;
+    this.hudText.setText(`${s.studentName} | XP ${s.xp} | ⭐ ${s.stars}`);
+    this.packText.setText(`📘${p.books}  🧱${p.bricks}  📜${p.blueprints}  🌱${p.seeds}  🔧${p.tools}  🔑${p.keys}`);
+  }
+
+  createMobileControls(){
+    const x=88,y=560;
+
+    const make=(txt,dx,dy)=>{
+      const b=this.add.text(x+dx,y+dy,txt,{
+        fontFamily:"Arial",
+        fontSize:"25px",
+        backgroundColor:"#f6c744",
+        color:"#102342",
+        padding:{x:12,y:7},
+        fontStyle:"bold"
+      }).setScrollFactor(0).setInteractive({useHandCursor:true}).setDepth(250);
+
+      b.dir={x:dx===-42?-1:dx===42?1:0,y:dy===-42?-1:dy===42?1:0};
+      b.on("pointerdown",()=>this.mobileDir=b.dir);
+      b.on("pointerup",()=>this.mobileDir=null);
+      b.on("pointerout",()=>this.mobileDir=null);
+    };
+
+    make("↑",0,-42);
+    make("↓",0,42);
+    make("←",-42,0);
+    make("→",42,0);
+  }
+
   showPrompt(name){
     this.hidePrompt();
-    this.prompt=this.add.container(400,505).setScrollFactor(0).setDepth(100);
-    const bg=this.add.rectangle(0,0,470,50,0xffffff).setStrokeStyle(4,0x111111);
-    const txt=this.add.text(0,0,`Press SPACE: ${name}`,{
-      fontSize:"21px",
+
+    this.prompt=this.add.container(640,655).setScrollFactor(0).setDepth(260);
+
+    const bg=this.add.rectangle(0,0,420,42,0xffffff,.94)
+      .setStrokeStyle(3,0x102342);
+
+    const txt=this.add.text(0,0,`SPACE: ${name}`,{
+      fontFamily:"Arial",
+      fontSize:"19px",
       fontStyle:"bold",
       color:"#102342"
     }).setOrigin(.5);
+
     this.prompt.add([bg,txt]);
   }
 
@@ -204,64 +281,41 @@ class World extends Phaser.Scene{
     }
   }
 
-  createHUD(){
-    this.hud=this.add.container(0,0).setScrollFactor(0).setDepth(200);
-
-    const top=this.add.rectangle(400,28,790,48,0x102342).setStrokeStyle(4,0x111111);
-    this.hudText=this.add.text(20,13,"",{fontSize:"18px",fontStyle:"bold",color:"#ffffff"});
-
-    const bottom=this.add.rectangle(400,575,790,46,0x102342).setStrokeStyle(4,0x111111);
-    this.packText=this.add.text(20,561,"",{fontSize:"18px",fontStyle:"bold",color:"#ffffff"});
-
-    this.hud.add([top,this.hudText,bottom,this.packText]);
-    this.refreshHUD();
-  }
-
-  refreshHUD(){
-    const s=this.save,p=s.pack;
-    this.hudText.setText(`${s.studentName} | ${s.currentStory} | XP ${s.xp} | Stars ${s.stars}`);
-    this.packText.setText(`Pack: 📘 ${p.books}  🧱 ${p.bricks}  📜 ${p.blueprints}  🌱 ${p.seeds}  🔧 ${p.tools}  🔑 ${p.keys}`);
-  }
-
-  createMobileControls(){
-    const x=70,y=455;
-    const make=(txt,dx,dy)=>{
-      const b=this.add.text(x+dx,y+dy,txt,{
-        fontSize:"28px",
-        backgroundColor:"#f6c744",
-        color:"#102342",
-        padding:{x:12,y:6},
-        fontStyle:"bold"
-      }).setScrollFactor(0).setInteractive({useHandCursor:true}).setDepth(250);
-
-      b.dir={x:dx===-40?-1:dx===40?1:0,y:dy===-40?-1:dy===40?1:0};
-      b.on("pointerdown",()=>this.mobileDir=b.dir);
-      b.on("pointerup",()=>this.mobileDir=null);
-      b.on("pointerout",()=>this.mobileDir=null);
-    };
-
-    make("↑",0,-40);
-    make("↓",0,40);
-    make("←",-40,0);
-    make("→",40,0);
-  }
-
   msg(title,body){
     if(this.popup)this.popup.destroy();
 
-    this.popup=this.add.container(400,300).setScrollFactor(0).setDepth(300);
-    const bg=this.add.rectangle(0,0,610,250,0xffffff).setStrokeStyle(6,0x111111);
-    const t=this.add.text(0,-85,title,{fontSize:"30px",fontStyle:"bold",color:"#102342"}).setOrigin(.5);
-    const b=this.add.text(0,-10,body,{fontSize:"23px",fontStyle:"bold",color:"#102342",align:"center",wordWrap:{width:530}}).setOrigin(.5);
-    const close=this.add.text(0,75,"Close",{
-      fontSize:"24px",
+    this.popup=this.add.container(640,360).setScrollFactor(0).setDepth(300);
+
+    const bg=this.add.rectangle(0,0,620,240,0xffffff,.97)
+      .setStrokeStyle(5,0x102342);
+
+    const t=this.add.text(0,-78,title,{
+      fontFamily:"Arial",
+      fontSize:"28px",
+      fontStyle:"bold",
+      color:"#102342"
+    }).setOrigin(.5);
+
+    const b=this.add.text(0,-10,body,{
+      fontFamily:"Arial",
+      fontSize:"22px",
+      fontStyle:"bold",
+      color:"#102342",
+      align:"center",
+      wordWrap:{width:540}
+    }).setOrigin(.5);
+
+    const close=this.add.text(0,74,"Close",{
+      fontFamily:"Arial",
+      fontSize:"22px",
       fontStyle:"bold",
       color:"#102342",
       backgroundColor:"#f6c744",
-      padding:{x:24,y:10}
+      padding:{x:24,y:8}
     }).setOrigin(.5).setInteractive({useHandCursor:true});
 
     close.on("pointerdown",()=>this.popup.destroy());
+
     this.popup.add([bg,t,b,close]);
   }
 }
@@ -269,8 +323,8 @@ class World extends Phaser.Scene{
 new Phaser.Game({
   type:Phaser.AUTO,
   parent:"game",
-  width:800,
-  height:600,
+  width:1280,
+  height:720,
   scale:{mode:Phaser.Scale.FIT,autoCenter:Phaser.Scale.CENTER_BOTH},
   physics:{default:"arcade"},
   scene:World
