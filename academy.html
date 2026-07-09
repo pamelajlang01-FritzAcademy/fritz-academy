@@ -14,7 +14,7 @@ body{margin:0;background:#071426;font-family:Arial,sans-serif}
 <div id="game"></div>
 
 <script>
-const SAVE_KEY="fritz_academy_world_v4";
+const SAVE_KEY="fritz_academy_world_v5";
 
 function getSave(){
   const old=localStorage.getItem(SAVE_KEY);
@@ -40,12 +40,12 @@ class World extends Phaser.Scene{
 
   preload(){
     this.load.image("campus","assets/fritz_academy_world_map.png");
-    this.load.image("fritz","assets/captain_fritz.png");
-    this.load.image("bash","assets/bash.png");
-    this.load.image("bear","assets/bear.png");
-    this.load.image("nola","assets/nola.png");
-    this.load.image("tony","assets/tony.png");
-    this.load.image("rascal","assets/rascal.png");
+    this.load.image("fritz_raw","assets/captain_fritz.png");
+    this.load.image("bash_raw","assets/bash.png");
+    this.load.image("bear_raw","assets/bear.png");
+    this.load.image("nola_raw","assets/nola.png");
+    this.load.image("tony_raw","assets/tony.png");
+    this.load.image("rascal_raw","assets/rascal.png");
   }
 
   create(){
@@ -57,6 +57,13 @@ class World extends Phaser.Scene{
     this.cameras.main.setBounds(0,0,this.worldW,this.worldH);
 
     this.add.image(this.worldW/2,this.worldH/2,"campus").setDisplaySize(this.worldW,this.worldH);
+
+    this.makeWhiteTransparent("fritz_raw","fritz");
+    this.makeWhiteTransparent("bash_raw","bash");
+    this.makeWhiteTransparent("bear_raw","bear");
+    this.makeWhiteTransparent("nola_raw","nola");
+    this.makeWhiteTransparent("tony_raw","tony");
+    this.makeWhiteTransparent("rascal_raw","rascal");
 
     this.createPlayer();
     this.createNPCs();
@@ -70,6 +77,27 @@ class World extends Phaser.Scene{
     this.currentZone=null;
   }
 
+  makeWhiteTransparent(sourceKey,newKey){
+    const src=this.textures.get(sourceKey).getSourceImage();
+    const canvas=this.textures.createCanvas(newKey,src.width,src.height);
+    const ctx=canvas.getContext();
+    ctx.drawImage(src,0,0);
+
+    const img=ctx.getImageData(0,0,src.width,src.height);
+    const d=img.data;
+
+    for(let i=0;i<d.length;i+=4){
+      const r=d[i],g=d[i+1],b=d[i+2];
+
+      if(r>238 && g>238 && b>238){
+        d[i+3]=0;
+      }
+    }
+
+    ctx.putImageData(img,0,0);
+    canvas.refresh();
+  }
+
   createPlayer(){
     this.player=this.add.image(1110,1860,"fritz").setScale(.045);
     this.physics.add.existing(this.player);
@@ -81,13 +109,13 @@ class World extends Phaser.Scene{
     this.npc("Bash","bash",560,850,.055,"Bash: The Library needs books and bricks.");
     this.npc("Bear","bear",1510,820,.055,"Bear: I found something near the path.");
     this.npc("Nola","nola",1600,1510,.05,"Nola: Seeds will help the Garden grow.");
-    this.npc("Tony","tony",1320,1440,.05,"Tony: I hear music from the Academy!");
+    this.npc("Tony","tony",1320,1440,.05,"Tony: I hear music coming from the Academy!");
     this.npc("Rascal","rascal",770,1510,.05,"Rascal: I hid a tool nearby.");
   }
 
   npc(name,key,x,y,scale,line){
     const img=this.add.image(x,y,key).setScale(scale).setInteractive({useHandCursor:true});
-    const bubble=this.add.text(x,y-70,"💬",{fontSize:"24px"}).setOrigin(.5);
+    this.add.text(x,y-70,"💬",{fontSize:"24px"}).setOrigin(.5);
     img.on("pointerdown",()=>this.msg(name,line));
   }
 
