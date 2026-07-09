@@ -14,7 +14,7 @@ body{margin:0;background:#071426;font-family:Arial,sans-serif}
 <div id="game"></div>
 
 <script>
-const SAVE_KEY="fritz_academy_world_engine_v1";
+const SAVE_KEY="fritz_academy_world_engine_v20";
 
 const MONTH_ONE={
   week1:{
@@ -456,7 +456,7 @@ class World extends Phaser.Scene{
     const bg=this.add.rectangle(0,0,620,240,0xffffff,.97).setStrokeStyle(5,0x102342);
     const t=this.add.text(0,-78,title,{fontSize:"28px",fontStyle:"bold",color:"#102342"}).setOrigin(.5);
     const b=this.add.text(0,-10,body,{fontSize:"22px",fontStyle:"bold",color:"#102342",align:"center",wordWrap:{width:540}}).setOrigin(.5);
-    const close=this.add.text(0,74,"Close",{fontSize:"22px",fontStyle:"bold",color:"#102342",backgroundColor:"#f6c744",padding:{x:24,y:8}}).setOrigin(.5).setInteractive({useHandCursor:true);
+    const close=this.add.text(0,74,"Close",{fontSize:"22px",fontStyle:"bold",color:"#102342",backgroundColor:"#f6c744",padding:{x:24,y:8}}).setOrigin(.5).setInteractive({useHandCursor:true});
 
     close.on("pointerdown",()=>this.popup.destroy());
     this.popup.add([bg,t,b,close]);
@@ -473,7 +473,5 @@ new Phaser.Game({
   scene:World
 });
 </script>
-</body>
-</html>
 </body>
 </html>
