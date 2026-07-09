@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Fritz Academy World v21</title>
+<title>Fritz Academy World v22</title>
 <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
 <style>
 body{margin:0;background:#071426;font-family:Arial,sans-serif}
@@ -14,518 +14,444 @@ body{margin:0;background:#071426;font-family:Arial,sans-serif}
 <div id="game"></div>
 
 <script>
-const SAVE_KEY="fritz_academy_world_v21";
+const SAVE_KEY="fritz_academy_world_v22";
 
-const MONTH_ONE={
-  week1:{
-    title:"Week 1: Welcome to Fritz Academy",
-    focus:"Hello / I am / A B C",
-    vocab:["hello","Fritz","I","am","A","B","C"],
-    song:"Hello, hello, hello my friend. I am Fritz. Let’s begin!",
-    story:[
-      "Captain Fritz opens the Academy gate.",
-      "The school is quiet.",
-      "He waves and says, Hello!",
-      "The first letters are waiting: A, B, and C."
-    ],
-    reader:["Hello.","I am Fritz.","I see A.","I see B.","I see C.","Hello, friend."],
-    game:"Find the book, brick, and blueprint. Then enter Main Hall."
-  },
-  week2:{
-    title:"Week 2: Bear’s Lost Backpack",
-    focus:"book / bag / pencil / where",
-    vocab:["book","bag","pencil","key","where","here","there"],
-    song:"Where is the bag? Here, here, here. Where is the book? Near, near, near.",
-    story:[
-      "Bear lost his backpack near the path.",
-      "Bash sees a clue.",
-      "Captain Fritz helps Bear look.",
-      "Inside the backpack are books for the Library."
-    ],
-    reader:["I see a bag.","I see a book.","I see a pencil.","The bag is here.","Bear has a book."],
-    game:"Collect school items and bring them to the Training Grounds."
-  },
-  week3:{
-    title:"Week 3: Nola’s Garden Gate",
-    focus:"seed / water / green / grow",
-    vocab:["seed","water","flower","green","grow","garden","gate"],
-    song:"Seed and water, grow, grow, grow. Green little garden, go, go, go!",
-    story:[
-      "Nola finds the Garden Gate.",
-      "The gate is closed.",
-      "The garden needs seeds and water.",
-      "Captain Fritz helps make the garden grow."
-    ],
-    reader:["I see a seed.","I see water.","The seed is green.","The flower can grow.","Nola has a garden."],
-    game:"Find seeds and tools near the Greenhouse."
-  },
-  week4:{
-    title:"Week 4: The Library Light",
-    focus:"read / page / word / open",
-    vocab:["read","page","word","light","open","library","book"],
-    song:"Open the book. Read the page. Words light up on every stage.",
-    story:[
-      "The Library is dark.",
-      "Captain Fritz sees a small light.",
-      "Rascal finds a tool.",
-      "The first books are ready to read."
-    ],
-    reader:["I see a book.","I see a page.","I see a word.","The light is on.","The Library is open."],
-    game:"Collect books, bricks, and a blueprint to start the Library."
-  }
-};
+const LEVELS=[
+ {id:"1-A",title:"Welcome to Fritz Academy",focus:"hello / I am / A B C",reward:"Bronze Key",chapter:"Chapter 1"},
+ {id:"1-B",title:"Hello, My Name Is...",focus:"name / my / your / friend",reward:"Friendship Star",chapter:"Chapter 1"},
+ {id:"1-C",title:"Colors Around Us",focus:"red / blue / green / yellow",reward:"Color Badge",chapter:"Chapter 1"},
+ {id:"2-A",title:"Bear's Lost Backpack",focus:"book / bag / pencil / where",reward:"Book",chapter:"Chapter 2"},
+ {id:"2-B",title:"What's In My Backpack?",focus:"school items",reward:"Pencil Box",chapter:"Chapter 2"},
+ {id:"2-C",title:"Classroom Treasure Hunt",focus:"here / there / find / look",reward:"Map Piece",chapter:"Chapter 2"},
+ {id:"3-A",title:"Nola's Garden Gate",focus:"seed / water / flower / grow",reward:"Seed Pack",chapter:"Chapter 3"},
+ {id:"3-B",title:"Counting Flowers",focus:"one / two / three / four / five",reward:"Garden Star",chapter:"Chapter 3"},
+ {id:"3-C",title:"Nature Colors",focus:"green / brown / sky / tree",reward:"Nature Badge",chapter:"Chapter 3"},
+ {id:"4-A",title:"The Library Light",focus:"read / page / word / open",reward:"Blueprint",chapter:"Chapter 4"},
+ {id:"4-B",title:"Story Time",focus:"story / listen / page / again",reward:"Library Book",chapter:"Chapter 4"},
+ {id:"4-C",title:"Reading Adventure",focus:"I see / I have / I can",reward:"Library Key",chapter:"Chapter 4"}
+];
 
 function getSave(){
-  const old=localStorage.getItem(SAVE_KEY);
-  if(old) return JSON.parse(old);
-  const fresh={
-    studentName:"Student",
-    currentWeek:"week1",
-    xp:0,
-    stars:0,
-    pack:{books:0,bricks:0,blueprints:0,seeds:0,tools:0,keys:0},
-    completed:{},
-    collected:{}
-  };
-  localStorage.setItem(SAVE_KEY,JSON.stringify(fresh));
-  return fresh;
+ const old=localStorage.getItem(SAVE_KEY);
+ if(old) return JSON.parse(old);
+ const fresh={
+   studentName:"",
+   puppy:"blue",
+   currentLevel:"1-A",
+   xp:0,
+   stars:0,
+   pack:{books:0,bricks:0,blueprints:0,seeds:0,tools:0,keys:0},
+   completed:{},
+   collected:{}
+ };
+ localStorage.setItem(SAVE_KEY,JSON.stringify(fresh));
+ return fresh;
 }
-
-function saveGame(data){
-  localStorage.setItem(SAVE_KEY,JSON.stringify(data));
-}
+function saveGame(data){localStorage.setItem(SAVE_KEY,JSON.stringify(data));}
 
 class World extends Phaser.Scene{
-  constructor(){super("World");}
-
-  preload(){
-    this.load.image("campus","assets/fritz_academy_world_map.png");
-    this.load.image("fritz_raw","assets/captain_fritz.png");
-  }
-
-  create(){
-    this.save=getSave();
-    this.worldW=2048;
-    this.worldH=2048;
-    this.debugOn=false;
-
-    this.physics.world.setBounds(0,0,this.worldW,this.worldH);
-    this.cameras.main.setBounds(0,0,this.worldW,this.worldH);
-
-    this.add.image(this.worldW/2,this.worldH/2,"campus").setDisplaySize(this.worldW,this.worldH);
-
-    this.makeCleanSprite("fritz_raw","fritz",238);
-
-    this.createCollision();
-    this.createPlayer();
-    this.createItems();
-    this.createZones();
-    this.createHUD();
-    this.createMobileControls();
-    this.createMenuButton();
-
-    this.keys=this.input.keyboard.addKeys("W,A,S,D,UP,DOWN,LEFT,RIGHT,SPACE,ONE,TWO,THREE,FOUR,M");
-    this.input.keyboard.on("keydown-D",()=>this.toggleDebug());
-
-    this.cameras.main.startFollow(this.player,true,.08,.08);
-    this.cameras.main.setZoom(1.05);
-
-    this.currentZone=null;
-  }
-
-  makeCleanSprite(sourceKey,newKey,whiteCutoff){
-    const src=this.textures.get(sourceKey).getSourceImage();
-    const temp=document.createElement("canvas");
-    temp.width=src.width;
-    temp.height=src.height;
-    const tctx=temp.getContext("2d");
-    tctx.drawImage(src,0,0);
-
-    const img=tctx.getImageData(0,0,temp.width,temp.height);
-    const d=img.data;
-    let minX=temp.width,minY=temp.height,maxX=0,maxY=0;
-
-    for(let y=0;y<temp.height;y++){
-      for(let x=0;x<temp.width;x++){
-        const i=(y*temp.width+x)*4;
-        const r=d[i],g=d[i+1],b=d[i+2];
-
-        if(r>whiteCutoff&&g>whiteCutoff&&b>whiteCutoff)d[i+3]=0;
-
-        if(d[i+3]>20){
-          if(x<minX)minX=x;
-          if(y<minY)minY=y;
-          if(x>maxX)maxX=x;
-          if(y>maxY)maxY=y;
-        }
-      }
-    }
-
-    tctx.putImageData(img,0,0);
-
-    const pad=8;
-    minX=Math.max(0,minX-pad);
-    minY=Math.max(0,minY-pad);
-    maxX=Math.min(temp.width,maxX+pad);
-    maxY=Math.min(temp.height,maxY+pad);
-
-    const cropW=maxX-minX;
-    const cropH=maxY-minY;
-
-    const canvas=this.textures.createCanvas(newKey,cropW,cropH);
-    const ctx=canvas.getContext();
-    ctx.drawImage(temp,minX,minY,cropW,cropH,0,0,cropW,cropH);
-    canvas.refresh();
-  }
-
-  createPlayer(){
-    this.shadow=this.add.ellipse(980,1845,30,12,0x000000,.28).setDepth(19);
-    this.player=this.physics.add.image(980,1830,"fritz").setScale(.052).setDepth(20);
-    this.player.body.setCollideWorldBounds(true);
-    this.player.body.setSize(42,64);
-    this.physics.add.collider(this.player,this.walls);
-  }
-
-  createCollision(){
-    this.walls=this.physics.add.staticGroup();
-    this.debugRects=[];
-
-    const wallData=[
-      [1020,735,350,240],
-      [520,760,310,250],
-      [1270,425,330,260],
-      [1435,650,330,260],
-      [925,1515,330,230],
-      [1645,970,360,270],
-      [350,1040,330,270],
-      [1510,1700,530,290],
-      [760,1325,260,160],
-      [1180,1510,240,120]
-    ];
-
-    wallData.forEach(([x,y,w,h])=>{
-      const zone=this.add.zone(x,y,w,h);
-      this.physics.world.enable(zone);
-      zone.body.setImmovable(true);
-      zone.body.moves=false;
-      this.walls.add(zone);
-
-      const r=this.add.rectangle(x,y,w,h,0xff0000,.22).setStrokeStyle(2,0xff0000).setVisible(false).setDepth(500);
-      this.debugRects.push(r);
-    });
-  }
-
-  toggleDebug(){
-    this.debugOn=!this.debugOn;
-    this.debugRects.forEach(r=>r.setVisible(this.debugOn));
-  }
-
-  createItems(){
-    this.item("book","📘",890,1240,"books","Book");
-    this.item("brick","🧱",1030,1320,"bricks","Brick");
-    this.item("blueprint","📜",1190,1180,"blueprints","Blueprint");
-    this.item("seed","🌱",1510,1620,"seeds","Seed");
-    this.item("tool","🔧",760,1640,"tools","Tool");
-    this.item("key","🔑",1160,1660,"keys","Key");
-  }
-
-  item(id,icon,x,y,type,label){
-    if(this.save.collected[id])return;
-    const item=this.add.text(x,y,icon,{fontSize:"38px"}).setOrigin(.5).setInteractive({useHandCursor:true}).setDepth(25);
-    item.on("pointerdown",()=>{
-      this.save.pack[type]++;
-      this.save.collected[id]=true;
-      this.save.xp+=2;
-      saveGame(this.save);
-      this.refreshHUD();
-      this.msg("Builder's Pack",`You collected: ${label}`);
-      item.destroy();
-    });
-  }
-
-  createZones(){
-    this.zones=[];
-    this.zone("Main Hall",1020,925,270,160,"week1");
-    this.zone("Training Grounds",1600,1850,420,160,"week2");
-    this.zone("Greenhouse",930,1700,320,160,"week3");
-    this.zone("Library",520,925,280,160,"week4");
-    this.zone("Workshop",1640,1180,320,160,"week4");
-  }
-
-  zone(name,x,y,w,h,week){
-    const z=this.add.zone(x,y,w,h);
-    this.physics.world.enable(z);
-    z.name=name;
-    z.week=week;
-    this.zones.push(z);
-  }
-
-  update(){
-    const speed=210;
-    let vx=0,vy=0;
-
-    if(this.keys.LEFT.isDown||this.keys.A.isDown)vx=-speed;
-    if(this.keys.RIGHT.isDown||this.keys.D.isDown)vx=speed;
-    if(this.keys.UP.isDown||this.keys.W.isDown)vy=-speed;
-    if(this.keys.DOWN.isDown||this.keys.S.isDown)vy=speed;
-
-    if(this.mobileDir){
-      vx=this.mobileDir.x*speed;
-      vy=this.mobileDir.y*speed;
-    }
-
-    this.player.body.setVelocity(vx,vy);
-
-    if(vx<0)this.player.setFlipX(true);
-    if(vx>0)this.player.setFlipX(false);
-
-    this.shadow.x=this.player.x;
-    this.shadow.y=this.player.y+38;
-
-    this.checkZones();
-
-    if(Phaser.Input.Keyboard.JustDown(this.keys.SPACE)&&this.currentZone){
-      this.openLesson(this.currentZone.week,this.currentZone.name);
-    }
-
-    if(Phaser.Input.Keyboard.JustDown(this.keys.ONE))this.openLesson("week1","Quick Start");
-    if(Phaser.Input.Keyboard.JustDown(this.keys.TWO))this.openLesson("week2","Quick Start");
-    if(Phaser.Input.Keyboard.JustDown(this.keys.THREE))this.openLesson("week3","Quick Start");
-    if(Phaser.Input.Keyboard.JustDown(this.keys.FOUR))this.openLesson("week4","Quick Start");
-    if(Phaser.Input.Keyboard.JustDown(this.keys.M))this.showMonthMenu();
-  }
-
-  checkZones(){
-    let found=null;
-    const playerBox=new Phaser.Geom.Rectangle(this.player.x-24,this.player.y-35,48,70);
-
-    for(const z of this.zones){
-      if(Phaser.Geom.Rectangle.Overlaps(z.getBounds(),playerBox)){
-        found=z;
-        break;
-      }
-    }
-
-    if(found&&!this.currentZone){
-      this.currentZone=found;
-      this.showPrompt(found.name);
-    }
-
-    if(!found&&this.currentZone){
-      this.currentZone=null;
-      this.hidePrompt();
-    }
-  }
-
-  openLesson(weekKey,place){
-    const lesson=MONTH_ONE[weekKey];
-    if(!lesson)return;
-
-    this.save.currentWeek=weekKey;
-    saveGame(this.save);
-
-    this.lessonStep=0;
-    this.activeLesson=lesson;
-    this.activePlace=place;
-    this.showLessonPanel();
-  }
-
-  showLessonPanel(){
-    if(this.lessonPanel)this.lessonPanel.destroy();
-
-    const l=this.activeLesson;
-    const steps=[
-      {title:l.title,body:`Place: ${this.activePlace}\nFocus: ${l.focus}`},
-      {title:"Story",body:l.story.join("\n")},
-      {title:"Read With Me",body:l.reader.join("\n")},
-      {title:"Vocabulary",body:l.vocab.join("   •   ")},
-      {title:"Song",body:l.song},
-      {title:"Game Challenge",body:l.game},
-      {title:"Complete",body:"Great work. Save this lesson and continue next class."}
-    ];
-
-    const step=steps[this.lessonStep];
-
-    this.lessonPanel=this.add.container(640,360).setScrollFactor(0).setDepth(400);
-
-    const bg=this.add.rectangle(0,0,800,540,0xfffbef,.98).setStrokeStyle(6,0x102342);
-    const title=this.add.text(0,-230,step.title,{fontSize:"32px",fontStyle:"bold",color:"#102342"}).setOrigin(.5);
-    const body=this.add.text(0,-35,step.body,{fontSize:"25px",fontStyle:"bold",color:"#102342",align:"center",wordWrap:{width:710}}).setOrigin(.5);
-
-    const next=this.add.text(170,220,this.lessonStep<6?"Next":"Finish",{
-      fontSize:"24px",fontStyle:"bold",color:"#102342",backgroundColor:"#f6c744",padding:{x:26,y:12}
-    }).setOrigin(.5).setInteractive({useHandCursor:true});
-
-    const close=this.add.text(-170,220,"Close",{
-      fontSize:"24px",fontStyle:"bold",color:"#102342",backgroundColor:"#ffffff",padding:{x:26,y:12}
-    }).setOrigin(.5).setInteractive({useHandCursor:true});
-
-    next.on("pointerdown",()=>{
-      if(this.lessonStep<6){
-        this.lessonStep++;
-        this.showLessonPanel();
-      }else{
-        this.completeLesson();
-      }
-    });
-
-    close.on("pointerdown",()=>this.lessonPanel.destroy());
-
-    this.lessonPanel.add([bg,title,body,next,close]);
-  }
-
-  completeLesson(){
-    const week=this.save.currentWeek;
-    if(!this.save.completed[week]){
-      this.save.completed[week]=true;
-      this.save.xp+=10;
-      this.save.stars+=1;
-      if(week==="week1")this.save.pack.keys++;
-      if(week==="week2")this.save.pack.books++;
-      if(week==="week3")this.save.pack.seeds++;
-      if(week==="week4")this.save.pack.blueprints++;
-    }
-
-    saveGame(this.save);
-    this.refreshHUD();
-
-    if(this.lessonPanel)this.lessonPanel.destroy();
-    this.msg("Saved","Progress saved. Fritz Academy will remember this next class.");
-  }
-
-  createMenuButton(){
-    const b=this.add.text(1115,670,"Month 1 Menu",{
-      fontSize:"18px",
-      fontStyle:"bold",
-      color:"#102342",
-      backgroundColor:"#f6c744",
-      padding:{x:16,y:8}
-    }).setScrollFactor(0).setDepth(260).setInteractive({useHandCursor:true});
-
-    b.on("pointerdown",()=>this.showMonthMenu());
-  }
-
-  showMonthMenu(){
-    if(this.menuPanel)this.menuPanel.destroy();
-
-    this.menuPanel=this.add.container(640,360).setScrollFactor(0).setDepth(420);
-
-    const bg=this.add.rectangle(0,0,720,430,0xfffbef,.98).setStrokeStyle(6,0x102342);
-    const title=this.add.text(0,-180,"Fritz Academy Month 1",{fontSize:"32px",fontStyle:"bold",color:"#102342"}).setOrigin(.5);
-
-    const buttons=[];
-    const rows=[
-      ["1","week1",-90],
-      ["2","week2",-30],
-      ["3","week3",30],
-      ["4","week4",90]
-    ];
-
-    rows.forEach(([num,key,y])=>{
-      const l=MONTH_ONE[key];
-      const done=this.save.completed[key]?" ✅":"";
-      const row=this.add.text(0,y,`${num}. ${l.title}${done}`,{
-        fontSize:"23px",
-        fontStyle:"bold",
-        color:"#102342",
-        backgroundColor:"#ffffff",
-        padding:{x:18,y:8}
-      }).setOrigin(.5).setInteractive({useHandCursor:true});
-      row.on("pointerdown",()=>{
-        this.menuPanel.destroy();
-        this.openLesson(key,"Month Menu");
-      });
-      buttons.push(row);
-    });
-
-    const close=this.add.text(0,170,"Close",{
-      fontSize:"22px",
-      fontStyle:"bold",
-      color:"#102342",
-      backgroundColor:"#f6c744",
-      padding:{x:24,y:8}
-    }).setOrigin(.5).setInteractive({useHandCursor:true});
-
-    close.on("pointerdown",()=>this.menuPanel.destroy());
-
-    this.menuPanel.add([bg,title,...buttons,close]);
-  }
-
-  showPrompt(name){
-    this.hidePrompt();
-    this.prompt=this.add.container(640,655).setScrollFactor(0).setDepth(260);
-    const bg=this.add.rectangle(0,0,450,42,0xffffff,.95).setStrokeStyle(3,0x102342);
-    const txt=this.add.text(0,0,`SPACE: ${name}`,{fontSize:"19px",fontStyle:"bold",color:"#102342"}).setOrigin(.5);
-    this.prompt.add([bg,txt]);
-  }
-
-  hidePrompt(){
-    if(this.prompt){this.prompt.destroy();this.prompt=null;}
-  }
-
-  createHUD(){
-    this.hud=this.add.container(0,0).setScrollFactor(0).setDepth(200);
-
-    const topBg=this.add.rectangle(220,32,410,46,0x102342,.92).setStrokeStyle(3,0xffffff,.45);
-    this.hudText=this.add.text(28,18,"",{fontSize:"18px",fontStyle:"bold",color:"#ffffff"});
-
-    const packBg=this.add.rectangle(1060,32,390,46,0x102342,.92).setStrokeStyle(3,0xffffff,.45);
-    this.packText=this.add.text(885,18,"",{fontSize:"18px",fontStyle:"bold",color:"#ffffff"});
-
-    this.hud.add([topBg,this.hudText,packBg,this.packText]);
-    this.refreshHUD();
-  }
-
-  refreshHUD(){
-    const s=this.save,p=s.pack;
-    this.hudText.setText(`${s.studentName} | XP ${s.xp} | ⭐ ${s.stars}`);
-    this.packText.setText(`📘${p.books}  🧱${p.bricks}  📜${p.blueprints}  🌱${p.seeds}  🔧${p.tools}  🔑${p.keys}`);
-  }
-
-  createMobileControls(){
-    const x=88,y=560;
-    const make=(txt,dx,dy)=>{
-      const b=this.add.text(x+dx,y+dy,txt,{
-        fontSize:"25px",backgroundColor:"#f6c744",color:"#102342",padding:{x:12,y:7},fontStyle:"bold"
-      }).setScrollFactor(0).setInteractive({useHandCursor:true}).setDepth(250);
-
-      b.dir={x:dx===-42?-1:dx===42?1:0,y:dy===-42?-1:dy===42?1:0};
-      b.on("pointerdown",()=>this.mobileDir=b.dir);
-      b.on("pointerup",()=>this.mobileDir=null);
-      b.on("pointerout",()=>this.mobileDir=null);
-    };
-    make("↑",0,-42); make("↓",0,42); make("←",-42,0); make("→",42,0);
-  }
-
-  msg(title,body){
-    if(this.popup)this.popup.destroy();
-    this.popup=this.add.container(640,360).setScrollFactor(0).setDepth(300);
-
-    const bg=this.add.rectangle(0,0,620,240,0xffffff,.97).setStrokeStyle(5,0x102342);
-    const t=this.add.text(0,-78,title,{fontSize:"28px",fontStyle:"bold",color:"#102342"}).setOrigin(.5);
-    const b=this.add.text(0,-10,body,{fontSize:"22px",fontStyle:"bold",color:"#102342",align:"center",wordWrap:{width:540}}).setOrigin(.5);
-
-    const close=this.add.text(0,74,"Close",{
-      fontSize:"22px",
-      fontStyle:"bold",
-      color:"#102342",
-      backgroundColor:"#f6c744",
-      padding:{x:24,y:8}
-    }).setOrigin(.5).setInteractive({useHandCursor:true});
-
-    close.on("pointerdown",()=>this.popup.destroy());
-    this.popup.add([bg,t,b,close]);
-  }
+ constructor(){super("World");}
+
+ preload(){
+   this.load.image("campus","assets/fritz_academy_world_map.png");
+   this.load.image("fritz_raw","assets/captain_fritz.png");
+ }
+
+ create(){
+   this.save=getSave();
+   this.worldW=2048;
+   this.worldH=2048;
+   this.panelOpen=false;
+
+   this.physics.world.setBounds(0,0,this.worldW,this.worldH);
+   this.cameras.main.setBounds(0,0,this.worldW,this.worldH);
+
+   this.add.image(this.worldW/2,this.worldH/2,"campus").setDisplaySize(this.worldW,this.worldH);
+   this.makeCleanSprite("fritz_raw","fritz",238);
+
+   this.createCollision();
+   this.createPlayer();
+   this.createCaptainFritz();
+   this.createZones();
+   this.createHUD();
+   this.createMobileControls();
+   this.createAdventureLogButton();
+
+   this.keys=this.input.keyboard.addKeys("W,A,S,D,UP,DOWN,LEFT,RIGHT,SPACE,ESC,M,ONE,TWO,THREE,FOUR");
+   this.input.keyboard.on("keydown-D",()=>this.toggleDebug());
+
+   this.cameras.main.startFollow(this.player,true,.08,.08);
+   this.cameras.main.setZoom(1.05);
+
+   this.currentZone=null;
+
+   if(!this.save.studentName){
+     this.showStudentSetup();
+   }
+ }
+
+ makeCleanSprite(sourceKey,newKey,whiteCutoff){
+   const src=this.textures.get(sourceKey).getSourceImage();
+   const temp=document.createElement("canvas");
+   temp.width=src.width; temp.height=src.height;
+   const tctx=temp.getContext("2d");
+   tctx.drawImage(src,0,0);
+   const img=tctx.getImageData(0,0,temp.width,temp.height);
+   const d=img.data;
+   let minX=temp.width,minY=temp.height,maxX=0,maxY=0;
+
+   for(let y=0;y<temp.height;y++){
+     for(let x=0;x<temp.width;x++){
+       const i=(y*temp.width+x)*4;
+       const r=d[i],g=d[i+1],b=d[i+2];
+       if(r>whiteCutoff&&g>whiteCutoff&&b>whiteCutoff)d[i+3]=0;
+       if(d[i+3]>20){
+         if(x<minX)minX=x; if(y<minY)minY=y;
+         if(x>maxX)maxX=x; if(y>maxY)maxY=y;
+       }
+     }
+   }
+   tctx.putImageData(img,0,0);
+
+   const pad=8;
+   minX=Math.max(0,minX-pad); minY=Math.max(0,minY-pad);
+   maxX=Math.min(temp.width,maxX+pad); maxY=Math.min(temp.height,maxY+pad);
+   const cropW=maxX-minX, cropH=maxY-minY;
+
+   const canvas=this.textures.createCanvas(newKey,cropW,cropH);
+   const ctx=canvas.getContext();
+   ctx.drawImage(temp,minX,minY,cropW,cropH,0,0,cropW,cropH);
+   canvas.refresh();
+ }
+
+ createPlayer(){
+   this.playerShadow=this.add.ellipse(980,1848,34,14,0x000000,.28).setDepth(19);
+   this.player=this.add.circle(980,1830,20,this.puppyColor()).setStrokeStyle(4,0xffffff).setDepth(20);
+   this.physics.add.existing(this.player);
+   this.player.body.setCollideWorldBounds(true);
+   this.player.body.setSize(34,34);
+   this.physics.add.collider(this.player,this.walls);
+ }
+
+ puppyColor(){
+   const colors={blue:0x2f75ff,gold:0xf6c744,green:0x4caf50,pink:0xff7ab6,gray:0x666666};
+   return colors[this.save.puppy]||0x2f75ff;
+ }
+
+ createCaptainFritz(){
+   this.fritz=this.add.image(1015,1765,"fritz").setScale(.055).setDepth(22).setInteractive({useHandCursor:true});
+   this.add.text(1015,1688,"💬",{fontSize:"24px"}).setOrigin(.5).setDepth(23);
+   this.fritz.on("pointerdown",()=>{
+     const name=this.save.studentName||"Academite";
+     this.msg("Captain Fritz",`Welcome back, ${name}! Open your Academy Adventure Log to continue.`);
+   });
+ }
+
+ createCollision(){
+   this.walls=this.physics.add.staticGroup();
+   this.debugRects=[];
+   const wallData=[
+    [1020,735,350,240],[520,760,310,250],[1270,425,330,260],
+    [1435,650,330,260],[925,1515,330,230],[1645,970,360,270],
+    [350,1040,330,270],[1510,1700,530,290],[760,1325,260,160],
+    [1180,1510,240,120]
+   ];
+   wallData.forEach(([x,y,w,h])=>{
+     const z=this.add.zone(x,y,w,h);
+     this.physics.world.enable(z);
+     z.body.setImmovable(true); z.body.moves=false;
+     this.walls.add(z);
+     const r=this.add.rectangle(x,y,w,h,0xff0000,.22).setStrokeStyle(2,0xff0000).setVisible(false).setDepth(500);
+     this.debugRects.push(r);
+   });
+ }
+ toggleDebug(){this.debugRects.forEach(r=>r.setVisible(!r.visible));}
+
+ createZones(){
+   this.zones=[];
+   this.zone("Main Hall",1020,925,270,160,"1-A");
+   this.zone("Training Grounds",1600,1850,420,160,"2-A");
+   this.zone("Greenhouse",930,1700,320,160,"3-A");
+   this.zone("Library",520,925,280,160,"4-A");
+ }
+ zone(name,x,y,w,h,level){
+   const z=this.add.zone(x,y,w,h);
+   this.physics.world.enable(z);
+   z.name=name; z.level=level;
+   this.zones.push(z);
+ }
+
+ update(){
+   if(this.panelOpen){
+     this.player.body.setVelocity(0,0);
+     if(Phaser.Input.Keyboard.JustDown(this.keys.ESC))this.closeTopPanel();
+     return;
+   }
+
+   const speed=210;
+   let vx=0,vy=0;
+   if(this.keys.LEFT.isDown||this.keys.A.isDown)vx=-speed;
+   if(this.keys.RIGHT.isDown||this.keys.D.isDown)vx=speed;
+   if(this.keys.UP.isDown||this.keys.W.isDown)vy=-speed;
+   if(this.keys.DOWN.isDown||this.keys.S.isDown)vy=speed;
+   if(this.mobileDir){vx=this.mobileDir.x*speed;vy=this.mobileDir.y*speed;}
+
+   this.player.body.setVelocity(vx,vy);
+   this.playerShadow.x=this.player.x;
+   this.playerShadow.y=this.player.y+20;
+
+   this.checkZones();
+
+   if(Phaser.Input.Keyboard.JustDown(this.keys.SPACE)&&this.currentZone){
+     this.openLevel(this.currentZone.level,this.currentZone.name);
+   }
+   if(Phaser.Input.Keyboard.JustDown(this.keys.M))this.showAdventureLog();
+   if(Phaser.Input.Keyboard.JustDown(this.keys.ONE))this.openLevel("1-A","Quick Start");
+   if(Phaser.Input.Keyboard.JustDown(this.keys.TWO))this.openLevel("2-A","Quick Start");
+   if(Phaser.Input.Keyboard.JustDown(this.keys.THREE))this.openLevel("3-A","Quick Start");
+   if(Phaser.Input.Keyboard.JustDown(this.keys.FOUR))this.openLevel("4-A","Quick Start");
+ }
+
+ checkZones(){
+   let found=null;
+   const box=new Phaser.Geom.Rectangle(this.player.x-24,this.player.y-35,48,70);
+   for(const z of this.zones){
+     if(Phaser.Geom.Rectangle.Overlaps(z.getBounds(),box)){found=z;break;}
+   }
+   if(found&&!this.currentZone){this.currentZone=found;this.showPrompt(found.name);}
+   if(!found&&this.currentZone){this.currentZone=null;this.hidePrompt();}
+ }
+
+ findLevel(id){return LEVELS.find(l=>l.id===id);}
+
+ openLevel(levelId,place){
+   const level=this.findLevel(levelId);
+   if(!level)return;
+   this.save.currentLevel=levelId;
+   saveGame(this.save);
+   this.activeLevel=level;
+   this.activePlace=place;
+   this.lessonStep=0;
+   this.showLevelPanel();
+ }
+
+ showLevelPanel(){
+   this.closeTopPanel();
+   this.panelOpen=true;
+
+   const l=this.activeLevel;
+   const steps=[
+     {title:`Level ${l.id}`,body:`${l.title}\n\nPlace: ${this.activePlace}\nFocus: ${l.focus}`},
+     {title:"Story",body:`Captain Fritz gives you your next Academy task.\n\nUse English to help build the Academy.`},
+     {title:"Read With Me",body:`Hello.\nI am ${this.save.studentName||"an Academite"}.\nI see the Academy.\nI can help.`},
+     {title:"Say It",body:`Practice:\n${l.focus}`},
+     {title:"Challenge",body:`Complete the task and earn: ${l.reward}`},
+     {title:"Complete",body:"Save this level and continue your Adventure Log."}
+   ];
+   const step=steps[this.lessonStep];
+
+   this.topPanel=this.add.container(640,360).setScrollFactor(0).setDepth(420);
+   const bg=this.add.rectangle(0,0,800,520,0xfffbef,.98).setStrokeStyle(6,0x102342);
+   const title=this.add.text(0,-220,step.title,{fontSize:"32px",fontStyle:"bold",color:"#102342"}).setOrigin(.5);
+   const body=this.add.text(0,-35,step.body,{fontSize:"25px",fontStyle:"bold",color:"#102342",align:"center",wordWrap:{width:710}}).setOrigin(.5);
+
+   const next=this.add.text(170,210,this.lessonStep<5?"Next":"Finish",{
+     fontSize:"24px",fontStyle:"bold",color:"#102342",backgroundColor:"#f6c744",padding:{x:26,y:12}
+   }).setOrigin(.5).setInteractive({useHandCursor:true});
+
+   const close=this.add.text(-170,210,"Close",{
+     fontSize:"24px",fontStyle:"bold",color:"#102342",backgroundColor:"#ffffff",padding:{x:26,y:12}
+   }).setOrigin(.5).setInteractive({useHandCursor:true});
+
+   next.on("pointerdown",()=>{
+     if(this.lessonStep<5){this.lessonStep++;this.showLevelPanel();}
+     else this.completeLevel();
+   });
+   close.on("pointerdown",()=>this.closeTopPanel());
+
+   this.topPanel.add([bg,title,body,next,close]);
+ }
+
+ completeLevel(){
+   const id=this.activeLevel.id;
+   if(!this.save.completed[id]){
+     this.save.completed[id]=true;
+     this.save.xp+=10;
+     this.save.stars+=1;
+     if(id.includes("1-"))this.save.pack.keys++;
+     if(id.includes("2-"))this.save.pack.books++;
+     if(id.includes("3-"))this.save.pack.seeds++;
+     if(id.includes("4-"))this.save.pack.blueprints++;
+   }
+   saveGame(this.save);
+   this.refreshHUD();
+   this.closeTopPanel();
+   this.msg("Saved","Progress saved. The Academy will remember this next class.");
+ }
+
+ createAdventureLogButton(){
+   const b=this.add.text(1090,664,"Adventure Log",{
+     fontSize:"18px",fontStyle:"bold",color:"#102342",backgroundColor:"#f6c744",padding:{x:16,y:8}
+   }).setScrollFactor(0).setDepth(260).setInteractive({useHandCursor:true});
+   b.on("pointerdown",()=>this.showAdventureLog());
+ }
+
+ showAdventureLog(){
+   this.closeTopPanel();
+   this.panelOpen=true;
+   this.topPanel=this.add.container(640,360).setScrollFactor(0).setDepth(430);
+
+   const bg=this.add.rectangle(0,0,850,610,0xfffbef,.98).setStrokeStyle(6,0x102342);
+   const title=this.add.text(0,-270,"Fritz Academy Adventure Log",{fontSize:"32px",fontStyle:"bold",color:"#102342"}).setOrigin(.5);
+
+   const rows=[];
+   let y=-210;
+   let currentChapter="";
+   LEVELS.forEach((l,i)=>{
+     if(l.chapter!==currentChapter){
+       currentChapter=l.chapter;
+       rows.push(this.add.text(-350,y,currentChapter,{fontSize:"20px",fontStyle:"bold",color:"#174ea6"}));
+       y+=32;
+     }
+     const done=this.save.completed[l.id]?"✅":"";
+     const current=this.save.currentLevel===l.id?"▶":"";
+     const label=`${current}${done} Level ${l.id}: ${l.title}`;
+     const color=this.save.currentLevel===l.id?"#ffffff":"#102342";
+     const bgColor=this.save.currentLevel===l.id?"#174ea6":"#ffffff";
+
+     const row=this.add.text(-330,y,label,{
+       fontSize:"19px",fontStyle:"bold",color,backgroundColor:bgColor,padding:{x:10,y:5}
+     }).setInteractive({useHandCursor:true});
+     row.on("pointerdown",()=>this.openLevel(l.id,"Adventure Log"));
+     rows.push(row);
+     y+=36;
+   });
+
+   const close=this.add.text(0,270,"Close",{
+     fontSize:"22px",fontStyle:"bold",color:"#102342",backgroundColor:"#f6c744",padding:{x:24,y:8}
+   }).setOrigin(.5).setInteractive({useHandCursor:true});
+   close.on("pointerdown",()=>this.closeTopPanel());
+
+   this.topPanel.add([bg,title,...rows,close]);
+ }
+
+ closeTopPanel(){
+   if(this.topPanel){this.topPanel.destroy();this.topPanel=null;}
+   this.panelOpen=false;
+ }
+
+ showPrompt(name){
+   this.hidePrompt();
+   this.prompt=this.add.container(640,655).setScrollFactor(0).setDepth(260);
+   const bg=this.add.rectangle(0,0,450,42,0xffffff,.95).setStrokeStyle(3,0x102342);
+   const txt=this.add.text(0,0,`SPACE: ${name}`,{fontSize:"19px",fontStyle:"bold",color:"#102342"}).setOrigin(.5);
+   this.prompt.add([bg,txt]);
+ }
+
+ hidePrompt(){
+   if(this.prompt){this.prompt.destroy();this.prompt=null;}
+ }
+
+ createHUD(){
+   this.hud=this.add.container(0,0).setScrollFactor(0).setDepth(200);
+   const topBg=this.add.rectangle(235,32,440,46,0x102342,.92).setStrokeStyle(3,0xffffff,.45);
+   this.hudText=this.add.text(28,18,"",{fontSize:"18px",fontStyle:"bold",color:"#ffffff"});
+   const packBg=this.add.rectangle(1045,32,420,46,0x102342,.92).setStrokeStyle(3,0xffffff,.45);
+   this.packText=this.add.text(850,18,"",{fontSize:"18px",fontStyle:"bold",color:"#ffffff"});
+   this.hud.add([topBg,this.hudText,packBg,this.packText]);
+   this.refreshHUD();
+ }
+
+ refreshHUD(){
+   const s=this.save,p=s.pack;
+   const name=s.studentName||"New Student";
+   this.hudText.setText(`${name} | Level ${s.currentLevel} | XP ${s.xp} | ⭐ ${s.stars}`);
+   this.packText.setText(`📘${p.books}  🧱${p.bricks}  📜${p.blueprints}  🌱${p.seeds}  🔧${p.tools}  🔑${p.keys}`);
+ }
+
+ createMobileControls(){
+   const x=88,y=560;
+   const make=(txt,dx,dy)=>{
+     const b=this.add.text(x+dx,y+dy,txt,{
+       fontSize:"25px",backgroundColor:"#f6c744",color:"#102342",padding:{x:12,y:7},fontStyle:"bold"
+     }).setScrollFactor(0).setInteractive({useHandCursor:true}).setDepth(250);
+     b.dir={x:dx===-42?-1:dx===42?1:0,y:dy===-42?-1:dy===42?1:0};
+     b.on("pointerdown",()=>this.mobileDir=b.dir);
+     b.on("pointerup",()=>this.mobileDir=null);
+     b.on("pointerout",()=>this.mobileDir=null);
+   };
+   make("↑",0,-42); make("↓",0,42); make("←",-42,0); make("→",42,0);
+ }
+
+ showStudentSetup(){
+   this.panelOpen=true;
+   this.topPanel=this.add.container(640,360).setScrollFactor(0).setDepth(450);
+   const bg=this.add.rectangle(0,0,760,500,0xfffbef,.98).setStrokeStyle(6,0x102342);
+   const title=this.add.text(0,-205,"Welcome to Fritz Academy",{fontSize:"34px",fontStyle:"bold",color:"#102342"}).setOrigin(.5);
+   const body=this.add.text(0,-90,"Captain Fritz gives you an Academy Adventure Log.\nChoose your student puppy to begin.",{
+     fontSize:"24px",fontStyle:"bold",color:"#102342",align:"center",wordWrap:{width:660}
+   }).setOrigin(.5);
+
+   const choices=[
+     ["Blue Puppy","blue",-240,35,0x2f75ff],
+     ["Gold Puppy","gold",-80,35,0xf6c744],
+     ["Green Puppy","green",80,35,0x4caf50],
+     ["Pink Puppy","pink",240,35,0xff7ab6]
+   ];
+
+   const items=[bg,title,body];
+
+   choices.forEach(([label,key,x,y,color])=>{
+     const c=this.add.circle(x,y,24,color).setStrokeStyle(4,0xffffff).setInteractive({useHandCursor:true});
+     const t=this.add.text(x,y+45,label,{fontSize:"18px",fontStyle:"bold",color:"#102342"}).setOrigin(.5);
+     c.on("pointerdown",()=>{
+       this.save.puppy=key;
+       this.player.setFillStyle(color);
+       saveGame(this.save);
+     });
+     items.push(c,t);
+   });
+
+   const start=this.add.text(0,175,"Start Adventure",{
+     fontSize:"24px",fontStyle:"bold",color:"#102342",backgroundColor:"#f6c744",padding:{x:26,y:12}
+   }).setOrigin(.5).setInteractive({useHandCursor:true});
+
+   start.on("pointerdown",()=>{
+     const entered=prompt("Student name?");
+     this.save.studentName=(entered&&entered.trim())?entered.trim():"Academite";
+     saveGame(this.save);
+     this.refreshHUD();
+     this.closeTopPanel();
+     this.msg("Captain Fritz",`Welcome to Fritz Academy, ${this.save.studentName}!`);
+   });
+
+   items.push(start);
+   this.topPanel.add(items);
+ }
+
+ msg(title,body){
+   this.closeTopPanel();
+   this.panelOpen=true;
+   this.topPanel=this.add.container(640,360).setScrollFactor(0).setDepth(430);
+   const bg=this.add.rectangle(0,0,620,240,0xffffff,.97).setStrokeStyle(5,0x102342);
+   const t=this.add.text(0,-78,title,{fontSize:"28px",fontStyle:"bold",color:"#102342"}).setOrigin(.5);
+   const b=this.add.text(0,-10,body,{fontSize:"22px",fontStyle:"bold",color:"#102342",align:"center",wordWrap:{width:540}}).setOrigin(.5);
+   const close=this.add.text(0,74,"Close",{
+     fontSize:"22px",fontStyle:"bold",color:"#102342",backgroundColor:"#f6c744",padding:{x:24,y:8}
+   }).setOrigin(.5).setInteractive({useHandCursor:true});
+   close.on("pointerdown",()=>this.closeTopPanel());
+   this.topPanel.add([bg,t,b,close]);
+ }
 }
 
 new Phaser.Game({
-  type:Phaser.AUTO,
-  parent:"game",
-  width:1280,
-  height:720,
-  scale:{mode:Phaser.Scale.FIT,autoCenter:Phaser.Scale.CENTER_BOTH},
-  physics:{default:"arcade"},
-  scene:World
+ type:Phaser.AUTO,
+ parent:"game",
+ width:1280,
+ height:720,
+ scale:{mode:Phaser.Scale.FIT,autoCenter:Phaser.Scale.CENTER_BOTH},
+ physics:{default:"arcade"},
+ scene:World
 });
 </script>
 </body>
