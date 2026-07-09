@@ -14,7 +14,7 @@ body{margin:0;background:#071426;font-family:Arial,sans-serif}
 <div id="game"></div>
 
 <script>
-const SAVE_KEY="fritz_academy_world_v6";
+const SAVE_KEY="fritz_academy_world_v7";
 
 function getSave(){
   const old=localStorage.getItem(SAVE_KEY);
@@ -31,26 +31,16 @@ function getSave(){
   return fresh;
 }
 
-function setSave(data){
-  localStorage.setItem(SAVE_KEY,JSON.stringify(data));
-}
-
 class World extends Phaser.Scene{
   constructor(){super("World");}
 
   preload(){
     this.load.image("campus","assets/fritz_academy_world_map.png");
     this.load.image("fritz_raw","assets/captain_fritz.png");
-    this.load.image("bash_raw","assets/bash.png");
-    this.load.image("bear_raw","assets/bear.png");
-    this.load.image("nola_raw","assets/nola.png");
-    this.load.image("tony_raw","assets/tony.png");
-    this.load.image("rascal_raw","assets/rascal.png");
   }
 
   create(){
     this.save=getSave();
-
     this.worldW=2048;
     this.worldH=2048;
 
@@ -60,15 +50,8 @@ class World extends Phaser.Scene{
     this.add.image(this.worldW/2,this.worldH/2,"campus").setDisplaySize(this.worldW,this.worldH);
 
     this.makeCleanSprite("fritz_raw","fritz",238);
-    this.makeCleanSprite("bash_raw","bash",245);
-    this.makeCleanSprite("bear_raw","bear",245);
-    this.makeCleanSprite("nola_raw","nola",245);
-    this.makeCleanSprite("tony_raw","tony",245);
-    this.makeCleanSprite("rascal_raw","rascal",245);
 
     this.createPlayer();
-    this.createNPCs();
-    this.createItems();
     this.createZones();
     this.createHUD();
     this.createMobileControls();
@@ -80,7 +63,6 @@ class World extends Phaser.Scene{
 
   makeCleanSprite(sourceKey,newKey,whiteCutoff){
     const src=this.textures.get(sourceKey).getSourceImage();
-
     const temp=document.createElement("canvas");
     temp.width=src.width;
     temp.height=src.height;
@@ -90,12 +72,12 @@ class World extends Phaser.Scene{
     const img=tctx.getImageData(0,0,temp.width,temp.height);
     const d=img.data;
 
-    let minX=temp.width, minY=temp.height, maxX=0, maxY=0;
+    let minX=temp.width,minY=temp.height,maxX=0,maxY=0;
 
     for(let y=0;y<temp.height;y++){
       for(let x=0;x<temp.width;x++){
         const i=(y*temp.width+x)*4;
-        const r=d[i],g=d[i+1],b=d[i+2],a=d[i+3];
+        const r=d[i],g=d[i+1],b=d[i+2];
 
         if(r>whiteCutoff && g>whiteCutoff && b>whiteCutoff){
           d[i+3]=0;
@@ -128,55 +110,17 @@ class World extends Phaser.Scene{
   }
 
   createPlayer(){
-    this.player=this.add.image(1025,1645,"fritz").setScale(.075);
+    this.player=this.add.image(1025,1645,"fritz").setScale(.065);
     this.player.setDepth(20);
     this.physics.add.existing(this.player);
     this.player.body.setCollideWorldBounds(true);
-    this.player.body.setSize(50,80);
-  }
-
-  createNPCs(){
-    this.npc("Bash","bash",600,850,.075,"Bash: The Library needs books and bricks.");
-    this.npc("Bear","bear",1500,820,.075,"Bear: I found something near the path.");
-    this.npc("Nola","nola",1585,1515,.07,"Nola: Seeds will help the Garden grow.");
-    this.npc("Tony","tony",1320,1435,.07,"Tony: I hear music coming from the Academy!");
-    this.npc("Rascal","rascal",760,1510,.07,"Rascal: I hid a tool nearby.");
-  }
-
-  npc(name,key,x,y,scale,line){
-    const img=this.add.image(x,y,key).setScale(scale).setInteractive({useHandCursor:true});
-    img.setDepth(18);
-    this.add.text(x,y-80,"💬",{fontSize:"24px"}).setOrigin(.5).setDepth(30);
-    img.on("pointerdown",()=>this.msg(name,line));
-  }
-
-  createItems(){
-    this.item("book","📘",890,1240,"books","Book");
-    this.item("brick","🧱",1030,1320,"bricks","Brick");
-    this.item("blueprint","📜",1190,1180,"blueprints","Blueprint");
-    this.item("seed","🌱",1510,1620,"seeds","Seed");
-    this.item("tool","🔧",760,1640,"tools","Tool");
-  }
-
-  item(id,icon,x,y,type,label){
-    if(this.save.collected[id]) return;
-    const item=this.add.text(x,y,icon,{fontSize:"40px"}).setOrigin(.5).setInteractive({useHandCursor:true});
-    item.setDepth(25);
-    item.on("pointerdown",()=>{
-      this.save.pack[type]++;
-      this.save.collected[id]=true;
-      this.save.xp+=2;
-      setSave(this.save);
-      this.refreshHUD();
-      this.msg("Builder's Pack",`You collected: ${label}`);
-      item.destroy();
-    });
+    this.player.body.setSize(45,70);
   }
 
   createZones(){
     this.zones=[];
     this.zone("Main Hall",1050,760,270,230,"This is where every Academy day begins.");
-    this.zone("Library",520,760,300,260,"The Library opens soon. We need books, bricks, and blueprints.");
+    this.zone("Library",520,760,300,260,"The Library opens soon.");
     this.zone("Science Lab",1270,430,330,260,"The Science Lab is locked for now.");
     this.zone("Music Hall",1435,650,330,260,"The Music Hall is locked for now.");
     this.zone("Greenhouse",930,1525,360,260,"The Greenhouse needs seeds and tools.");
@@ -194,7 +138,7 @@ class World extends Phaser.Scene{
   }
 
   update(){
-    const speed=230;
+    const speed=220;
     let vx=0,vy=0;
 
     if(this.keys.LEFT.isDown||this.keys.A.isDown) vx=-speed;
@@ -221,7 +165,7 @@ class World extends Phaser.Scene{
 
   checkZones(){
     let found=null;
-    const playerBox=new Phaser.Geom.Rectangle(this.player.x-35,this.player.y-50,70,100);
+    const playerBox=new Phaser.Geom.Rectangle(this.player.x-30,this.player.y-45,60,90);
 
     for(const z of this.zones){
       if(Phaser.Geom.Rectangle.Overlaps(z.getBounds(),playerBox)){
@@ -243,10 +187,10 @@ class World extends Phaser.Scene{
 
   showPrompt(name){
     this.hidePrompt();
-    this.prompt=this.add.container(400,500).setScrollFactor(0).setDepth(100);
-    const bg=this.add.rectangle(0,0,520,58,0xffffff).setStrokeStyle(5,0x111111);
-    const txt=this.add.text(0,0,`Press SPACE to enter ${name}`,{
-      fontSize:"22px",
+    this.prompt=this.add.container(400,505).setScrollFactor(0).setDepth(100);
+    const bg=this.add.rectangle(0,0,470,50,0xffffff).setStrokeStyle(4,0x111111);
+    const txt=this.add.text(0,0,`Press SPACE: ${name}`,{
+      fontSize:"21px",
       fontStyle:"bold",
       color:"#102342"
     }).setOrigin(.5);
@@ -263,11 +207,11 @@ class World extends Phaser.Scene{
   createHUD(){
     this.hud=this.add.container(0,0).setScrollFactor(0).setDepth(200);
 
-    const top=this.add.rectangle(400,38,790,70,0x102342).setStrokeStyle(5,0x111111);
-    this.hudText=this.add.text(20,18,"",{fontSize:"21px",fontStyle:"bold",color:"#ffffff"});
+    const top=this.add.rectangle(400,28,790,48,0x102342).setStrokeStyle(4,0x111111);
+    this.hudText=this.add.text(20,13,"",{fontSize:"18px",fontStyle:"bold",color:"#ffffff"});
 
-    const bottom=this.add.rectangle(400,562,790,62,0x102342).setStrokeStyle(5,0x111111);
-    this.packText=this.add.text(20,542,"",{fontSize:"22px",fontStyle:"bold",color:"#ffffff"});
+    const bottom=this.add.rectangle(400,575,790,46,0x102342).setStrokeStyle(4,0x111111);
+    this.packText=this.add.text(20,561,"",{fontSize:"18px",fontStyle:"bold",color:"#ffffff"});
 
     this.hud.add([top,this.hudText,bottom,this.packText]);
     this.refreshHUD();
@@ -276,45 +220,45 @@ class World extends Phaser.Scene{
   refreshHUD(){
     const s=this.save,p=s.pack;
     this.hudText.setText(`${s.studentName} | ${s.currentStory} | XP ${s.xp} | Stars ${s.stars}`);
-    this.packText.setText(`Builder's Pack: 📘 ${p.books}  🧱 ${p.bricks}  📜 ${p.blueprints}  🌱 ${p.seeds}  🔧 ${p.tools}  🔑 ${p.keys}`);
+    this.packText.setText(`Pack: 📘 ${p.books}  🧱 ${p.bricks}  📜 ${p.blueprints}  🌱 ${p.seeds}  🔧 ${p.tools}  🔑 ${p.keys}`);
   }
 
   createMobileControls(){
-    const x=78,y=455;
+    const x=70,y=455;
     const make=(txt,dx,dy)=>{
       const b=this.add.text(x+dx,y+dy,txt,{
-        fontSize:"34px",
+        fontSize:"28px",
         backgroundColor:"#f6c744",
         color:"#102342",
-        padding:{x:14,y:8},
+        padding:{x:12,y:6},
         fontStyle:"bold"
       }).setScrollFactor(0).setInteractive({useHandCursor:true}).setDepth(250);
 
-      b.dir={x:dx===-45?-1:dx===45?1:0,y:dy===-45?-1:dy===45?1:0};
+      b.dir={x:dx===-40?-1:dx===40?1:0,y:dy===-40?-1:dy===40?1:0};
       b.on("pointerdown",()=>this.mobileDir=b.dir);
       b.on("pointerup",()=>this.mobileDir=null);
       b.on("pointerout",()=>this.mobileDir=null);
     };
 
-    make("↑",0,-45);
-    make("↓",0,45);
-    make("←",-45,0);
-    make("→",45,0);
+    make("↑",0,-40);
+    make("↓",0,40);
+    make("←",-40,0);
+    make("→",40,0);
   }
 
   msg(title,body){
     if(this.popup)this.popup.destroy();
 
     this.popup=this.add.container(400,300).setScrollFactor(0).setDepth(300);
-    const bg=this.add.rectangle(0,0,630,300,0xffffff).setStrokeStyle(7,0x111111);
-    const t=this.add.text(0,-108,title,{fontSize:"34px",fontStyle:"bold",color:"#102342"}).setOrigin(.5);
-    const b=this.add.text(0,-25,body,{fontSize:"24px",fontStyle:"bold",color:"#102342",align:"center",wordWrap:{width:550}}).setOrigin(.5);
-    const close=this.add.text(0,98,"Close",{
-      fontSize:"26px",
+    const bg=this.add.rectangle(0,0,610,250,0xffffff).setStrokeStyle(6,0x111111);
+    const t=this.add.text(0,-85,title,{fontSize:"30px",fontStyle:"bold",color:"#102342"}).setOrigin(.5);
+    const b=this.add.text(0,-10,body,{fontSize:"23px",fontStyle:"bold",color:"#102342",align:"center",wordWrap:{width:530}}).setOrigin(.5);
+    const close=this.add.text(0,75,"Close",{
+      fontSize:"24px",
       fontStyle:"bold",
       color:"#102342",
       backgroundColor:"#f6c744",
-      padding:{x:26,y:12}
+      padding:{x:24,y:10}
     }).setOrigin(.5).setInteractive({useHandCursor:true});
 
     close.on("pointerdown",()=>this.popup.destroy());
