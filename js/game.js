@@ -85,12 +85,16 @@ class World extends Phaser.Scene {
 
     this.input.keyboard.on(
       "keydown-ESC",
-      () => this.panels.close()
+      () => {
+        this.panels.close();
+      }
     );
 
     this.input.keyboard.on(
       "keydown-B",
-      () => this.toggleDebug()
+      () => {
+        this.toggleDebug();
+      }
     );
 
     this.cameras.main.startFollow(
@@ -218,10 +222,6 @@ class World extends Phaser.Scene {
   }
 
   createPlayer(){
-    /*
-      Spawn on the lower stone path rather than
-      on top of the greenhouse.
-    */
     const startX = 1080;
     const startY = 1810;
 
@@ -238,7 +238,7 @@ class World extends Phaser.Scene {
 
     /*
       Temporary student-puppy placeholder.
-      Captain Fritz remains the larger NPC.
+      Captain Fritz remains the larger guide character.
     */
     this.player = this.physics.add
       .image(
@@ -254,17 +254,6 @@ class World extends Phaser.Scene {
     this.player.body.setSize(
       38,
       52
-    );
-
-    this.player.body.setOffset(
-      Math.max(
-        0,
-        (this.player.width - 38) / 2
-      ),
-      Math.max(
-        0,
-        this.player.height - 58
-      )
     );
 
     this.physics.add.collider(
@@ -334,43 +323,20 @@ class World extends Phaser.Scene {
 
     this.debugRects = [];
 
-    /*
-      These zones keep the player around the
-      visible paths in the current map section.
-    */
     const barriers = [
-      /*
-        Greenhouse body.
-        Door and lower stairs remain accessible.
-      */
       [780, 1335, 480, 250, "Greenhouse upper"],
       [630, 1510, 230, 190, "Greenhouse left"],
       [1010, 1490, 150, 150, "Greenhouse right"],
 
-      /*
-        Main building at upper left.
-      */
       [315, 390, 620, 590, "Main building"],
 
-      /*
-        Left pond and stream.
-      */
       [160, 1450, 320, 360, "Left pond"],
       [370, 1285, 170, 240, "Left stream"],
 
-      /*
-        River beside the greenhouse.
-      */
       [1235, 1030, 180, 650, "River"],
 
-      /*
-        Right garden fencing.
-      */
       [1680, 1420, 510, 500, "Right garden"],
 
-      /*
-        Lower-right gazebo.
-      */
       [1840, 1770, 260, 260, "Gazebo"]
     ];
 
@@ -433,11 +399,6 @@ class World extends Phaser.Scene {
   createZones(){
     this.zones = [];
 
-    /*
-      Current playable Greenhouse entrance.
-      More entrances will be aligned as we
-      move around the entire campus map.
-    */
     this.zone(
       "Greenhouse",
       930,
@@ -447,9 +408,6 @@ class World extends Phaser.Scene {
       "3-A"
     );
 
-    /*
-      Adventure entry points for testing.
-    */
     this.zone(
       "Main Hall",
       420,
@@ -548,9 +506,6 @@ class World extends Phaser.Scene {
         this.mobileDir.y * speed;
     }
 
-    /*
-      Prevent diagonal movement from being faster.
-    */
     if(velocityX !== 0 && velocityY !== 0){
       velocityX *= 0.7071;
       velocityY *= 0.7071;
@@ -569,10 +524,6 @@ class World extends Phaser.Scene {
       this.player.setFlipX(false);
     }
 
-    /*
-      Dynamic depth makes the player appear in
-      front of or behind objects based on Y position.
-    */
     this.player.setDepth(
       Math.floor(this.player.y)
     );
@@ -676,7 +627,7 @@ class World extends Phaser.Scene {
       .text(
         -75,
         0,
-        `${zone.name}`,
+        zone.name,
         {
           fontSize: "20px",
           fontStyle: "bold",
@@ -708,9 +659,7 @@ class World extends Phaser.Scene {
 
     enterButton.on(
       "pointerdown",
-      event => {
-        event.stopPropagation();
-
+      () => {
         this.openLevel(
           zone.level,
           zone.name
@@ -740,6 +689,7 @@ class World extends Phaser.Scene {
         "Adventure unavailable",
         "This Academy adventure has not been added yet."
       );
+
       return;
     }
 
@@ -789,14 +739,14 @@ class World extends Phaser.Scene {
       {
         title: "Say It",
         body:
-          `Practice these words and phrases:\n\n` +
-          `${level.focus}`
+          "Practice these words and phrases:\n\n" +
+          level.focus
       },
       {
         title: "Mission Challenge",
         body:
-          `Complete this mission to earn:\n\n` +
-          `${level.reward}`
+          "Complete this mission to earn:\n\n" +
+          level.reward
       },
       {
         title: "Level Complete",
@@ -944,8 +894,7 @@ class World extends Phaser.Scene {
 
     this.adventureLogButton.on(
       "pointerdown",
-      event => {
-        event.stopPropagation();
+      () => {
         this.showAdventureLog();
       }
     );
@@ -1049,9 +998,7 @@ class World extends Phaser.Scene {
 
       row.on(
         "pointerdown",
-        event => {
-          event.stopPropagation();
-
+        () => {
           this.openLevel(
             level.id,
             "Adventure Log"
@@ -1226,9 +1173,7 @@ class World extends Phaser.Scene {
 
       button.on(
         "pointerdown",
-        event => {
-          event.stopPropagation();
-
+        () => {
           if(!this.panels.isOpen){
             this.mobileDir = direction;
           }
