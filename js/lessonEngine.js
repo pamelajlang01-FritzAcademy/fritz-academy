@@ -1743,4 +1743,4 @@ class LessonEngine {
       this.mediaElement = null;
     }
   }
-}
+
