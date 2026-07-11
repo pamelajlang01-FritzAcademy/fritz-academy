@@ -17,7 +17,9 @@ class World extends Phaser.Scene {
 
   create(){
     this.save = getSave();
+
     this.panels = new PanelManager(this);
+    this.lessonEngine = new LessonEngine(this);
 
     this.worldW = 2048;
     this.worldH = 2048;
@@ -59,10 +61,11 @@ class World extends Phaser.Scene {
       238
     );
 
+    this.prepareSaveData();
     this.createCollision();
     this.createPlayer();
     this.createCaptainFritz();
-    this.createZones();
+    this.createBuildingEntrances();
     this.createHUD();
     this.createMobileControls();
     this.createAdventureLogButton();
@@ -86,6 +89,7 @@ class World extends Phaser.Scene {
     this.input.keyboard.on(
       "keydown-ESC",
       () => {
+        this.lessonEngine.stopMedia();
         this.panels.close();
       }
     );
@@ -111,7 +115,35 @@ class World extends Phaser.Scene {
     }
   }
 
-  makeCleanSprite(sourceKey, newKey, whiteCutoff){
+  prepareSaveData(){
+    if(!this.save.completed){
+      this.save.completed = {};
+    }
+
+    if(!this.save.unlockedLevels){
+      this.save.unlockedLevels = ["1-A"];
+    }
+
+    if(!this.save.lessonProgress){
+      this.save.lessonProgress = {};
+    }
+
+    if(!this.save.academyBuilds){
+      this.save.academyBuilds = {};
+    }
+
+    if(!this.save.currentLevel){
+      this.save.currentLevel = "1-A";
+    }
+
+    saveGame(this.save);
+  }
+
+  makeCleanSprite(
+    sourceKey,
+    newKey,
+    whiteCutoff
+  ){
     const source = this.textures
       .get(sourceKey)
       .getSourceImage();
@@ -180,8 +212,15 @@ class World extends Phaser.Scene {
 
     const padding = 8;
 
-    minX = Math.max(0, minX - padding);
-    minY = Math.max(0, minY - padding);
+    minX = Math.max(
+      0,
+      minX - padding
+    );
+
+    minY = Math.max(
+      0,
+      minY - padding
+    );
 
     maxX = Math.min(
       source.width,
@@ -193,8 +232,11 @@ class World extends Phaser.Scene {
       maxY + padding
     );
 
-    const cropWidth = maxX - minX;
-    const cropHeight = maxY - minY;
+    const cropWidth =
+      maxX - minX;
+
+    const cropHeight =
+      maxY - minY;
 
     const canvasTexture =
       this.textures.createCanvas(
@@ -236,10 +278,6 @@ class World extends Phaser.Scene {
       )
       .setDepth(startY - 1);
 
-    /*
-      Temporary student-puppy placeholder.
-      Captain Fritz remains the larger guide character.
-    */
     this.player = this.physics.add
       .image(
         startX,
@@ -249,7 +287,9 @@ class World extends Phaser.Scene {
       .setScale(0.036)
       .setDepth(startY);
 
-    this.player.body.setCollideWorldBounds(true);
+    this.player.body.setCollideWorldBounds(
+      true
+    );
 
     this.player.body.setSize(
       38,
@@ -302,17 +342,17 @@ class World extends Phaser.Scene {
 
       this.panels.message(
         "Captain Fritz",
-        `Welcome, ${name}! Open your Academy Adventure Log to begin your next mission.`
+        `Hello, ${name}! The Greenhouse holds your first Academy adventure.`
       );
     };
 
     this.captainFritz.on(
-      "pointerdown",
+      "pointerup",
       speak
     );
 
     this.captainBubble.on(
-      "pointerdown",
+      "pointerup",
       speak
     );
   }
@@ -324,24 +364,24 @@ class World extends Phaser.Scene {
     this.debugRects = [];
 
     const barriers = [
-      [780, 1335, 480, 250, "Greenhouse upper"],
-      [630, 1510, 230, 190, "Greenhouse left"],
-      [1010, 1490, 150, 150, "Greenhouse right"],
+      [780, 1335, 480, 250],
+      [630, 1510, 230, 190],
+      [1010, 1490, 150, 150],
 
-      [315, 390, 620, 590, "Main building"],
+      [315, 390, 620, 590],
 
-      [160, 1450, 320, 360, "Left pond"],
-      [370, 1285, 170, 240, "Left stream"],
+      [160, 1450, 320, 360],
+      [370, 1285, 170, 240],
 
-      [1235, 1030, 180, 650, "River"],
+      [1235, 1030, 180, 650],
 
-      [1680, 1420, 510, 500, "Right garden"],
+      [1680, 1420, 510, 500],
 
-      [1840, 1770, 260, 260, "Gazebo"]
+      [1840, 1770, 260, 260]
     ];
 
     barriers.forEach(
-      ([x, y, width, height, label]) => {
+      ([x, y, width, height]) => {
         const zone = this.add.zone(
           x,
           y,
@@ -358,8 +398,6 @@ class World extends Phaser.Scene {
           width,
           height
         );
-
-        zone.debugLabel = label;
 
         this.walls.add(zone);
 
@@ -379,13 +417,16 @@ class World extends Phaser.Scene {
           .setVisible(false)
           .setDepth(5000);
 
-        this.debugRects.push(rectangle);
+        this.debugRects.push(
+          rectangle
+        );
       }
     );
   }
 
   toggleDebug(){
-    this.debugOn = !this.debugOn;
+    this.debugOn =
+      !this.debugOn;
 
     this.debugRects.forEach(
       rectangle => {
@@ -396,47 +437,61 @@ class World extends Phaser.Scene {
     );
   }
 
-  createZones(){
+  createBuildingEntrances(){
     this.zones = [];
 
-    this.zone(
+    this.createEntrance(
       "Greenhouse",
       930,
       1695,
-      250,
-      130,
-      "3-A"
+      260,
+      150,
+      "1-A",
+      true
     );
 
-    this.zone(
+    this.createEntrance(
       "Main Hall",
       420,
       780,
       260,
       150,
-      "1-A"
+      "1-B",
+      false
     );
 
-    this.zone(
+    this.createEntrance(
       "Library",
       500,
       1000,
       260,
       150,
-      "4-A"
+      "4-A",
+      false
     );
 
-    this.zone(
+    this.createEntrance(
       "Training Grounds",
       1600,
       1620,
       340,
       180,
-      "2-A"
+      "2-A",
+      false
     );
+
+    this.createGreenhouseMarker();
   }
 
-  zone(name, x, y, width, height, level){
+  createEntrance(
+    name,
+    x,
+    y,
+    width,
+    height,
+    level,
+    enabled
+  ){
     const zone = this.add.zone(
       x,
       y,
@@ -446,12 +501,60 @@ class World extends Phaser.Scene {
 
     zone.name = name;
     zone.level = level;
+    zone.enabled = enabled;
 
     this.zones.push(zone);
   }
 
+  createGreenhouseMarker(){
+    this.greenhouseMarker = this.add
+      .text(
+        930,
+        1650,
+        "LEVEL 1-A\nENTER GREENHOUSE",
+        {
+          fontSize: "18px",
+          fontStyle: "bold",
+          color: "#102342",
+          backgroundColor: "#f6c744",
+          padding: {
+            x: 14,
+            y: 9
+          },
+          align: "center"
+        }
+      )
+      .setOrigin(0.5)
+      .setDepth(1900)
+      .setInteractive({
+        useHandCursor: true
+      });
+
+    this.greenhouseMarker.on(
+      "pointerup",
+      () => {
+        this.startLevel(
+          "1-A",
+          "Greenhouse"
+        );
+      }
+    );
+
+    this.tweens.add({
+      targets: this.greenhouseMarker,
+      y: 1642,
+      duration: 900,
+      yoyo: true,
+      repeat: -1,
+      ease: "Sine.easeInOut"
+    });
+  }
+
   update(){
-    if(!this.player || !this.player.body){
+    if(
+      !this.player ||
+      !this.player.body
+    ){
       return;
     }
 
@@ -506,7 +609,10 @@ class World extends Phaser.Scene {
         this.mobileDir.y * speed;
     }
 
-    if(velocityX !== 0 && velocityY !== 0){
+    if(
+      velocityX !== 0 &&
+      velocityY !== 0
+    ){
       velocityX *= 0.7071;
       velocityY *= 0.7071;
     }
@@ -546,10 +652,7 @@ class World extends Phaser.Scene {
       ) &&
       this.currentZone
     ){
-      this.openLevel(
-        this.currentZone.level,
-        this.currentZone.name
-      );
+      this.enterCurrentZone();
     }
 
     if(
@@ -591,14 +694,16 @@ class World extends Phaser.Scene {
       this.currentZone = foundZone;
 
       if(foundZone){
-        this.showPrompt(foundZone);
+        this.showEntrancePrompt(
+          foundZone
+        );
       }else{
         this.hidePrompt();
       }
     }
   }
 
-  showPrompt(zone){
+  showEntrancePrompt(zone){
     this.hidePrompt();
 
     this.prompt = this.add
@@ -607,16 +712,16 @@ class World extends Phaser.Scene {
         650
       )
       .setScrollFactor(0)
-      .setDepth(1000);
+      .setDepth(4000);
 
     const background = this.add
       .rectangle(
         0,
         0,
-        510,
-        60,
+        560,
+        62,
         0xffffff,
-        0.97
+        0.98
       )
       .setStrokeStyle(
         4,
@@ -625,9 +730,11 @@ class World extends Phaser.Scene {
 
     const label = this.add
       .text(
-        -75,
+        -90,
         0,
-        zone.name,
+        zone.enabled
+          ? zone.name
+          : `${zone.name} — Locked`,
         {
           fontSize: "20px",
           fontStyle: "bold",
@@ -636,58 +743,84 @@ class World extends Phaser.Scene {
       )
       .setOrigin(0.5);
 
-    const enterButton = this.add
+    const button = this.add
       .text(
-        165,
+        180,
         0,
-        "Enter",
+        zone.enabled
+          ? "Enter"
+          : "Locked",
         {
           fontSize: "20px",
           fontStyle: "bold",
           color: "#102342",
-          backgroundColor: "#f6c744",
+          backgroundColor:
+            zone.enabled
+              ? "#f6c744"
+              : "#d8d8d8",
           padding: {
-            x: 20,
+            x: 22,
             y: 8
           }
         }
       )
-      .setOrigin(0.5)
-      .setInteractive({
+      .setOrigin(0.5);
+
+    if(zone.enabled){
+      button.setInteractive({
         useHandCursor: true
       });
 
-    enterButton.on(
-      "pointerdown",
-      () => {
-        this.openLevel(
-          zone.level,
-          zone.name
-        );
-      }
-    );
+      button.on(
+        "pointerup",
+        () => {
+          this.enterZone(zone);
+        }
+      );
+    }
 
     this.prompt.add([
       background,
       label,
-      enterButton
+      button
     ]);
   }
 
-  hidePrompt(){
-    if(this.prompt){
-      this.prompt.destroy(true);
-      this.prompt = null;
+  enterCurrentZone(){
+    if(!this.currentZone){
+      return;
     }
+
+    this.enterZone(
+      this.currentZone
+    );
   }
 
-  openLevel(levelId, place){
-    const level = findLevel(levelId);
-
-    if(!level){
+  enterZone(zone){
+    if(!zone.enabled){
       this.panels.message(
-        "Adventure unavailable",
-        "This Academy adventure has not been added yet."
+        "Adventure Locked",
+        "Complete the earlier Academy adventures first."
+      );
+
+      return;
+    }
+
+    this.startLevel(
+      zone.level,
+      zone.name
+    );
+  }
+
+  startLevel(levelId, location){
+    const unlocked =
+      this.save.unlockedLevels ||
+      ["1-A"];
+
+    if(!unlocked.includes(levelId)){
+      this.panels.message(
+        "Adventure Locked",
+        "Complete Level 1-A to unlock the next adventure."
       );
 
       return;
@@ -699,173 +832,19 @@ class World extends Phaser.Scene {
       levelId;
 
     saveGame(this.save);
-
-    this.activeLevel = level;
-    this.activePlace = place;
-    this.lessonStep = 0;
-
-    this.showLevelPanel();
-  }
-
-  showLevelPanel(){
-    const level = this.activeLevel;
-
-    const studentName =
-      this.save.studentName ||
-      "Academy Student";
-
-    const steps = [
-      {
-        title: `Level ${level.id}`,
-        body:
-          `${level.title}\n\n` +
-          `Location: ${this.activePlace}\n` +
-          `English focus: ${level.focus}`
-      },
-      {
-        title: "Mission Story",
-        body:
-          "Captain Fritz has a new Academy mission.\n\n" +
-          "Listen carefully and use English to help."
-      },
-      {
-        title: "Read With Me",
-        body:
-          `Hello.\n` +
-          `I am ${studentName}.\n` +
-          `I see Fritz Academy.\n` +
-          `I can help.`
-      },
-      {
-        title: "Say It",
-        body:
-          "Practice these words and phrases:\n\n" +
-          level.focus
-      },
-      {
-        title: "Mission Challenge",
-        body:
-          "Complete this mission to earn:\n\n" +
-          level.reward
-      },
-      {
-        title: "Level Complete",
-        body:
-          "Great work!\n\n" +
-          "Save your progress and return to the Academy."
-      }
-    ];
-
-    const step =
-      steps[this.lessonStep];
-
-    const title = this.add
-      .text(
-        0,
-        -210,
-        step.title,
-        {
-          fontSize: "32px",
-          fontStyle: "bold",
-          color: "#102342"
-        }
-      )
-      .setOrigin(0.5);
-
-    const body = this.add
-      .text(
-        0,
-        -30,
-        step.body,
-        {
-          fontSize: "25px",
-          fontStyle: "bold",
-          color: "#102342",
-          align: "center",
-          wordWrap: {
-            width: 680
-          }
-        }
-      )
-      .setOrigin(0.5);
-
-    const closeButton =
-      this.panels.makeButton(
-        -175,
-        205,
-        "Close",
-        () => {
-          this.panels.close();
-        },
-        {
-          backgroundColor: "#ffffff"
-        }
-      );
-
-    const nextButton =
-      this.panels.makeButton(
-        175,
-        205,
-        this.lessonStep < 5
-          ? "Next"
-          : "Finish",
-        () => {
-          if(this.lessonStep < 5){
-            this.lessonStep++;
-            this.showLevelPanel();
-          }else{
-            this.completeLevel();
-          }
-        }
-      );
-
-    this.panels.open(
-      [
-        title,
-        body,
-        closeButton,
-        nextButton
-      ],
-      {
-        width: 820,
-        height: 540
-      }
-    );
-  }
-
-  completeLevel(){
-    const levelId =
-      this.activeLevel.id;
-
-    if(!this.save.completed[levelId]){
-      this.save.completed[levelId] = true;
-      this.save.xp += 10;
-      this.save.stars += 1;
-
-      if(levelId.startsWith("1-")){
-        this.save.pack.keys++;
-      }
-
-      if(levelId.startsWith("2-")){
-        this.save.pack.books++;
-      }
-
-      if(levelId.startsWith("3-")){
-        this.save.pack.seeds++;
-      }
-
-      if(levelId.startsWith("4-")){
-        this.save.pack.blueprints++;
-      }
-    }
-
-    saveGame(this.save);
     this.refreshHUD();
 
-    this.panels.message(
-      "Progress saved",
-      "Your Academy Adventure Log has been updated."
+    this.lessonEngine.start(
+      levelId,
+      location
     );
+  }
+
+  hidePrompt(){
+    if(this.prompt){
+      this.prompt.destroy(true);
+      this.prompt = null;
+    }
   }
 
   createAdventureLogButton(){
@@ -887,13 +866,13 @@ class World extends Phaser.Scene {
       )
       .setOrigin(0.5)
       .setScrollFactor(0)
-      .setDepth(1000)
+      .setDepth(4000)
       .setInteractive({
         useHandCursor: true
       });
 
     this.adventureLogButton.on(
-      "pointerdown",
+      "pointerup",
       () => {
         this.showAdventureLog();
       }
@@ -901,6 +880,10 @@ class World extends Phaser.Scene {
   }
 
   showAdventureLog(){
+    const unlocked =
+      this.save.unlockedLevels ||
+      ["1-A"];
+
     const title = this.add
       .text(
         0,
@@ -914,55 +897,38 @@ class World extends Phaser.Scene {
       )
       .setOrigin(0.5);
 
-    const visibleRows = [];
-    const levelsPerPage = 8;
-
-    const currentIndex = Math.max(
-      0,
-      LEVELS.findIndex(
-        level =>
-          level.id ===
-          this.save.currentLevel
-      )
-    );
-
-    let startIndex =
-      Math.max(
-        0,
-        currentIndex - 2
-      );
-
-    startIndex =
-      Math.min(
-        startIndex,
-        Math.max(
-          0,
-          LEVELS.length - levelsPerPage
-        )
-      );
+    const rows = [];
 
     const visibleLevels =
-      LEVELS.slice(
-        startIndex,
-        startIndex + levelsPerPage
-      );
+      LEVELS.slice(0, 8);
 
     let rowY = -195;
 
     visibleLevels.forEach(level => {
       const completed =
         Boolean(
-          this.save.completed[level.id]
+          this.save.completed[
+            level.id
+          ]
         );
 
       const current =
         level.id ===
         this.save.currentLevel;
 
-      let prefix = "○";
+      const isUnlocked =
+        unlocked.includes(
+          level.id
+        );
+
+      let prefix = "🔒";
+
+      if(isUnlocked){
+        prefix = "○";
+      }
 
       if(completed){
-        prefix = "✓";
+        prefix = "✅";
       }
 
       if(current){
@@ -991,22 +957,25 @@ class World extends Phaser.Scene {
             align: "left"
           }
         )
-        .setOrigin(0.5)
-        .setInteractive({
+        .setOrigin(0.5);
+
+      if(isUnlocked){
+        row.setInteractive({
           useHandCursor: true
         });
 
-      row.on(
-        "pointerdown",
-        () => {
-          this.openLevel(
-            level.id,
-            "Adventure Log"
-          );
-        }
-      );
+        row.on(
+          "pointerup",
+          () => {
+            this.startLevel(
+              level.id,
+              "Adventure Log"
+            );
+          }
+        );
+      }
 
-      visibleRows.push(row);
+      rows.push(row);
       rowY += 48;
     });
 
@@ -1014,7 +983,7 @@ class World extends Phaser.Scene {
       .text(
         0,
         207,
-        "The log automatically centers on the student's current level.",
+        "Complete each lesson to unlock the next Academy adventure.",
         {
           fontSize: "17px",
           color: "#46566f"
@@ -1035,7 +1004,7 @@ class World extends Phaser.Scene {
     this.panels.open(
       [
         title,
-        ...visibleRows,
+        ...rows,
         hint,
         closeButton
       ],
@@ -1050,7 +1019,7 @@ class World extends Phaser.Scene {
     this.hud = this.add
       .container(0, 0)
       .setScrollFactor(0)
-      .setDepth(900);
+      .setDepth(3000);
 
     const statusBackground = this.add
       .rectangle(
@@ -1166,7 +1135,7 @@ class World extends Phaser.Scene {
         )
         .setOrigin(0.5)
         .setScrollFactor(0)
-        .setDepth(1000)
+        .setDepth(4000)
         .setInteractive({
           useHandCursor: true
         });
@@ -1184,9 +1153,20 @@ class World extends Phaser.Scene {
         this.mobileDir = null;
       };
 
-      button.on("pointerup", stop);
-      button.on("pointerout", stop);
-      button.on("pointerupoutside", stop);
+      button.on(
+        "pointerup",
+        stop
+      );
+
+      button.on(
+        "pointerout",
+        stop
+      );
+
+      button.on(
+        "pointerupoutside",
+        stop
+      );
 
       return button;
     };
@@ -1195,28 +1175,40 @@ class World extends Phaser.Scene {
       "↑",
       0,
       -48,
-      { x: 0, y: -1 }
+      {
+        x: 0,
+        y: -1
+      }
     );
 
     makeButton(
       "↓",
       0,
       48,
-      { x: 0, y: 1 }
+      {
+        x: 0,
+        y: 1
+      }
     );
 
     makeButton(
       "←",
       -48,
       0,
-      { x: -1, y: 0 }
+      {
+        x: -1,
+        y: 0
+      }
     );
 
     makeButton(
       "→",
       48,
       0,
-      { x: 1, y: 0 }
+      {
+        x: 1,
+        y: 0
+      }
     );
   }
 
@@ -1237,8 +1229,10 @@ class World extends Phaser.Scene {
     const body = this.add
       .text(
         0,
-        -65,
-        "Captain Fritz is the Academy guide.\n\nYou are a new Academy student joining the adventure.",
+        -60,
+        "Captain Fritz is waiting to welcome you.\n\n" +
+        "Your first adventure will help build\n" +
+        "the Academy Welcome Garden.",
         {
           fontSize: "24px",
           fontStyle: "bold",
@@ -1273,7 +1267,7 @@ class World extends Phaser.Scene {
 
           this.panels.message(
             "Captain Fritz",
-            `Welcome to Fritz Academy, ${this.save.studentName}!`
+            `Hello, ${this.save.studentName}! Walk to the Greenhouse or open your Adventure Log to begin Level 1-A.`
           );
         },
         {
