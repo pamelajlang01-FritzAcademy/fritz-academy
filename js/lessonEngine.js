@@ -460,6 +460,7 @@ class LessonEngine {
               if(option === question.answer){
                 this.correctAnswers++;
                 this.questionIndex++;
+
                 this.showCorrectAnswer(
                   "Correct!",
                   question.answer,
@@ -547,7 +548,7 @@ class LessonEngine {
     const body = this.scene.add.text(
       0,
       20,
-      "Look carefully at the face.",
+      "Look carefully and try once more.",
       {
         fontSize: "24px",
         fontStyle: "bold",
@@ -777,6 +778,7 @@ class LessonEngine {
             () => {
               if(option === question.answer){
                 this.questionIndex++;
+
                 this.showCorrectAnswer(
                   "Correct!",
                   option,
@@ -1613,9 +1615,7 @@ class LessonEngine {
   }
 
   speakText(text){
-    if(
-      "speechSynthesis" in window
-    ){
+    if("speechSynthesis" in window){
       window.speechSynthesis.cancel();
 
       const utterance =
@@ -1727,7 +1727,9 @@ class LessonEngine {
   }
 
   stopMedia(){
-    window.speechSynthesis?.cancel();
+    if("speechSynthesis" in window){
+      window.speechSynthesis.cancel();
+    }
 
     if(this.mediaElement){
       try{
@@ -1743,4 +1745,4 @@ class LessonEngine {
       this.mediaElement = null;
     }
   }
-
+}
