@@ -1,33 +1,33 @@
 const LEVELS = [
   {
     id: "1-A",
-    chapter: "Chapter 1",
+    chapter: "Week 1",
     title: "Welcome to Fritz Academy",
     unlocked: true,
-    reward: "Welcome Garden",
+    reward: "Welcome Garden — Section 1",
+    buildArea: "welcome-garden",
+    buildStage: 1,
 
     objectives: {
       speaking: [
-        "Hello.",
-        "My name is...",
-        "I am happy.",
-        "I am sad.",
-        "I am fine."
+        "Introduce yourself.",
+        "Say and spell your name.",
+        "Describe how you feel."
       ],
       listening: [
-        "Recognize basic greetings.",
+        "Understand basic greetings.",
         "Recognize feeling words.",
         "Follow short spoken directions."
       ],
       reading: [
         "Read familiar greeting sentences.",
-        "Read three feeling words.",
-        "Read two short controlled readers."
+        "Read feeling words.",
+        "Read two short connected stories."
       ],
       writing: [
         "Identify uppercase A.",
         "Identify lowercase a.",
-        "Type or copy A and a."
+        "Copy or type A and a."
       ],
       phonics: [
         "Recognize the letter A.",
@@ -81,6 +81,11 @@ const LEVELS = [
       },
       {
         speaker: "Captain Fritz",
+        text: "How do you spell your name?",
+        responseType: "spelling"
+      },
+      {
+        speaker: "Captain Fritz",
         text: "It is nice to meet you, {studentName}!"
       },
       {
@@ -110,7 +115,8 @@ const LEVELS = [
 
     feelingsActivity: {
       title: "Match the Feelings",
-      instructions: "Choose the sentence that matches the face.",
+      instructions:
+        "Choose the sentence that matches each face.",
       questions: [
         {
           emoji: "😀",
@@ -141,73 +147,110 @@ const LEVELS = [
         }
       ],
       rewardPiece: {
-        id: "flowers",
-        name: "Garden Flowers",
-        icon: "🌼"
+        id: "welcome-flowers",
+        name: "Welcome Flowers",
+        icon: "🌼",
+        area: "welcome-garden",
+        lesson: "1-A"
       }
     },
 
     story: {
-      title: "A New Friend at the Academy",
+      title: "A New Builder Arrives",
+      imageBasePath:
+        "assets/readers/lesson-1a/teacher-story",
       pages: [
         {
-          text: "Captain Fritz is at the Academy gate."
+          text:
+            "Captain Fritz waits beside the Academy gate.",
+          image:
+            "assets/readers/lesson-1a/teacher-story/page-1.png"
         },
         {
-          text: "A new student walks to the gate."
+          text:
+            "A new Academy Builder walks up the path.",
+          image:
+            "assets/readers/lesson-1a/teacher-story/page-2.png"
         },
         {
-          text: "Captain Fritz says, “Hello!”"
+          text:
+            "Captain Fritz waves and says, “Hello!”",
+          image:
+            "assets/readers/lesson-1a/teacher-story/page-3.png"
         },
         {
-          text: "The student says, “Hello! My name is {studentName}.”"
+          text:
+            "The student answers, “Hello! My name is {studentName}.”",
+          image:
+            "assets/readers/lesson-1a/teacher-story/page-4.png"
         },
         {
-          text: "Captain Fritz says, “It is nice to meet you.”"
+          text:
+            "Captain Fritz smiles. “It is nice to meet you.”",
+          image:
+            "assets/readers/lesson-1a/teacher-story/page-5.png"
         },
         {
-          text: "The student smiles. A new adventure begins."
+          text:
+            "Together, they walk toward the unfinished Welcome Garden.",
+          image:
+            "assets/readers/lesson-1a/teacher-story/page-6.png"
         }
       ],
       questions: [
         {
-          prompt: "Who says hello?",
+          prompt: "Who waits at the Academy gate?",
           options: [
             "Captain Fritz",
-            "A tree",
-            "A book"
+            "Rascal",
+            "Tony"
           ],
           answer: "Captain Fritz"
         },
         {
-          prompt: "Where is Captain Fritz?",
+          prompt: "What does Captain Fritz say?",
           options: [
-            "At the Academy gate",
-            "In a boat",
-            "At the moon"
+            "Hello!",
+            "Good night!",
+            "Stop!"
           ],
-          answer: "At the Academy gate"
+          answer: "Hello!"
+        },
+        {
+          prompt: "Where do they walk?",
+          options: [
+            "Toward the Welcome Garden",
+            "Toward the beach",
+            "Toward a city"
+          ],
+          answer: "Toward the Welcome Garden"
         }
       ],
       rewardPiece: {
-        id: "path",
-        name: "Garden Path",
-        icon: "🪨"
+        id: "stone-path",
+        name: "Stone Garden Path",
+        icon: "🪨",
+        area: "welcome-garden",
+        lesson: "1-A"
       }
     },
 
     alphabetSong: {
-      title: "Alphabet Song",
-      rewardMessage: "You found the Academy Music Box!",
-      assetPath: "assets/audio/alphabet-song.mp3",
-      videoPath: "assets/video/alphabet-song.mp4"
+      title: "Fritz Academy Alphabet Song",
+      rewardMessage:
+        "You unlocked the Academy Music Box!",
+      assetPath:
+        "assets/audio/alphabet-song.mp3",
+      videoPath:
+        "assets/video/alphabet-song.mp4"
     },
 
     phonics: {
       letterUpper: "A",
       letterLower: "a",
       soundLabel: "short a",
-      teacherCue: "Open your mouth gently and say: a, a, apple.",
+      teacherCue:
+        "Open your mouth gently and say: a, a, apple.",
       examples: [
         {
           word: "apple",
@@ -232,83 +275,152 @@ const LEVELS = [
         options: ["e", "a", "o"],
         answer: "a"
       },
+      wordQuestion: {
+        prompt: "Which word has the short-a sound?",
+        options: [
+          "apple",
+          "moon",
+          "tree"
+        ],
+        answer: "apple"
+      },
       rewardPiece: {
-        id: "bench",
-        name: "Garden Bench",
-        icon: "🪑"
+        id: "reading-bench",
+        name: "Garden Reading Bench",
+        icon: "🪑",
+        area: "welcome-garden",
+        lesson: "1-A"
       }
     },
 
     reader1: {
-      title: "Reader 1: Hello, Friend!",
+      title: "Reader 1: Tony's First Hello",
       level: "Easy",
+      imageBasePath:
+        "assets/readers/lesson-1a/reader-1",
       pages: [
-        "Hello.",
-        "My name is {studentName}.",
-        "I am happy.",
-        "Hello, Fritz.",
-        "Fritz is my friend."
+        {
+          text: "Tony is near the gate.",
+          image:
+            "assets/readers/lesson-1a/reader-1/page-1.png"
+        },
+        {
+          text: "He sees a new friend.",
+          image:
+            "assets/readers/lesson-1a/reader-1/page-2.png"
+        },
+        {
+          text: "Tony says, “Hello!”",
+          image:
+            "assets/readers/lesson-1a/reader-1/page-3.png"
+        },
+        {
+          text: "The new friend waves.",
+          image:
+            "assets/readers/lesson-1a/reader-1/page-4.png"
+        },
+        {
+          text: "Tony is happy.",
+          image:
+            "assets/readers/lesson-1a/reader-1/page-5.png"
+        }
       ],
       check: {
-        prompt: "How does the student feel?",
+        prompt: "How does Tony feel?",
         options: [
           "Happy",
           "Sad",
-          "Tired"
+          "Angry"
         ],
         answer: "Happy"
       },
       rewardPiece: {
-        id: "tree",
+        id: "welcome-tree",
         name: "Welcome Tree",
-        icon: "🌳"
+        icon: "🌳",
+        area: "welcome-garden",
+        lesson: "1-A"
       }
     },
 
     reader2: {
-      title: "Reader 2: A New Day",
+      title: "Reader 2: Friends at the Garden",
       level: "Stretch",
+      imageBasePath:
+        "assets/readers/lesson-1a/reader-2",
       pages: [
-        "Hello! My name is {studentName}.",
-        "I am at Fritz Academy.",
-        "Captain Fritz is at the gate.",
-        "He says, “Hello, my friend!”",
-        "I am happy to be here."
+        {
+          text:
+            "Tony and {studentName} walk to the garden.",
+          image:
+            "assets/readers/lesson-1a/reader-2/page-1.png"
+        },
+        {
+          text:
+            "The garden has a path, but it needs flowers.",
+          image:
+            "assets/readers/lesson-1a/reader-2/page-2.png"
+        },
+        {
+          text:
+            "Nola brings a basket of bright flowers.",
+          image:
+            "assets/readers/lesson-1a/reader-2/page-3.png"
+        },
+        {
+          text:
+            "Bash carries a small tree to the garden.",
+          image:
+            "assets/readers/lesson-1a/reader-2/page-4.png"
+        },
+        {
+          text:
+            "The friends are ready to build together.",
+          image:
+            "assets/readers/lesson-1a/reader-2/page-5.png"
+        }
       ],
       check: {
-        prompt: "Where is the student?",
+        prompt: "What does Nola bring?",
         options: [
-          "At Fritz Academy",
-          "At the beach",
-          "At home"
+          "A basket of flowers",
+          "A red ball",
+          "A blue book"
         ],
-        answer: "At Fritz Academy"
+        answer: "A basket of flowers"
       },
       rewardPiece: {
-        id: "fence",
+        id: "garden-fence",
         name: "Garden Fence",
-        icon: "🪵"
+        icon: "🪵",
+        area: "welcome-garden",
+        lesson: "1-A"
       }
     },
 
     build: {
-      title: "Build the Welcome Garden",
+      areaId: "welcome-garden",
+      stage: 1,
+      title: "Build the First Garden Section",
       requiredPieces: [
-        "flowers",
-        "path",
-        "bench",
-        "tree",
-        "fence"
+        "welcome-flowers",
+        "stone-path",
+        "reading-bench",
+        "welcome-tree",
+        "garden-fence"
       ],
       completionMessage:
-        "You built the Welcome Garden! It will stay at your Academy."
+        "You completed the first section of your Welcome Garden. Your work will stay in your Academy."
     },
 
     closingSong: {
-      title: "Hello and Goodbye Song",
-      assetPath: "assets/audio/hello-goodbye-song.mp3",
+      title: "Fritz Academy Welcome Theme",
+      assetPath:
+        "assets/audio/fritz-academy-theme.mp3",
+      videoPath:
+        "assets/video/fritz-academy-theme.mp4",
       rewardMessage:
-        "The Welcome Garden is complete. Sing with the Academy cast!"
+        "Your first garden section is ready. Sing with the Academy cast!"
     },
 
     completion: {
@@ -322,100 +434,629 @@ const LEVELS = [
 
   {
     id: "1-B",
-    chapter: "Chapter 1",
-    title: "Hello, My Name Is...",
+    chapter: "Week 1",
+    title: "How Was Your Week?",
     unlocked: false,
-    reward: "Academy Sign"
+    reward: "Welcome Garden — Section 2",
+    buildArea: "welcome-garden",
+    buildStage: 2,
+
+    objectives: {
+      speaking: [
+        "Answer: How are you today?",
+        "Answer: What did you do this week?",
+        "Speak in a short complete sentence."
+      ],
+      listening: [
+        "Understand questions about recent activities.",
+        "Recognize common action phrases.",
+        "Follow two-step directions."
+      ],
+      reading: [
+        "Read short sentences about familiar activities.",
+        "Identify the main event in a story.",
+        "Read two connected but distinct readers."
+      ],
+      writing: [
+        "Identify uppercase B.",
+        "Identify lowercase b.",
+        "Copy or type B and b."
+      ],
+      phonics: [
+        "Recognize the letter B.",
+        "Produce the /b/ sound.",
+        "Connect B with book, ball, and backpack."
+      ]
+    },
+
+    vocabulary: [
+      {
+        word: "played",
+        display: "I played a game.",
+        picture: "🎮"
+      },
+      {
+        word: "read",
+        display: "I read a book.",
+        picture: "📘"
+      },
+      {
+        word: "helped",
+        display: "I helped at home.",
+        picture: "🏠"
+      },
+      {
+        word: "visited",
+        display: "I visited my family.",
+        picture: "👨‍👩‍👧"
+      },
+      {
+        word: "built",
+        display: "I built something.",
+        picture: "🧱"
+      },
+      {
+        word: "week",
+        display: "this week",
+        picture: "📅"
+      }
+    ],
+
+    intro: [
+      {
+        speaker: "Captain Fritz",
+        text:
+          "Welcome back, {studentName}! How are you today?",
+        responseType: "feeling"
+      },
+      {
+        speaker: "Captain Fritz",
+        text:
+          "What did you do this week?",
+        responseType: "weekly-activity"
+      },
+      {
+        speaker: "Captain Fritz",
+        text:
+          "That sounds interesting. Today, we will help Bear find something important."
+      }
+    ],
+
+    feelingChoices: [
+      {
+        id: "great",
+        label: "I am great.",
+        emoji: "😄"
+      },
+      {
+        id: "fine",
+        label: "I am fine.",
+        emoji: "🙂"
+      },
+      {
+        id: "tired",
+        label: "I am tired.",
+        emoji: "😴"
+      }
+    ],
+
+    conversationActivity: {
+      title: "What Did You Do?",
+      instructions:
+        "Listen to the question. Choose or say a complete answer.",
+      prompt:
+        "What did you do this week?",
+      responseChoices: [
+        {
+          id: "played",
+          label: "I played a game.",
+          emoji: "🎮"
+        },
+        {
+          id: "read",
+          label: "I read a book.",
+          emoji: "📘"
+        },
+        {
+          id: "helped",
+          label: "I helped at home.",
+          emoji: "🏠"
+        },
+        {
+          id: "visited",
+          label: "I visited my family.",
+          emoji: "👨‍👩‍👧"
+        }
+      ],
+      questions: [
+        {
+          prompt:
+            "Which answer is a complete sentence?",
+          picture: "🎮",
+          options: [
+            "I played a game.",
+            "Played.",
+            "A game."
+          ],
+          answer:
+            "I played a game."
+        },
+        {
+          prompt:
+            "Choose the sentence about reading.",
+          picture: "📘",
+          options: [
+            "I read a book.",
+            "I played a game.",
+            "I helped at home."
+          ],
+          answer:
+            "I read a book."
+        },
+        {
+          prompt:
+            "Choose the sentence about helping.",
+          picture: "🏠",
+          options: [
+            "I visited my family.",
+            "I helped at home.",
+            "I built a garden."
+          ],
+          answer:
+            "I helped at home."
+        }
+      ],
+      rewardPiece: {
+        id: "watering-can",
+        name: "Garden Watering Can",
+        icon: "🚿",
+        area: "welcome-garden",
+        lesson: "1-B"
+      }
+    },
+
+    /*
+      This duplicate field keeps Lesson 1-B compatible
+      with the current Version 31 lesson engine until
+      the generalized Version 32 engine is installed.
+    */
+    feelingsActivity: {
+      title: "What Did You Do?",
+      instructions:
+        "Choose the complete sentence that matches each picture.",
+      questions: [
+        {
+          emoji: "🎮",
+          answer: "I played a game.",
+          options: [
+            "I played a game.",
+            "I read a book.",
+            "I helped at home."
+          ]
+        },
+        {
+          emoji: "📘",
+          answer: "I read a book.",
+          options: [
+            "I helped at home.",
+            "I read a book.",
+            "I played a game."
+          ]
+        },
+        {
+          emoji: "🏠",
+          answer: "I helped at home.",
+          options: [
+            "I read a book.",
+            "I played a game.",
+            "I helped at home."
+          ]
+        }
+      ],
+      rewardPiece: {
+        id: "watering-can",
+        name: "Garden Watering Can",
+        icon: "🚿",
+        area: "welcome-garden",
+        lesson: "1-B"
+      }
+    },
+
+    story: {
+      title: "Bear's Missing Backpack",
+      imageBasePath:
+        "assets/readers/lesson-1b/teacher-story",
+      pages: [
+        {
+          text:
+            "Bear runs into the courtyard. His backpack is missing.",
+          image:
+            "assets/readers/lesson-1b/teacher-story/page-1.png"
+        },
+        {
+          text:
+            "“I had it this morning,” Bear says.",
+          image:
+            "assets/readers/lesson-1b/teacher-story/page-2.png"
+        },
+        {
+          text:
+            "Bash asks, “What did you do before you came here?”",
+          image:
+            "assets/readers/lesson-1b/teacher-story/page-3.png"
+        },
+        {
+          text:
+            "Bear thinks. “I read a book near the garden.”",
+          image:
+            "assets/readers/lesson-1b/teacher-story/page-4.png"
+        },
+        {
+          text:
+            "The friends look beside the reading bench.",
+          image:
+            "assets/readers/lesson-1b/teacher-story/page-5.png"
+        },
+        {
+          text:
+            "The backpack is under the bench. Bear smiles. “Thank you!”",
+          image:
+            "assets/readers/lesson-1b/teacher-story/page-6.png"
+        }
+      ],
+      questions: [
+        {
+          prompt: "What is missing?",
+          options: [
+            "Bear's backpack",
+            "Bash's book",
+            "Tony's hat"
+          ],
+          answer:
+            "Bear's backpack"
+        },
+        {
+          prompt:
+            "What did Bear do near the garden?",
+          options: [
+            "He read a book.",
+            "He played music.",
+            "He ate lunch."
+          ],
+          answer:
+            "He read a book."
+        },
+        {
+          prompt:
+            "Where is the backpack?",
+          options: [
+            "Under the bench",
+            "Inside the greenhouse",
+            "Behind the gate"
+          ],
+          answer:
+            "Under the bench"
+        }
+      ],
+      rewardPiece: {
+        id: "flower-bed",
+        name: "Garden Flower Bed",
+        icon: "🌷",
+        area: "welcome-garden",
+        lesson: "1-B"
+      }
+    },
+
+    alphabetSong: {
+      title: "Fritz Academy Alphabet Song",
+      rewardMessage:
+        "The Academy Music Box is ready again!",
+      assetPath:
+        "assets/audio/alphabet-song.mp3",
+      videoPath:
+        "assets/video/alphabet-song.mp4"
+    },
+
+    phonics: {
+      letterUpper: "B",
+      letterLower: "b",
+      soundLabel: "/b/",
+      teacherCue:
+        "Press your lips together, release the air, and say: b, b, book.",
+      examples: [
+        {
+          word: "book",
+          icon: "📘"
+        },
+        {
+          word: "ball",
+          icon: "⚽"
+        },
+        {
+          word: "backpack",
+          icon: "🎒"
+        }
+      ],
+      recognitionQuestion: {
+        prompt: "Choose uppercase B.",
+        options: ["B", "D", "P"],
+        answer: "B"
+      },
+      lowercaseQuestion: {
+        prompt: "Choose lowercase b.",
+        options: ["d", "b", "p"],
+        answer: "b"
+      },
+      wordQuestion: {
+        prompt:
+          "Which word begins with the /b/ sound?",
+        options: [
+          "book",
+          "apple",
+          "map"
+        ],
+        answer:
+          "book"
+      },
+      rewardPiece: {
+        id: "garden-lantern",
+        name: "Garden Lantern",
+        icon: "🏮",
+        area: "welcome-garden",
+        lesson: "1-B"
+      }
+    },
+
+    reader1: {
+      title: "Reader 1: Tony Finds a Book",
+      level: "Easy",
+      imageBasePath:
+        "assets/readers/lesson-1b/reader-1",
+      pages: [
+        {
+          text:
+            "Tony walks beside the garden.",
+          image:
+            "assets/readers/lesson-1b/reader-1/page-1.png"
+        },
+        {
+          text:
+            "He sees a blue book.",
+          image:
+            "assets/readers/lesson-1b/reader-1/page-2.png"
+        },
+        {
+          text:
+            "The book is near a bush.",
+          image:
+            "assets/readers/lesson-1b/reader-1/page-3.png"
+        },
+        {
+          text:
+            "Tony picks up the book.",
+          image:
+            "assets/readers/lesson-1b/reader-1/page-4.png"
+        },
+        {
+          text:
+            "“This book belongs to Bear,” he says.",
+          image:
+            "assets/readers/lesson-1b/reader-1/page-5.png"
+        }
+      ],
+      check: {
+        prompt: "What does Tony find?",
+        options: [
+          "A blue book",
+          "A yellow ball",
+          "A red backpack"
+        ],
+        answer:
+          "A blue book"
+      },
+      rewardPiece: {
+        id: "birdhouse",
+        name: "Garden Birdhouse",
+        icon: "🐦",
+        area: "welcome-garden",
+        lesson: "1-B"
+      }
+    },
+
+    reader2: {
+      title: "Reader 2: The Clue in the Book",
+      level: "Stretch",
+      imageBasePath:
+        "assets/readers/lesson-1b/reader-2",
+      pages: [
+        {
+          text:
+            "Tony carries the blue book to Bear.",
+          image:
+            "assets/readers/lesson-1b/reader-2/page-1.png"
+        },
+        {
+          text:
+            "A small garden map falls from the pages.",
+          image:
+            "assets/readers/lesson-1b/reader-2/page-2.png"
+        },
+        {
+          text:
+            "The map shows a path, a bench, and a tall tree.",
+          image:
+            "assets/readers/lesson-1b/reader-2/page-3.png"
+        },
+        {
+          text:
+            "Rascal points to a mark beside the tree.",
+          image:
+            "assets/readers/lesson-1b/reader-2/page-4.png"
+        },
+        {
+          text:
+            "“Maybe this is our next garden clue,” Nola says.",
+          image:
+            "assets/readers/lesson-1b/reader-2/page-5.png"
+        },
+        {
+          text:
+            "The friends decide to follow the map next time.",
+          image:
+            "assets/readers/lesson-1b/reader-2/page-6.png"
+        }
+      ],
+      check: {
+        prompt:
+          "What falls from the book?",
+        options: [
+          "A garden map",
+          "A flower",
+          "A letter"
+        ],
+        answer:
+          "A garden map"
+      },
+      rewardPiece: {
+        id: "welcome-sign",
+        name: "Welcome Garden Sign",
+        icon: "🪧",
+        area: "welcome-garden",
+        lesson: "1-B"
+      }
+    },
+
+    build: {
+      areaId: "welcome-garden",
+      stage: 2,
+      title:
+        "Add to Your Welcome Garden",
+      requiredPieces: [
+        "watering-can",
+        "flower-bed",
+        "garden-lantern",
+        "birdhouse",
+        "welcome-sign"
+      ],
+      completionMessage:
+        "You completed the second section of your Welcome Garden. Every piece will remain in your Academy."
+    },
+
+    closingSong: {
+      title:
+        "Fritz Academy Welcome Theme",
+      assetPath:
+        "assets/audio/fritz-academy-theme.mp3",
+      videoPath:
+        "assets/video/fritz-academy-theme.mp4",
+      rewardMessage:
+        "Your Welcome Garden is growing. Sing with the Academy cast!"
+    },
+
+    completion: {
+      xp: 25,
+      stars: 1,
+      unlocks: "1-C",
+      message:
+        "Level 1-B complete! Level 1-C is now unlocked."
+    }
   },
 
   {
     id: "1-C",
-    chapter: "Chapter 1",
-    title: "Colors Around Us",
+    chapter: "Week 1",
+    title: "Follow the Garden Map",
     unlocked: false,
-    reward: "Color Flags"
+    reward: "Welcome Garden — Section 3"
   },
 
   {
     id: "2-A",
-    chapter: "Chapter 2",
-    title: "Bear's Lost Backpack",
+    chapter: "Week 2",
+    title: "Colors in the Garden",
     unlocked: false,
-    reward: "Library Books"
+    reward: "Welcome Garden — Section 4"
   },
 
   {
     id: "2-B",
-    chapter: "Chapter 2",
-    title: "What's in My Backpack?",
+    chapter: "Week 2",
+    title: "Count the Flowers",
     unlocked: false,
-    reward: "Classroom Shelf"
+    reward: "Welcome Garden — Section 5"
   },
 
   {
     id: "2-C",
-    chapter: "Chapter 2",
-    title: "Classroom Treasure Hunt",
+    chapter: "Week 2",
+    title: "The Welcome Celebration",
     unlocked: false,
-    reward: "Map Table"
+    reward: "Welcome Garden — Final Section"
   },
 
   {
     id: "3-A",
-    chapter: "Chapter 3",
-    title: "Nola's Garden Gate",
+    chapter: "Week 3",
+    title: "The Greenhouse Door",
     unlocked: false,
-    reward: "Greenhouse Gate"
+    reward: "Greenhouse Learning Area — Section 1"
   },
 
   {
     id: "3-B",
-    chapter: "Chapter 3",
-    title: "Counting Flowers",
+    chapter: "Week 3",
+    title: "What Plants Need",
     unlocked: false,
-    reward: "Flower Beds"
+    reward: "Greenhouse Learning Area — Section 2"
   },
 
   {
     id: "3-C",
-    chapter: "Chapter 3",
-    title: "Nature Colors",
+    chapter: "Week 3",
+    title: "Rascal's Watering Machine",
     unlocked: false,
-    reward: "Garden Pond"
+    reward: "Greenhouse Learning Area — Section 3"
   },
 
   {
     id: "4-A",
-    chapter: "Chapter 4",
-    title: "The Library Light",
+    chapter: "Week 4",
+    title: "Seeds and Sprouts",
     unlocked: false,
-    reward: "Library Lamp"
+    reward: "Greenhouse Learning Area — Section 4"
   },
 
   {
     id: "4-B",
-    chapter: "Chapter 4",
-    title: "Story Time",
+    chapter: "Week 4",
+    title: "A Garden for Everyone",
     unlocked: false,
-    reward: "Reading Chair"
+    reward: "Greenhouse Learning Area — Section 5"
   },
 
   {
     id: "4-C",
-    chapter: "Chapter 4",
-    title: "Reading Adventure",
+    chapter: "Week 4",
+    title: "The Greenhouse Opens",
     unlocked: false,
-    reward: "Library Key"
+    reward: "Greenhouse Learning Area — Final Section"
   }
 ];
 
 function findLevel(id){
-  return LEVELS.find(level => level.id === id);
+  return LEVELS.find(
+    level => level.id === id
+  );
 }
 
-function replaceStudentName(text, studentName){
-  return text.replaceAll(
-    "{studentName}",
-    studentName || "Academy Student"
-  );
+function replaceStudentName(
+  text,
+  studentName
+){
+  return String(text || "")
+    .replaceAll(
+      "{studentName}",
+      studentName ||
+        "Academy Student"
+    );
 }
