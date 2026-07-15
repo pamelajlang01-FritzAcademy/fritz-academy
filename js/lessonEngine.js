@@ -46,8 +46,9 @@ class LessonEngine {
       saveGame(this.scene.save);
     }
 
-    this.resumeFromCheckpoint(checkpoint);
-  }
+       this.preloadLessonImages(() => {
+      this.resumeFromCheckpoint(checkpoint);
+    });
 
   ensureLessonSave(){
     const save = this.scene.save;
@@ -398,7 +399,45 @@ class LessonEngine {
   choicePositions(count, spacing){
     if(count <= 1){
       return [0];
+    }  preloadLessonImages(callback){
+    const imagePaths = [];
+
+    const addPages = pages => {
+      (pages || []).forEach(page => {
+        if(
+          typeof page === "object" &&
+          page.image &&
+          !imagePaths.includes(page.image)
+        ){
+          imagePaths.push(page.image);
+        }
+      });
+    };
+
+    addPages(this.lesson.story?.pages);
+    addPages(this.lesson.reader1?.pages);
+    addPages(this.lesson.reader2?.pages);
+
+    const missingImages = imagePaths.filter(
+      path => !this.scene.textures.exists(path)
+    );
+
+    if(missingImages.length === 0){
+      callback();
+      return;
     }
+
+    missingImages.forEach(path => {
+      this.scene.load.image(path, path);
+    });
+
+    this.scene.load.once(
+      Phaser.Loader.Events.COMPLETE,
+      callback
+    );
+
+    this.scene.load.start();
+  }
 
     const total = spacing * (count - 1);
     const start = -total / 2;
@@ -663,14 +702,48 @@ class LessonEngine {
       }
     ).setOrigin(0.5);
 
-    const image=this.scene.add.image(
-      0,
-      -20,
-      page.image || "story-placeholder"
-    );
+       const imageObjects = [];
 
-    image.setDisplaySize(420,240);
+    if(
+      page.image &&
+      this.scene.textures.exists(page.image)
+    ){
+      const image = this.scene.add.image(
+        0,
+        -25,
+        page.image
+      );
 
+      const scale = Math.min(
+        470 / image.width,
+        245 / image.height
+      );
+
+      image.setScale(scale);
+      imageObjects.push(image);
+    }else{
+      const imageFrame = this.scene.add.rectangle(
+        0,
+        -25,
+        470,
+        245,
+        0xe8f5e9,
+        1
+      ).setStrokeStyle(4, 0x174ea6);
+
+      const imageLabel = this.scene.add.text(
+        0,
+        -25,
+        "Illustration file not found",
+        {
+          fontSize: "21px",
+          fontStyle: "bold",
+          color: "#174ea6"
+        }
+      ).setOrigin(0.5);
+
+      imageObjects.push(imageFrame, imageLabel);
+    }
     const text=this.scene.add.text(
       0,
       160,
@@ -699,12 +772,17 @@ class LessonEngine {
     );
 
     this.scene.panels.open(
-      [title,image,text,next],
-      {
-        width:820,
-        height:650
-      }
-    );
+  [
+    title,
+    ...imageObjects,
+    text,
+    next
+  ],
+  {
+    width: 820,
+    height: 650
+  }
+);
   }  showStoryQuestions(){
 
     this.questionIndex = 0;
@@ -1405,19 +1483,51 @@ class LessonEngine {
         ? page.image
         : "";
 
-    const imageFrame =
-      this.scene.add.rectangle(
+        const illustrationObjects = [];
+
+    if(
+      imagePath &&
+      this.scene.textures.exists(imagePath)
+    ){
+      const illustration = this.scene.add.image(
+        0,
+        -40,
+        imagePath
+      );
+
+      const scale = Math.min(
+        500 / illustration.width,
+        205 / illustration.height
+      );
+
+      illustration.setScale(scale);
+      illustrationObjects.push(illustration);
+    }else{
+      const imageFrame = this.scene.add.rectangle(
         0,
         -40,
         500,
         205,
         0xe8f5e9,
         1
-      )
-      .setStrokeStyle(
-        4,
-        0x174ea6
+      ).setStrokeStyle(4, 0x174ea6);
+
+      const imageLabel = this.scene.add.text(
+        0,
+        -40,
+        "Illustration file not found",
+        {
+          fontSize: "21px",
+          fontStyle: "bold",
+          color: "#174ea6"
+        }
+      ).setOrigin(0.5);
+
+      illustrationObjects.push(
+        imageFrame,
+        imageLabel
       );
+    }
 
     const imageLabel =
       this.scene.add.text(
