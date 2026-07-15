@@ -10,15 +10,19 @@ class LessonEngine {
     this.questionIndex = 0;
     this.correctAnswers = 0;
     this.mediaElement = null;
+    this.activeReader = null;
+    this.activeReaderNumber = 0;
+    this.selectedBuildPiece = null;
+    this.buildObjects = [];
   }
 
-  start(levelId, location = "Fritz Academy"){
+  start(levelId, location = "Fritz Academy", options = {}){
     const lesson = findLevel(levelId);
 
-    if(!lesson || levelId !== "1-A"){
+    if(!lesson || !lesson.story || !lesson.reader1 || !lesson.reader2){
       this.scene.panels.message(
         "Adventure Locked",
-        "This adventure is still being built. Complete Level 1-A first."
+        "This lesson is still being built."
       );
       return;
     }
@@ -30,8 +34,19 @@ class LessonEngine {
       this.scene.save.studentName ||
       "Academy Student";
 
+    this.scene.save.reviewMode = Boolean(options.reviewMode);
     this.ensureLessonSave();
-    this.showMissionOpening();
+
+    const checkpoint = options.restart
+      ? "opening"
+      : this.progress().currentSection || "opening";
+
+    if(options.restart){
+      this.progress().currentSection = "opening";
+      saveGame(this.scene.save);
+    }
+
+    this.resumeFromCheckpoint(checkpoint);
   }
 
   ensureLessonSave(){
@@ -46,6 +61,7 @@ class LessonEngine {
         currentSection: "opening",
         earnedPieces: [],
         feeling: "",
+        weeklyActivity: "",
         completed: false
       };
     }
@@ -54,6 +70,15 @@ class LessonEngine {
       save.unlockedLevels = ["1-A"];
     }
 
+    if(!save.academyBuilds){
+      save.academyBuilds = {};
+    }
+
+    if(!save.placedBuilds){
+      save.placedBuilds = {};
+    }
+
+    save.currentLevel = this.levelId;
     saveGame(save);
   }
 
@@ -70,7 +95,33 @@ class LessonEngine {
 
   setSection(section){
     this.progress().currentSection = section;
+    this.scene.save.currentCheckpoint = section;
+    this.scene.save.currentLevel = this.levelId;
     saveGame(this.scene.save);
+  }
+
+  resumeFromCheckpoint(section){
+    const routes = {
+      opening: () => this.showMissionOpening(),
+      greeting: () => this.showGreeting(0),
+      conversation: () => this.showConversationActivityIntro(),
+      story: () => this.startStory(),
+      "alphabet-song": () => this.showAlphabetSong(),
+      phonics: () => this.showPhonics(),
+      "reader-1": () => this.startReader(this.lesson.reader1, 1),
+      "reader-2": () => this.startReader(this.lesson.reader2, 2),
+      build: () => this.showBuildWorkshop(),
+      debrief: () => this.showDebrief(),
+      "closing-song": () => this.showClosingSong(),
+      complete: () => this.showCompletionScreen()
+    };
+
+    const route = routes[section] || routes.opening;
+    route();
+  }
+
+  isReviewMode(){
+    return Boolean(this.scene.save.reviewMode);
   }
 
   hasPiece(pieceId){
@@ -78,10 +129,24 @@ class LessonEngine {
   }
 
   earnPiece(piece){
+    if(this.isReviewMode()){
+      return;
+    }
+
     if(!this.hasPiece(piece.id)){
       this.progress().earnedPieces.push(piece.id);
-      saveGame(this.scene.save);
     }
+
+    if(!this.scene.save.collected){
+      this.scene.save.collected = {};
+    }
+
+    this.scene.save.collected[piece.id] = {
+      ...piece,
+      earnedIn: this.levelId
+    };
+
+    saveGame(this.scene.save);
   }
 
   showMissionOpening(){
@@ -90,7 +155,7 @@ class LessonEngine {
     const title = this.scene.add.text(
       0,
       -205,
-      "Level 1-A",
+      `Level ${this.levelId}`,
       {
         fontSize: "34px",
         fontStyle: "bold",
@@ -109,28 +174,33 @@ class LessonEngine {
       }
     ).setOrigin(0.5);
 
+    const reviewLabel = this.isReviewMode()
+      ? "\n\nREVIEW MODE — no duplicate rewards will be added."
+      : "";
+
     const body = this.scene.add.text(
       0,
-      -20,
+      -15,
       "Captain Fritz has a new mission.\n\n" +
-      "Learn the words.\n" +
-      "Earn the pieces.\n" +
-      "Build the Welcome Garden.",
+      "Complete each English challenge.\n" +
+      "Earn five build pieces.\n" +
+      "Add them to your Academy." +
+      reviewLabel,
       {
-        fontSize: "25px",
+        fontSize: "24px",
         fontStyle: "bold",
         color: "#102342",
         align: "center",
-        lineSpacing: 10,
+        lineSpacing: 9,
         wordWrap: {
-          width: 650
+          width: 660
         }
       }
     ).setOrigin(0.5);
 
     const begin = this.scene.panels.makeButton(
       0,
-      190,
+      205,
       "Begin Adventure",
       () => this.showGreeting(0),
       {
@@ -141,8 +211,8 @@ class LessonEngine {
     this.scene.panels.open(
       [title, subtitle, body, begin],
       {
-        width: 780,
-        height: 520
+        width: 800,
+        height: 560
       }
     );
   }
@@ -150,39 +220,21 @@ class LessonEngine {
   showGreeting(index){
     this.setSection("greeting");
 
-    const conversation = [
-      {
-        speaker: "Captain Fritz",
-        text: "Hello! My name is Captain Fritz."
-      },
-      {
-        speaker: "Captain Fritz",
-        text: "What is your name?",
-        nameResponse: true
-      },
-      {
-        speaker: "Captain Fritz",
-        text:
-          `It is nice to meet you, ${this.studentName}!`
-      },
-      {
-        speaker: "Captain Fritz",
-        text: "How are you today?",
-        feelingResponse: true
-      }
-    ];
+    const conversation = Array.isArray(this.lesson.intro)
+      ? this.lesson.intro
+      : [];
 
     const line = conversation[index];
 
     if(!line){
-      this.showFeelingsActivityIntro();
+      this.showConversationActivityIntro();
       return;
     }
 
     const speaker = this.scene.add.text(
       0,
-      -160,
-      line.speaker,
+      -170,
+      line.speaker || "Captain Fritz",
       {
         fontSize: "27px",
         fontStyle: "bold",
@@ -192,38 +244,33 @@ class LessonEngine {
 
     const dialogue = this.scene.add.text(
       0,
-      -30,
-      line.text,
+      -50,
+      this.replaceName(line.text || ""),
       {
-        fontSize: "30px",
+        fontSize: "29px",
         fontStyle: "bold",
         color: "#102342",
         align: "center",
         wordWrap: {
-          width: 650
+          width: 670
         }
       }
     ).setOrigin(0.5);
 
-    const objects = [
-      speaker,
-      dialogue
-    ];
+    const objects = [speaker, dialogue];
+    const responseType = line.responseType;
 
-    if(line.nameResponse){
+    if(responseType === "name"){
       const answer = this.scene.add.text(
         0,
-        75,
+        60,
         `My name is ${this.studentName}.`,
         {
           fontSize: "25px",
           fontStyle: "bold",
           color: "#102342",
           backgroundColor: "#ffffff",
-          padding: {
-            x: 22,
-            y: 12
-          }
+          padding: { x: 22, y: 12 }
         }
       ).setOrigin(0.5);
 
@@ -235,35 +282,94 @@ class LessonEngine {
       );
 
       objects.push(answer, sayIt);
-    }else if(line.feelingResponse){
-      const choices = this.lesson.feelingChoices;
-      const xPositions = [-220, 0, 220];
+    }else if(responseType === "spelling"){
+      const spelling =
+        this.scene.save.studentSpelling ||
+        this.studentName.toUpperCase().split("").join("-");
+
+      const answer = this.scene.add.text(
+        0,
+        60,
+        spelling,
+        {
+          fontSize: "31px",
+          fontStyle: "bold",
+          color: "#102342",
+          backgroundColor: "#ffffff",
+          padding: { x: 22, y: 12 }
+        }
+      ).setOrigin(0.5);
+
+      const continueButton = this.scene.panels.makeButton(
+        0,
+        165,
+        "Continue",
+        () => this.showGreeting(index + 1)
+      );
+
+      objects.push(answer, continueButton);
+    }else if(responseType === "feeling"){
+      const choices = this.lesson.feelingChoices || [];
+      const xPositions = this.choicePositions(choices.length, 220);
 
       choices.forEach((choice, choiceIndex) => {
+        const x = xPositions[choiceIndex];
+
         const emoji = this.scene.add.text(
-          xPositions[choiceIndex],
-          55,
+          x,
+          45,
           choice.emoji,
-          {
-            fontSize: "48px"
-          }
+          { fontSize: "48px" }
         ).setOrigin(0.5);
 
         const button = this.scene.panels.makeButton(
-          xPositions[choiceIndex],
+          x,
           135,
           choice.label,
           () => {
             this.progress().feeling = choice.id;
             saveGame(this.scene.save);
-            this.showFeelingResponse(choice);
+            this.showFeelingResponse(choice, index + 1);
           },
           {
-            fontSize: "20px",
-            padding: {
-              x: 15,
-              y: 9
-            }
+            fontSize: "19px",
+            padding: { x: 14, y: 9 }
+          }
+        );
+
+        objects.push(emoji, button);
+      });
+    }else if(responseType === "weekly-activity"){
+      const choices =
+        this.lesson.conversationActivity?.responseChoices ||
+        [];
+
+      const xPositions = this.choicePositions(choices.length, 180);
+
+      choices.forEach((choice, choiceIndex) => {
+        const x = xPositions[choiceIndex];
+
+        const emoji = this.scene.add.text(
+          x,
+          35,
+          choice.emoji,
+          { fontSize: "44px" }
+        ).setOrigin(0.5);
+
+        const button = this.scene.panels.makeButton(
+          x,
+          130,
+          choice.label,
+          () => {
+            this.progress().weeklyActivity = choice.id;
+            saveGame(this.scene.save);
+            this.showSpokenResponse(choice.label, () => {
+              this.showGreeting(index + 1);
+            });
+          },
+          {
+            fontSize: "17px",
+            padding: { x: 11, y: 8 }
           }
         );
 
@@ -283,88 +389,376 @@ class LessonEngine {
     this.scene.panels.open(
       objects,
       {
-        width: 800,
-        height: 500
+        width: 850,
+        height: 520
       }
     );
   }
 
-  showFeelingResponse(choice){
-    const title = this.scene.add.text(
-      0,
-      -135,
-      choice.emoji,
-      {
-        fontSize: "70px"
-      }
-    ).setOrigin(0.5);
+  choicePositions(count, spacing){
+    if(count <= 1){
+      return [0];
+    }
 
-    const studentSentence = this.scene.add.text(
-      0,
-      -35,
-      choice.label,
-      {
-        fontSize: "30px",
-        fontStyle: "bold",
-        color: "#102342"
-      }
-    ).setOrigin(0.5);
+    const total = spacing * (count - 1);
+    const start = -total / 2;
 
-    const fritzResponse = this.scene.add.text(
-      0,
-      65,
-      `Captain Fritz: Thank you, ${this.studentName}.`,
-      {
-        fontSize: "23px",
-        fontStyle: "bold",
-        color: "#174ea6"
-      }
-    ).setOrigin(0.5);
-
-    const continueButton =
-      this.scene.panels.makeButton(
-        0,
-        155,
-        "Continue",
-        () => this.showFeelingsActivityIntro()
-      );
-
-    this.scene.panels.open(
-      [
-        title,
-        studentSentence,
-        fritzResponse,
-        continueButton
-      ],
-      {
-        width: 720,
-        height: 430
-      }
+    return Array.from(
+      { length: count },
+      (_, index) => start + index * spacing
     );
-  }
-
-  showFeelingsActivityIntro(){
-    this.setSection("feelings");
-
+  }  showFeelingResponse(choice, nextIndex){
     const title = this.scene.add.text(
       0,
-      -175,
-      "Feeling Match",
+      -130,
+      "Great Job!",
       {
         fontSize: "34px",
         fontStyle: "bold",
-        color: "#102342"
+        color: "#1b5e20"
       }
     ).setOrigin(0.5);
 
     const body = this.scene.add.text(
       0,
-      -25,
-      "Match each face to the English sentence.\n\n" +
-      "Get all three correct to earn\n" +
-      "the first Welcome Garden piece.",
+      -10,
+      `You said:\n\n${choice.label}`,
       {
-        fontSize: "25px",
+        fontSize: "28px",
+        align: "center",
+        color: "#102342"
+      }
+    ).setOrigin(0.5);
+
+    const next = this.scene.panels.makeButton(
+      0,
+      170,
+      "Continue",
+      ()=>this.showGreeting(nextIndex)
+    );
+
+    this.scene.panels.open(
+      [title, body, next],
+      {
+        width:700,
+        height:420
+      }
+    );
+  }
+
+  showSpokenResponse(text, callback){
+    const title = this.scene.add.text(
+      0,
+      -120,
+      "Excellent Speaking!",
+      {
+        fontSize:"34px",
+        fontStyle:"bold",
+        color:"#1b5e20"
+      }
+    ).setOrigin(0.5);
+
+    const body = this.scene.add.text(
+      0,
+      -10,
+      text,
+      {
+        fontSize:"28px",
+        color:"#102342",
+        align:"center",
+        wordWrap:{width:600}
+      }
+    ).setOrigin(0.5);
+
+    const next=this.scene.panels.makeButton(
+      0,
+      170,
+      "Continue",
+      callback
+    );
+
+    this.scene.panels.open(
+      [title,body,next],
+      {
+        width:700,
+        height:420
+      }
+    );
+  }
+
+  showConversationActivityIntro(){
+
+    this.setSection("conversation");
+
+    const activity =
+      this.lesson.conversationActivity ||
+      this.lesson.feelingsActivity;
+
+    const title=this.scene.add.text(
+      0,
+      -170,
+      activity.title,
+      {
+        fontSize:"32px",
+        fontStyle:"bold",
+        color:"#174ea6"
+      }
+    ).setOrigin(0.5);
+
+    const instructions=this.scene.add.text(
+      0,
+      -80,
+      activity.instructions,
+      {
+        fontSize:"24px",
+        color:"#102342",
+        align:"center",
+        wordWrap:{width:640}
+      }
+    ).setOrigin(0.5);
+
+    const begin=this.scene.panels.makeButton(
+      0,
+      170,
+      "Start Activity",
+      ()=>{
+        this.questionIndex=0;
+        this.correctAnswers=0;
+        this.showConversationQuestion();
+      }
+    );
+
+    this.scene.panels.open(
+      [title,instructions,begin],
+      {
+        width:760,
+        height:500
+      }
+    );
+  }
+
+  showConversationQuestion(){
+
+    const activity =
+      this.lesson.conversationActivity ||
+      this.lesson.feelingsActivity;
+
+    const questions=activity.questions;
+
+    if(this.questionIndex>=questions.length){
+
+      this.earnPiece(activity.rewardPiece);
+
+      this.showReward(
+        activity.rewardPiece,
+        ()=>this.startStory()
+      );
+
+      return;
+    }
+
+    const question=questions[this.questionIndex];
+
+    const title=this.scene.add.text(
+      0,
+      -170,
+      `Question ${this.questionIndex+1}`,
+      {
+        fontSize:"30px",
+        fontStyle:"bold",
+        color:"#174ea6"
+      }
+    ).setOrigin(0.5);
+
+    const picture=this.scene.add.text(
+      0,
+      -90,
+      question.picture || question.emoji || "",
+      {
+        fontSize:"58px"
+      }
+    ).setOrigin(0.5);
+
+    const prompt=this.scene.add.text(
+      0,
+      -20,
+      question.prompt,
+      {
+        fontSize:"24px",
+        color:"#102342",
+        align:"center",
+        wordWrap:{width:620}
+      }
+    ).setOrigin(0.5);
+
+    const objects=[title,picture,prompt];
+
+    question.options.forEach((option,index)=>{
+
+      const button=this.scene.panels.makeButton(
+        0,
+        70+(index*70),
+        option,
+        ()=>{
+
+          if(option===question.answer){
+            this.correctAnswers++;
+          }
+
+          this.questionIndex++;
+
+          this.showConversationQuestion();
+
+        },
+        {
+          width:420
+        }
+      );
+
+      objects.push(button);
+
+    });
+
+    this.scene.panels.open(
+      objects,
+      {
+        width:760,
+        height:560
+      }
+    );
+  }
+
+  startStory(){
+
+    this.setSection("story");
+
+    this.storyPage=0;
+
+    this.showStoryPage();
+
+  }
+
+  showStoryPage(){
+
+    const pages=this.lesson.story.pages;
+
+    if(this.storyPage>=pages.length){
+
+      this.showStoryQuestions();
+
+      return;
+
+    }
+
+    const page=pages[this.storyPage];
+
+    const title=this.scene.add.text(
+      0,
+      -190,
+      this.lesson.story.title,
+      {
+        fontSize:"30px",
+        fontStyle:"bold",
+        color:"#174ea6"
+      }
+    ).setOrigin(0.5);
+
+    const image=this.scene.add.image(
+      0,
+      -20,
+      page.image || "story-placeholder"
+    );
+
+    image.setDisplaySize(420,240);
+
+    const text=this.scene.add.text(
+      0,
+      160,
+      this.replaceName(page.text),
+      {
+        fontSize:"26px",
+        align:"center",
+        wordWrap:{width:650},
+        color:"#102342"
+      }
+    ).setOrigin(0.5);
+
+    const next=this.scene.panels.makeButton(
+      0,
+      250,
+      this.storyPage===pages.length-1
+        ? "Questions"
+        : "Next Page",
+      ()=>{
+
+        this.storyPage++;
+
+        this.showStoryPage();
+
+      }
+    );
+
+    this.scene.panels.open(
+      [title,image,text,next],
+      {
+        width:820,
+        height:650
+      }
+    );
+  }  showStoryQuestions(){
+
+    this.questionIndex = 0;
+
+    this.showStoryQuestion();
+  }
+
+  showStoryQuestion(){
+
+    const story = this.lesson.story;
+    const questions = story.questions || [];
+
+    if(this.questionIndex >= questions.length){
+
+      this.earnPiece(story.rewardPiece);
+
+      this.showReward(
+        story.rewardPiece,
+        () => this.showAlphabetSong()
+      );
+
+      return;
+    }
+
+    const question = questions[this.questionIndex];
+
+    const title = this.scene.add.text(
+      0,
+      -180,
+      "Story Challenge",
+      {
+        fontSize: "32px",
+        fontStyle: "bold",
+        color: "#174ea6"
+      }
+    ).setOrigin(0.5);
+
+    const progress = this.scene.add.text(
+      0,
+      -130,
+      `Question ${this.questionIndex + 1} of ${questions.length}`,
+      {
+        fontSize: "18px",
+        fontStyle: "bold",
+        color: "#5b677a"
+      }
+    ).setOrigin(0.5);
+
+    const prompt = this.scene.add.text(
+      0,
+      -60,
+      question.prompt,
+      {
+        fontSize: "27px",
         fontStyle: "bold",
         color: "#102342",
         align: "center",
@@ -374,101 +768,38 @@ class LessonEngine {
       }
     ).setOrigin(0.5);
 
-    const begin = this.scene.panels.makeButton(
-      0,
-      170,
-      "Start Matching",
-      () => {
-        this.questionIndex = 0;
-        this.correctAnswers = 0;
-        this.showFeelingQuestion();
-      }
-    );
-
-    this.scene.panels.open(
-      [title, body, begin],
-      {
-        width: 760,
-        height: 480
-      }
-    );
-  }
-
-  showFeelingQuestion(){
-    const activity =
-      this.lesson.feelingsActivity;
-
-    const question =
-      activity.questions[this.questionIndex];
-
-    if(!question){
-      this.rewardPiece(
-        activity.rewardPiece,
-        "You matched the feelings!",
-        () => this.startStory()
-      );
-      return;
-    }
-
-    const progress = this.scene.add.text(
-      0,
-      -205,
-      `Feeling ${this.questionIndex + 1} of ${activity.questions.length}`,
-      {
-        fontSize: "19px",
-        fontStyle: "bold",
-        color: "#46566f"
-      }
-    ).setOrigin(0.5);
-
-    const emoji = this.scene.add.text(
-      0,
-      -105,
-      question.emoji,
-      {
-        fontSize: "78px"
-      }
-    ).setOrigin(0.5);
-
-    const instruction = this.scene.add.text(
-      0,
-      -20,
-      "Choose the matching sentence.",
-      {
-        fontSize: "24px",
-        fontStyle: "bold",
-        color: "#102342"
-      }
-    ).setOrigin(0.5);
-
     const objects = [
+      title,
       progress,
-      emoji,
-      instruction
+      prompt
     ];
 
-    const yPositions = [55, 115, 175];
+    const yPositions = [35, 105, 175];
 
     question.options.forEach(
       (option, optionIndex) => {
+
         const button =
           this.scene.panels.makeButton(
             0,
             yPositions[optionIndex],
             option,
             () => {
+
               if(option === question.answer){
-                this.correctAnswers++;
+
                 this.questionIndex++;
 
                 this.showCorrectAnswer(
                   "Correct!",
-                  question.answer,
-                  () => this.showFeelingQuestion()
+                  option,
+                  () => this.showStoryQuestion()
                 );
+
               }else{
+
                 this.showTryAgain(
-                  () => this.showFeelingQuestion()
+                  () => this.showStoryQuestion()
                 );
               }
             },
@@ -476,7 +807,7 @@ class LessonEngine {
               fontSize: "21px",
               padding: {
                 x: 22,
-                y: 8
+                y: 9
               }
             }
           );
@@ -488,16 +819,21 @@ class LessonEngine {
     this.scene.panels.open(
       objects,
       {
-        width: 760,
-        height: 560
+        width: 790,
+        height: 550
       }
     );
   }
 
-  showCorrectAnswer(titleText, answer, callback){
+  showCorrectAnswer(
+    titleText,
+    answer,
+    callback
+  ){
+
     const title = this.scene.add.text(
       0,
-      -90,
+      -95,
       titleText,
       {
         fontSize: "38px",
@@ -508,35 +844,45 @@ class LessonEngine {
 
     const body = this.scene.add.text(
       0,
-      10,
+      5,
       answer,
       {
         fontSize: "28px",
         fontStyle: "bold",
-        color: "#102342"
+        color: "#102342",
+        align: "center",
+        wordWrap: {
+          width: 560
+        }
       }
     ).setOrigin(0.5);
 
-    const next = this.scene.panels.makeButton(
-      0,
-      110,
-      "Next",
-      callback
-    );
+    const next =
+      this.scene.panels.makeButton(
+        0,
+        115,
+        "Continue",
+        callback
+      );
 
     this.scene.panels.open(
-      [title, body, next],
+      [
+        title,
+        body,
+        next
+      ],
       {
-        width: 620,
-        height: 330
+        width: 650,
+        height: 350
       }
     );
   }
 
   showTryAgain(callback){
+
     const title = this.scene.add.text(
       0,
-      -60,
+      -75,
       "Try Again",
       {
         fontSize: "36px",
@@ -547,39 +893,48 @@ class LessonEngine {
 
     const body = this.scene.add.text(
       0,
-      20,
-      "Look carefully and try once more.",
+      10,
+      "Look carefully and choose again.",
       {
         fontSize: "24px",
         fontStyle: "bold",
-        color: "#102342"
+        color: "#102342",
+        align: "center"
       }
     ).setOrigin(0.5);
 
     const tryButton =
       this.scene.panels.makeButton(
         0,
-        105,
+        110,
         "Try Again",
         callback
       );
 
     this.scene.panels.open(
-      [title, body, tryButton],
+      [
+        title,
+        body,
+        tryButton
+      ],
       {
-        width: 620,
-        height: 320
+        width: 640,
+        height: 330
       }
     );
   }
 
-  rewardPiece(piece, message, callback){
-    this.earnPiece(piece);
+  showReward(piece, callback){
+
+    const reviewMode =
+      this.isReviewMode();
 
     const title = this.scene.add.text(
       0,
-      -165,
-      "Build Piece Earned!",
+      -175,
+      reviewMode
+        ? "Challenge Complete!"
+        : "Build Piece Earned!",
       {
         fontSize: "34px",
         fontStyle: "bold",
@@ -589,17 +944,17 @@ class LessonEngine {
 
     const icon = this.scene.add.text(
       0,
-      -65,
-      piece.icon,
+      -75,
+      piece?.icon || "⭐",
       {
-        fontSize: "72px"
+        fontSize: "74px"
       }
     ).setOrigin(0.5);
 
     const name = this.scene.add.text(
       0,
       20,
-      piece.name,
+      piece?.name || "Academy Piece",
       {
         fontSize: "29px",
         fontStyle: "bold",
@@ -607,22 +962,32 @@ class LessonEngine {
       }
     ).setOrigin(0.5);
 
+    const message = reviewMode
+      ? "Review Mode does not add a duplicate piece."
+      : "This piece has been added to your Builder Pack.";
+
     const body = this.scene.add.text(
       0,
-      82,
+      85,
       message,
       {
         fontSize: "21px",
         fontStyle: "bold",
-        color: "#102342"
+        color: "#102342",
+        align: "center",
+        wordWrap: {
+          width: 620
+        }
       }
     ).setOrigin(0.5);
 
     const continueButton =
       this.scene.panels.makeButton(
         0,
-        170,
-        "Add to Builder Pack",
+        175,
+        reviewMode
+          ? "Continue Review"
+          : "Add to Builder Pack",
         callback
       );
 
@@ -635,180 +1000,14 @@ class LessonEngine {
         continueButton
       ],
       {
-        width: 720,
-        height: 500
-      }
-    );
-  }
-
-  startStory(){
-    this.setSection("story");
-    this.storyPage = 0;
-    this.showStoryPage();
-  }
-
-  showStoryPage(){
-    const story = this.lesson.story;
-
-    if(this.storyPage >= story.pages.length){
-      this.questionIndex = 0;
-      this.showStoryQuestion();
-      return;
-    }
-
-    const page = story.pages[this.storyPage];
-
-    const pageLabel = this.scene.add.text(
-      0,
-      -205,
-      `${story.title} — Page ${this.storyPage + 1}`,
-      {
-        fontSize: "21px",
-        fontStyle: "bold",
-        color: "#46566f"
-      }
-    ).setOrigin(0.5);
-
-    const storyText = this.scene.add.text(
-      0,
-      -25,
-      this.replaceName(page.text),
-      {
-        fontSize: "31px",
-        fontStyle: "bold",
-        color: "#102342",
-        align: "center",
-        lineSpacing: 10,
-        wordWrap: {
-          width: 670
-        }
-      }
-    ).setOrigin(0.5);
-
-    const readButton =
-      this.scene.panels.makeButton(
-        -150,
-        190,
-        "Read Again",
-        () => {
-          this.speakText(
-            this.replaceName(page.text)
-          );
-        },
-        {
-          backgroundColor: "#ffffff"
-        }
-      );
-
-    const nextButton =
-      this.scene.panels.makeButton(
-        150,
-        190,
-        this.storyPage ===
-          story.pages.length - 1
-          ? "Story Check"
-          : "Next Page",
-        () => {
-          this.storyPage++;
-          this.showStoryPage();
-        }
-      );
-
-    this.scene.panels.open(
-      [
-        pageLabel,
-        storyText,
-        readButton,
-        nextButton
-      ],
-      {
-        width: 800,
+        width: 750,
         height: 520
       }
     );
   }
 
-  showStoryQuestion(){
-    const story = this.lesson.story;
-    const question =
-      story.questions[this.questionIndex];
-
-    if(!question){
-      this.rewardPiece(
-        story.rewardPiece,
-        "You understood the story!",
-        () => this.showAlphabetSong()
-      );
-      return;
-    }
-
-    const title = this.scene.add.text(
-      0,
-      -185,
-      "Story Check",
-      {
-        fontSize: "32px",
-        fontStyle: "bold",
-        color: "#102342"
-      }
-    ).setOrigin(0.5);
-
-    const prompt = this.scene.add.text(
-      0,
-      -90,
-      question.prompt,
-      {
-        fontSize: "27px",
-        fontStyle: "bold",
-        color: "#102342",
-        align: "center"
-      }
-    ).setOrigin(0.5);
-
-    const objects = [title, prompt];
-    const yPositions = [25, 90, 155];
-
-    question.options.forEach(
-      (option, optionIndex) => {
-        const button =
-          this.scene.panels.makeButton(
-            0,
-            yPositions[optionIndex],
-            option,
-            () => {
-              if(option === question.answer){
-                this.questionIndex++;
-
-                this.showCorrectAnswer(
-                  "Correct!",
-                  option,
-                  () => this.showStoryQuestion()
-                );
-              }else{
-                this.showTryAgain(
-                  () => this.showStoryQuestion()
-                );
-              }
-            },
-            {
-              fontSize: "21px"
-            }
-          );
-
-        objects.push(button);
-      }
-    );
-
-    this.scene.panels.open(
-      objects,
-      {
-        width: 760,
-        height: 530
-      }
-    );
-  }
-
   showAlphabetSong(){
+
     this.setSection("alphabet-song");
 
     const song =
@@ -817,9 +1016,10 @@ class LessonEngine {
     const title = this.scene.add.text(
       0,
       -190,
-      "Music Box Unlocked!",
+      song?.title ||
+        "Fritz Academy Alphabet Song",
       {
-        fontSize: "35px",
+        fontSize: "34px",
         fontStyle: "bold",
         color: "#102342"
       }
@@ -830,40 +1030,49 @@ class LessonEngine {
       -95,
       "🎵",
       {
-        fontSize: "70px"
+        fontSize: "72px"
       }
     ).setOrigin(0.5);
 
     const body = this.scene.add.text(
       0,
-      0,
-      song.rewardMessage +
-      "\n\nSing the alphabet with Captain Fritz.",
+      5,
+      (
+        song?.rewardMessage ||
+        "The Academy Music Box is ready!"
+      ) +
+      "\n\nSing the alphabet with the Academy cast.",
       {
-        fontSize: "25px",
+        fontSize: "24px",
         fontStyle: "bold",
         color: "#102342",
-        align: "center"
+        align: "center",
+        wordWrap: {
+          width: 650
+        }
       }
     ).setOrigin(0.5);
 
-    const play = this.scene.panels.makeButton(
-      -155,
-      175,
-      "Play Song",
-      () => this.playMedia(
-        song.videoPath,
-        song.assetPath
-      )
-    );
+    const play =
+      this.scene.panels.makeButton(
+        -160,
+        180,
+        "Play Song",
+        () => this.playMedia(
+          song?.videoPath,
+          song?.assetPath
+        )
+      );
 
     const continueButton =
       this.scene.panels.makeButton(
-        155,
-        175,
+        160,
+        180,
         "Continue",
         () => {
+
           this.stopMedia();
+
           this.showPhonics();
         }
       );
@@ -877,21 +1086,24 @@ class LessonEngine {
         continueButton
       ],
       {
-        width: 780,
-        height: 520
+        width: 800,
+        height: 530
       }
     );
   }
 
   showPhonics(){
+
     this.stopMedia();
+
     this.setSection("phonics");
 
-    const phonics = this.lesson.phonics;
+    const phonics =
+      this.lesson.phonics;
 
     const title = this.scene.add.text(
       0,
-      -210,
+      -215,
       "Phonics Workshop",
       {
         fontSize: "33px",
@@ -902,61 +1114,88 @@ class LessonEngine {
 
     const letters = this.scene.add.text(
       0,
-      -110,
+      -125,
       `${phonics.letterUpper}   ${phonics.letterLower}`,
       {
-        fontSize: "86px",
+        fontSize: "84px",
         fontStyle: "bold",
         color: "#174ea6"
       }
     ).setOrigin(0.5);
 
+    const sound = this.scene.add.text(
+      0,
+      -48,
+      phonics.soundLabel || "",
+      {
+        fontSize: "24px",
+        fontStyle: "bold",
+        color: "#b5462d"
+      }
+    ).setOrigin(0.5);
+
     const cue = this.scene.add.text(
       0,
-      -20,
+      5,
       phonics.teacherCue,
       {
-        fontSize: "23px",
+        fontSize: "22px",
+        fontStyle: "bold",
+        color: "#102342",
+        align: "center",
+        wordWrap: {
+          width: 670
+        }
+      }
+    ).setOrigin(0.5);
+
+    const examples = phonics.examples
+      .map(
+        example =>
+          `${example.icon} ${example.word}`
+      )
+      .join("        ");
+
+    const exampleText = this.scene.add.text(
+      0,
+      78,
+      examples,
+      {
+        fontSize: "25px",
         fontStyle: "bold",
         color: "#102342",
         align: "center"
       }
     ).setOrigin(0.5);
 
-    const examples = phonics.examples
-      .map(example =>
-        `${example.icon} ${example.word}`
-      )
-      .join("      ");
+    const hear =
+      this.scene.panels.makeButton(
+        -165,
+        195,
+        "Hear the Sound",
+        () => {
 
-    const examplesText = this.scene.add.text(
-      0,
-      65,
-      examples,
-      {
-        fontSize: "26px",
-        fontStyle: "bold",
-        color: "#102342"
-      }
-    ).setOrigin(0.5);
+          const exampleWords =
+            phonics.examples
+              .map(example => example.word)
+              .join(". ");
 
-    const hear = this.scene.panels.makeButton(
-      -155,
-      185,
-      "Hear the Sound",
-      () => this.speakText(
-        "A. Short a. Apple. Ant. Map."
-      ),
-      {
-        backgroundColor: "#ffffff"
-      }
-    );
+          this.speakText(
+            `${phonics.letterUpper}. ` +
+            `${phonics.soundLabel}. ` +
+            `${exampleWords}.`
+          );
+        },
+        {
+          backgroundColor: "#ffffff"
+        }
+      );
 
     const practice =
       this.scene.panels.makeButton(
-        155,
-        185,
-        "Letter Game",
+        165,
+        195,
+        "Start Letter Game",
         () => this.showPhonicsQuestion(0)
       );
 
@@ -964,74 +1203,101 @@ class LessonEngine {
       [
         title,
         letters,
+        sound,
         cue,
-        examplesText,
+        exampleText,
         hear,
         practice
       ],
       {
-        width: 820,
-        height: 540
+        width: 850,
+        height: 560
       }
     );
   }
 
   showPhonicsQuestion(index){
-    const phonics = this.lesson.phonics;
+
+    const phonics =
+      this.lesson.phonics;
 
     const questions = [
       phonics.recognitionQuestion,
-      phonics.lowercaseQuestion
-    ];
+      phonics.lowercaseQuestion,
+      phonics.wordQuestion
+    ].filter(Boolean);
 
-    const question = questions[index];
+    const question =
+      questions[index];
 
     if(!question){
-      this.rewardPiece(
+
+      this.earnPiece(
+        phonics.rewardPiece
+      );
+
+      this.showReward(
         phonics.rewardPiece,
-        "You learned uppercase A and lowercase a!",
         () => this.startReader(
           this.lesson.reader1,
           1
         )
       );
+
       return;
     }
 
     const title = this.scene.add.text(
       0,
-      -165,
-      "Find the Letter",
+      -175,
+      index < 2
+        ? "Find the Letter"
+        : "Find the Sound",
       {
-        fontSize: "34px",
+        fontSize: "33px",
         fontStyle: "bold",
-        color: "#102342"
+        color: "#174ea6"
       }
     ).setOrigin(0.5);
 
     const prompt = this.scene.add.text(
       0,
-      -75,
+      -80,
       question.prompt,
       {
         fontSize: "27px",
         fontStyle: "bold",
-        color: "#102342"
+        color: "#102342",
+        align: "center",
+        wordWrap: {
+          width: 650
+        }
       }
     ).setOrigin(0.5);
 
-    const objects = [title, prompt];
-    const xPositions = [-180, 0, 180];
+    const objects = [
+      title,
+      prompt
+    ];
+
+    const xPositions =
+      this.choicePositions(
+        question.options.length,
+        210
+      );
 
     question.options.forEach(
       (option, optionIndex) => {
+
         const button =
           this.scene.panels.makeButton(
             xPositions[optionIndex],
-            75,
+            80,
             option,
             () => {
+
               if(option === question.answer){
+
                 this.showCorrectAnswer(
                   "Correct!",
                   option,
@@ -1039,7 +1305,9 @@ class LessonEngine {
                     index + 1
                   )
                 );
+
               }else{
+
                 this.showTryAgain(
                   () => this.showPhonicsQuestion(
                     index
@@ -1048,10 +1316,13 @@ class LessonEngine {
               }
             },
             {
-              fontSize: "42px",
+              fontSize:
+                index < 2
+                  ? "39px"
+                  : "22px",
               padding: {
-                x: 30,
-                y: 18
+                x: 26,
+                y: 16
               }
             }
           );
@@ -1063,39 +1334,56 @@ class LessonEngine {
     this.scene.panels.open(
       objects,
       {
-        width: 760,
-        height: 450
+        width: 810,
+        height: 470
       }
     );
   }
 
   startReader(reader, number){
-    this.setSection(`reader-${number}`);
+
+    this.setSection(
+      `reader-${number}`
+    );
+
     this.activeReader = reader;
     this.activeReaderNumber = number;
     this.readerPage = 0;
+
     this.showReaderPage();
   }
 
   showReaderPage(){
-    const reader = this.activeReader;
 
-    if(this.readerPage >= reader.pages.length){
+    const reader =
+      this.activeReader;
+
+    if(
+      this.readerPage >=
+      reader.pages.length
+    ){
+
       this.showReaderCheck();
+
       return;
     }
 
+    const page =
+      reader.pages[this.readerPage];
+
     const pageText =
-      this.replaceName(
-        reader.pages[this.readerPage]
-      );
+      typeof page === "string"
+        ? this.replaceName(page)
+        : this.replaceName(
+            page.text || ""
+          );
 
     const title = this.scene.add.text(
       0,
-      -205,
+      -210,
       reader.title,
       {
-        fontSize: "28px",
+        fontSize: "29px",
         fontStyle: "bold",
         color: "#102342"
       }
@@ -1103,80 +1391,125 @@ class LessonEngine {
 
     const level = this.scene.add.text(
       0,
-      -160,
-      `${reader.level} Reader — Page ${this.readerPage + 1}`,
+      -165,
+      `${reader.level} Reader — Page ${this.readerPage + 1} of ${reader.pages.length}`,
       {
-        fontSize: "19px",
+        fontSize: "18px",
         fontStyle: "bold",
-        color: "#46566f"
+        color: "#5b677a"
       }
     ).setOrigin(0.5);
 
-    const sentence = this.scene.add.text(
-      0,
-      -15,
-      pageText,
-      {
-        fontSize: "38px",
-        fontStyle: "bold",
-        color: "#102342",
-        align: "center",
-        wordWrap: {
-          width: 680
+    const imagePath =
+      typeof page === "object"
+        ? page.image
+        : "";
+
+    const imageFrame =
+      this.scene.add.rectangle(
+        0,
+        -40,
+        500,
+        205,
+        0xe8f5e9,
+        1
+      )
+      .setStrokeStyle(
+        4,
+        0x174ea6
+      );
+
+    const imageLabel =
+      this.scene.add.text(
+        0,
+        -40,
+        imagePath
+          ? "Reader Illustration"
+          : "Fritz Academy Story Scene",
+        {
+          fontSize: "22px",
+          fontStyle: "bold",
+          color: "#174ea6",
+          align: "center"
         }
-      }
-    ).setOrigin(0.5);
+      )
+      .setOrigin(0.5);
 
-    const hear = this.scene.panels.makeButton(
-      -155,
-      190,
-      "Hear It",
-      () => this.speakText(pageText),
-      {
-        backgroundColor: "#ffffff"
-      }
-    );
+    const sentence =
+      this.scene.add.text(
+        0,
+        105,
+        pageText,
+        {
+          fontSize: "31px",
+          fontStyle: "bold",
+          color: "#102342",
+          align: "center",
+          lineSpacing: 8,
+          wordWrap: {
+            width: 680
+          }
+        }
+      )
+      .setOrigin(0.5);
 
-    const next = this.scene.panels.makeButton(
-      155,
-      190,
-      this.readerPage ===
-        reader.pages.length - 1
-        ? "Reader Check"
-        : "Next Page",
-      () => {
-        this.readerPage++;
-        this.showReaderPage();
-      }
-    );
+    const hear =
+      this.scene.panels.makeButton(
+        -165,
+        220,
+        "Hear It",
+        () => this.speakText(
+          pageText
+        ),
+        {
+          backgroundColor: "#ffffff"
+        }
+      );
+
+    const next =
+      this.scene.panels.makeButton(
+        165,
+        220,
+        this.readerPage ===
+          reader.pages.length - 1
+          ? "Reader Challenge"
+          : "Next Page",
+        () => {
+
+          this.readerPage++;
+
+          this.showReaderPage();
+        }
+      );
 
     this.scene.panels.open(
       [
         title,
         level,
+        imageFrame,
+        imageLabel,
         sentence,
         hear,
         next
       ],
       {
-        width: 800,
-        height: 520
+        width: 850,
+        height: 620
       }
     );
-  }
+  }  showReaderCheck(){
 
-  showReaderCheck(){
     const reader = this.activeReader;
     const check = reader.check;
 
     const title = this.scene.add.text(
       0,
-      -175,
-      "Reader Check",
+      -180,
+      `${reader.title} Challenge`,
       {
-        fontSize: "33px",
+        fontSize: "31px",
         fontStyle: "bold",
-        color: "#102342"
+        color: "#174ea6"
       }
     ).setOrigin(0.5);
 
@@ -1185,46 +1518,83 @@ class LessonEngine {
       -85,
       check.prompt,
       {
-        fontSize: "26px",
+        fontSize: "27px",
         fontStyle: "bold",
-        color: "#102342"
+        color: "#102342",
+        align: "center",
+        wordWrap: {
+          width: 650
+        }
       }
     ).setOrigin(0.5);
 
-    const objects = [title, prompt];
-    const yPositions = [25, 90, 155];
+    const objects = [
+      title,
+      prompt
+    ];
+
+    const yPositions = [
+      25,
+      95,
+      165
+    ];
 
     check.options.forEach(
       (option, optionIndex) => {
+
         const button =
           this.scene.panels.makeButton(
             0,
             yPositions[optionIndex],
             option,
             () => {
+
               if(option === check.answer){
-                this.rewardPiece(
-                  reader.rewardPiece,
-                  "Reader complete!",
+
+                this.earnPiece(
+                  reader.rewardPiece
+                );
+
+                this.showCorrectAnswer(
+                  "Correct!",
+                  option,
                   () => {
-                    if(this.activeReaderNumber === 1){
-                      this.startReader(
-                        this.lesson.reader2,
-                        2
-                      );
-                    }else{
-                      this.showBuildWorkshop();
-                    }
+
+                    this.showReward(
+                      reader.rewardPiece,
+                      () => {
+
+                        if(
+                          this.activeReaderNumber === 1
+                        ){
+
+                          this.startReader(
+                            this.lesson.reader2,
+                            2
+                          );
+
+                        }else{
+
+                          this.showBuildWorkshop();
+                        }
+                      }
+                    );
                   }
                 );
+
               }else{
+
                 this.showTryAgain(
                   () => this.showReaderCheck()
                 );
               }
             },
             {
-              fontSize: "21px"
+              fontSize: "21px",
+              padding: {
+                x: 22,
+                y: 9
+              }
             }
           );
 
@@ -1235,144 +1605,602 @@ class LessonEngine {
     this.scene.panels.open(
       objects,
       {
-        width: 760,
-        height: 530
-      }
-    );
-  }
-
-  showBuildWorkshop(){
-    this.setSection("build");
-
-    const required =
-      this.lesson.build.requiredPieces;
-
-    const earned =
-      this.progress().earnedPieces;
-
-    const pieceMap = {
-      flowers: "🌼 Flowers",
-      path: "🪨 Path",
-      bench: "🪑 Bench",
-      tree: "🌳 Tree",
-      fence: "🪵 Fence"
-    };
-
-    const pieceList = required
-      .map(pieceId => {
-        const marker = earned.includes(pieceId)
-          ? "✅"
-          : "⬜";
-
-        return `${marker} ${pieceMap[pieceId]}`;
-      })
-      .join("\n");
-
-    const title = this.scene.add.text(
-      0,
-      -210,
-      "Build the Welcome Garden",
-      {
-        fontSize: "33px",
-        fontStyle: "bold",
-        color: "#102342"
-      }
-    ).setOrigin(0.5);
-
-    const list = this.scene.add.text(
-      -120,
-      -35,
-      pieceList,
-      {
-        fontSize: "25px",
-        fontStyle: "bold",
-        color: "#102342",
-        lineSpacing: 12
-      }
-    ).setOrigin(0.5);
-
-    const directions = this.scene.add.text(
-      220,
-      -30,
-      "You earned every piece.\n\nNow put the garden together!",
-      {
-        fontSize: "23px",
-        fontStyle: "bold",
-        color: "#174ea6",
-        align: "center",
-        wordWrap: {
-          width: 290
-        }
-      }
-    ).setOrigin(0.5);
-
-    const build = this.scene.panels.makeButton(
-      0,
-      205,
-      "Build My Garden",
-      () => this.completeGarden()
-    );
-
-    this.scene.panels.open(
-      [
-        title,
-        list,
-        directions,
-        build
-      ],
-      {
-        width: 820,
+        width: 790,
         height: 550
       }
     );
   }
 
+  getAllEarnedPieces(){
+
+    const allPieces = [];
+
+    Object.values(
+      this.scene.save.lessonProgress || {}
+    ).forEach(progress => {
+
+      if(
+        Array.isArray(
+          progress.earnedPieces
+        )
+      ){
+
+        progress.earnedPieces.forEach(
+          pieceId => {
+
+            if(
+              !allPieces.includes(pieceId)
+            ){
+
+              allPieces.push(pieceId);
+            }
+          }
+        );
+      }
+    });
+
+    return allPieces;
+  }
+
+  getPieceDefinition(pieceId){
+
+    const collected =
+      this.scene.save.collected || {};
+
+    if(collected[pieceId]){
+
+      return collected[pieceId];
+    }
+
+    const lessonPieces = [
+      this.lesson.conversationActivity
+        ?.rewardPiece,
+      this.lesson.feelingsActivity
+        ?.rewardPiece,
+      this.lesson.story
+        ?.rewardPiece,
+      this.lesson.phonics
+        ?.rewardPiece,
+      this.lesson.reader1
+        ?.rewardPiece,
+      this.lesson.reader2
+        ?.rewardPiece
+    ].filter(Boolean);
+
+    return (
+      lessonPieces.find(
+        piece => piece.id === pieceId
+      ) || {
+        id: pieceId,
+        name: pieceId,
+        icon: "⭐"
+      }
+    );
+  }
+
+  ensureBuildArea(){
+
+    const save =
+      this.scene.save;
+
+    const areaId =
+      this.lesson.build?.areaId ||
+      this.lesson.buildArea ||
+      "welcome-garden";
+
+    if(!save.placedBuilds){
+
+      save.placedBuilds = {};
+    }
+
+    if(!save.placedBuilds[areaId]){
+
+      save.placedBuilds[areaId] = {};
+    }
+
+    return {
+      areaId,
+      placed:
+        save.placedBuilds[areaId]
+    };
+  }
+
+  showBuildWorkshop(){
+
+    this.setSection("build");
+
+    const build =
+      this.lesson.build;
+
+    const required =
+      build.requiredPieces || [];
+
+    const earned =
+      this.progress().earnedPieces || [];
+
+    const title =
+      this.scene.add.text(
+        0,
+        -220,
+        build.title ||
+          "Build Your Academy",
+        {
+          fontSize: "32px",
+          fontStyle: "bold",
+          color: "#102342"
+        }
+      )
+      .setOrigin(0.5);
+
+    const directions =
+      this.scene.add.text(
+        0,
+        -170,
+        "Choose a piece from the Builder Pack.\nThen click inside the garden to place it.",
+        {
+          fontSize: "21px",
+          fontStyle: "bold",
+          color: "#174ea6",
+          align: "center",
+          wordWrap: {
+            width: 690
+          }
+        }
+      )
+      .setOrigin(0.5);
+
+    const packBackground =
+      this.scene.add.rectangle(
+        -265,
+        25,
+        245,
+        355,
+        0xf5ead3,
+        1
+      )
+      .setStrokeStyle(
+        4,
+        0x102342
+      );
+
+    const gardenBackground =
+      this.scene.add.rectangle(
+        145,
+        25,
+        525,
+        355,
+        0x88c96b,
+        1
+      )
+      .setStrokeStyle(
+        5,
+        0x102342
+      )
+      .setInteractive({
+        useHandCursor: true
+      });
+
+    const sky =
+      this.scene.add.rectangle(
+        145,
+        -80,
+        515,
+        135,
+        0x9edcff,
+        1
+      );
+
+    const grassLabel =
+      this.scene.add.text(
+        145,
+        -125,
+        "Nick's Welcome Garden",
+        {
+          fontSize: "23px",
+          fontStyle: "bold",
+          color: "#102342"
+        }
+      )
+      .setOrigin(0.5);
+
+    const packTitle =
+      this.scene.add.text(
+        -265,
+        -125,
+        "Builder Pack",
+        {
+          fontSize: "24px",
+          fontStyle: "bold",
+          color: "#102342"
+        }
+      )
+      .setOrigin(0.5);
+
+    const objects = [
+      title,
+      directions,
+      packBackground,
+      gardenBackground,
+      sky,
+      grassLabel,
+      packTitle
+    ];
+
+    this.buildObjects = [];
+
+    const buildState =
+      this.ensureBuildArea();
+
+    const allEarnedPieces =
+      this.getAllEarnedPieces();
+
+    const availablePieces =
+      required.filter(
+        pieceId =>
+          earned.includes(pieceId) ||
+          allEarnedPieces.includes(pieceId)
+      );
+
+    availablePieces.forEach(
+      (pieceId, index) => {
+
+        const piece =
+          this.getPieceDefinition(
+            pieceId
+          );
+
+        const y =
+          -70 + index * 58;
+
+        const button =
+          this.scene.panels.makeButton(
+            -265,
+            y,
+            `${piece.icon} ${piece.name}`,
+            () => {
+
+              this.selectedBuildPiece =
+                pieceId;
+
+              this.showBuildSelectionMessage(
+                piece
+              );
+            },
+            {
+              fontSize: "16px",
+              padding: {
+                x: 10,
+                y: 7
+              },
+              backgroundColor:
+                buildState.placed[pieceId]
+                  ? "#d7f0d2"
+                  : "#ffffff"
+            }
+          );
+
+        objects.push(button);
+      }
+    );
+
+    Object.entries(
+      buildState.placed
+    ).forEach(
+      ([pieceId, position]) => {
+
+        const piece =
+          this.getPieceDefinition(
+            pieceId
+          );
+
+        const placedIcon =
+          this.scene.add.text(
+            position.x,
+            position.y,
+            piece.icon,
+            {
+              fontSize: "52px"
+            }
+          )
+          .setOrigin(0.5)
+          .setInteractive({
+            useHandCursor: true
+          });
+
+        placedIcon.on(
+          "pointerdown",
+          () => {
+
+            if(this.isReviewMode()){
+
+              return;
+            }
+
+            this.selectedBuildPiece =
+              pieceId;
+
+            delete buildState.placed[
+              pieceId
+            ];
+
+            saveGame(
+              this.scene.save
+            );
+
+            this.showBuildWorkshop();
+          }
+        );
+
+        this.buildObjects.push(
+          placedIcon
+        );
+
+        objects.push(
+          placedIcon
+        );
+      }
+    );
+
+    gardenBackground.on(
+      "pointerdown",
+      pointer => {
+
+        if(this.isReviewMode()){
+
+          return;
+        }
+
+        if(!this.selectedBuildPiece){
+
+          this.scene.panels.message(
+            "Choose a Piece",
+            "Select an item from the Builder Pack first."
+          );
+
+          return;
+        }
+
+        const localX =
+          Phaser.Math.Clamp(
+            pointer.worldX - 640,
+            -95,
+            385
+          );
+
+        const localY =
+          Phaser.Math.Clamp(
+            pointer.worldY - 360,
+            -40,
+            165
+          );
+
+        buildState.placed[
+          this.selectedBuildPiece
+        ] = {
+          x: localX,
+          y: localY
+        };
+
+        this.selectedBuildPiece =
+          null;
+
+        saveGame(
+          this.scene.save
+        );
+
+        this.showBuildWorkshop();
+      }
+    );
+
+    const placedCount =
+      required.filter(
+        pieceId =>
+          Boolean(
+            buildState.placed[
+              pieceId
+            ]
+          )
+      ).length;
+
+    const counter =
+      this.scene.add.text(
+        145,
+        175,
+        `${placedCount} of ${required.length} lesson pieces placed`,
+        {
+          fontSize: "19px",
+          fontStyle: "bold",
+          color: "#102342"
+        }
+      )
+      .setOrigin(0.5);
+
+    objects.push(counter);
+
+    const finishButton =
+      this.scene.panels.makeButton(
+        145,
+        225,
+        this.isReviewMode()
+          ? "Finish Review"
+          : "Save My Garden",
+        () => {
+
+          if(
+            !this.isReviewMode() &&
+            placedCount <
+              required.length
+          ){
+
+            this.scene.panels.message(
+              "Keep Building",
+              "Place all five lesson pieces before finishing."
+            );
+
+            return;
+          }
+
+          this.completeGarden();
+        }
+      );
+
+    objects.push(finishButton);
+
+    this.scene.panels.open(
+      objects,
+      {
+        width: 940,
+        height: 650
+      }
+    );
+  }
+
+  showBuildSelectionMessage(piece){
+
+    const title =
+      this.scene.add.text(
+        0,
+        -70,
+        piece.icon,
+        {
+          fontSize: "65px"
+        }
+      )
+      .setOrigin(0.5);
+
+    const body =
+      this.scene.add.text(
+        0,
+        20,
+        `${piece.name}\n\nNow click inside the garden to place it.`,
+        {
+          fontSize: "24px",
+          fontStyle: "bold",
+          color: "#102342",
+          align: "center",
+          wordWrap: {
+            width: 560
+          }
+        }
+      )
+      .setOrigin(0.5);
+
+    const close =
+      this.scene.panels.makeButton(
+        0,
+        125,
+        "Place It",
+        () => {
+
+          this.scene.panels.close();
+
+          this.showBuildWorkshop();
+        }
+      );
+
+    this.scene.panels.open(
+      [
+        title,
+        body,
+        close
+      ],
+      {
+        width: 650,
+        height: 370
+      }
+    );
+  }
+
   completeGarden(){
-    const save = this.scene.save;
+
+    const save =
+      this.scene.save;
+
+    const areaId =
+      this.lesson.build?.areaId ||
+      "welcome-garden";
 
     if(!save.academyBuilds){
+
       save.academyBuilds = {};
     }
 
-    save.academyBuilds.welcomeGarden = true;
+    if(!save.academyBuilds[areaId]){
+
+      save.academyBuilds[areaId] = {
+        completedStages: []
+      };
+    }
+
+    const stage =
+      this.lesson.build?.stage ||
+      this.lesson.buildStage ||
+      1;
+
+    if(
+      !save.academyBuilds[
+        areaId
+      ].completedStages.includes(
+        stage
+      )
+    ){
+
+      save.academyBuilds[
+        areaId
+      ].completedStages.push(
+        stage
+      );
+    }
+
     saveGame(save);
 
-    const title = this.scene.add.text(
-      0,
-      -185,
-      "Welcome Garden Complete!",
-      {
-        fontSize: "34px",
-        fontStyle: "bold",
-        color: "#102342"
-      }
-    ).setOrigin(0.5);
+    const title =
+      this.scene.add.text(
+        0,
+        -165,
+        "Garden Progress Saved!",
+        {
+          fontSize: "35px",
+          fontStyle: "bold",
+          color: "#102342"
+        }
+      )
+      .setOrigin(0.5);
 
-    const garden = this.scene.add.text(
-      0,
-      -50,
-      "🌳   🌼   🪨   🪑   🌼   🪵",
-      {
-        fontSize: "55px"
-      }
-    ).setOrigin(0.5);
+    const garden =
+      this.scene.add.text(
+        0,
+        -55,
+        "🌳  🌼  🪨  🪑  🌷  🏮  🐦",
+        {
+          fontSize: "52px"
+        }
+      )
+      .setOrigin(0.5);
 
-    const body = this.scene.add.text(
-      0,
-      70,
-      this.lesson.build.completionMessage,
-      {
-        fontSize: "24px",
-        fontStyle: "bold",
-        color: "#174ea6",
-        align: "center"
-      }
-    ).setOrigin(0.5);
+    const body =
+      this.scene.add.text(
+        0,
+        65,
+        this.lesson.build
+          ?.completionMessage ||
+          "Your Academy build has been saved.",
+        {
+          fontSize: "23px",
+          fontStyle: "bold",
+          color: "#174ea6",
+          align: "center",
+          wordWrap: {
+            width: 650
+          }
+        }
+      )
+      .setOrigin(0.5);
 
-    const continueButton =
+    const next =
       this.scene.panels.makeButton(
         0,
-        180,
+        170,
         "Mission Debrief",
         () => this.showDebrief()
       );
@@ -1382,55 +2210,65 @@ class LessonEngine {
         title,
         garden,
         body,
-        continueButton
+        next
       ],
       {
-        width: 800,
-        height: 520
+        width: 790,
+        height: 500
       }
     );
-  }
+  }  showDebrief(){
 
-  showDebrief(){
     this.setSection("debrief");
 
-    const title = this.scene.add.text(
-      0,
-      -190,
-      "Captain Fritz's Mission Debrief",
-      {
-        fontSize: "31px",
-        fontStyle: "bold",
-        color: "#102342"
-      }
-    ).setOrigin(0.5);
+    const phonics =
+      this.lesson.phonics;
 
-    const body = this.scene.add.text(
-      0,
-      -15,
-      `Great work, ${this.studentName}!\n\n` +
-      "Today you learned to say hello,\n" +
-      "tell someone your name,\n" +
-      "talk about your feelings,\n" +
-      "and read the letter A.\n\n" +
-      "You also built the Welcome Garden!",
-      {
-        fontSize: "24px",
-        fontStyle: "bold",
-        color: "#102342",
-        align: "center",
-        lineSpacing: 8,
-        wordWrap: {
-          width: 680
+    const title =
+      this.scene.add.text(
+        0,
+        -195,
+        "Captain Fritz's Mission Debrief",
+        {
+          fontSize: "31px",
+          fontStyle: "bold",
+          color: "#102342"
         }
-      }
-    ).setOrigin(0.5);
+      )
+      .setOrigin(0.5);
+
+    const buildTitle =
+      this.lesson.build?.title ||
+      "your Academy build";
+
+    const body =
+      this.scene.add.text(
+        0,
+        -15,
+        `Great work, ${this.studentName}!\n\n` +
+        "Today you practiced speaking and listening,\n" +
+        "answered questions about the story,\n" +
+        `worked with the letter ${phonics?.letterUpper || ""},\n` +
+        "and read two different Academy stories.\n\n" +
+        `You also added five pieces to ${buildTitle}.`,
+        {
+          fontSize: "23px",
+          fontStyle: "bold",
+          color: "#102342",
+          align: "center",
+          lineSpacing: 8,
+          wordWrap: {
+            width: 690
+          }
+        }
+      )
+      .setOrigin(0.5);
 
     const continueButton =
       this.scene.panels.makeButton(
         0,
-        205,
-        "Hello & Goodbye Song",
+        210,
+        "Academy Closing",
         () => this.showClosingSong()
       );
 
@@ -1441,71 +2279,92 @@ class LessonEngine {
         continueButton
       ],
       {
-        width: 800,
-        height: 550
+        width: 820,
+        height: 570
       }
     );
   }
 
   showClosingSong(){
+
     this.setSection("closing-song");
 
     const song =
       this.lesson.closingSong;
 
-    const title = this.scene.add.text(
-      0,
-      -185,
-      song.title,
-      {
-        fontSize: "34px",
-        fontStyle: "bold",
-        color: "#102342"
-      }
-    ).setOrigin(0.5);
-
-    const icon = this.scene.add.text(
-      0,
-      -90,
-      "🎶",
-      {
-        fontSize: "72px"
-      }
-    ).setOrigin(0.5);
-
-    const body = this.scene.add.text(
-      0,
-      10,
-      song.rewardMessage,
-      {
-        fontSize: "24px",
-        fontStyle: "bold",
-        color: "#102342",
-        align: "center",
-        wordWrap: {
-          width: 650
+    const title =
+      this.scene.add.text(
+        0,
+        -185,
+        song?.title ||
+          "Fritz Academy Theme",
+        {
+          fontSize: "34px",
+          fontStyle: "bold",
+          color: "#102342"
         }
-      }
-    ).setOrigin(0.5);
-
-    const play = this.scene.panels.makeButton(
-      -155,
-      180,
-      "Play Song",
-      () => this.playMedia(
-        null,
-        song.assetPath
       )
-    );
+      .setOrigin(0.5);
+
+    const icon =
+      this.scene.add.text(
+        0,
+        -90,
+        "🎶",
+        {
+          fontSize: "72px"
+        }
+      )
+      .setOrigin(0.5);
+
+    const body =
+      this.scene.add.text(
+        0,
+        10,
+        song?.rewardMessage ||
+          "Your Academy progress has been saved.",
+        {
+          fontSize: "24px",
+          fontStyle: "bold",
+          color: "#102342",
+          align: "center",
+          wordWrap: {
+            width: 650
+          }
+        }
+      )
+      .setOrigin(0.5);
+
+    const play =
+      this.scene.panels.makeButton(
+        -165,
+        180,
+        "Play Theme",
+        () => this.playMedia(
+          song?.videoPath || null,
+          song?.assetPath || null
+        )
+      );
 
     const finish =
       this.scene.panels.makeButton(
-        155,
+        165,
         180,
-        "Finish Lesson",
+        this.isReviewMode()
+          ? "Finish Review"
+          : "Finish Lesson",
         () => {
+
           this.stopMedia();
-          this.completeLesson();
+
+          if(this.isReviewMode()){
+
+            this.finishReview();
+
+          }else{
+
+            this.completeLesson();
+          }
         }
       );
 
@@ -1518,85 +2377,155 @@ class LessonEngine {
         finish
       ],
       {
-        width: 780,
-        height: 510
+        width: 800,
+        height: 520
       }
     );
   }
 
   completeLesson(){
+
     this.stopMedia();
 
-    const save = this.scene.save;
-    const completion = this.lesson.completion;
+    const save =
+      this.scene.save;
 
-    if(!this.progress().completed){
-      this.progress().completed = true;
+    const completion =
+      this.lesson.completion || {};
 
-      save.completed[this.levelId] = true;
-      save.xp += completion.xp;
-      save.stars += completion.stars;
+    const progress =
+      this.progress();
+
+    if(!progress.completed){
+
+      progress.completed = true;
+
+      if(!save.completed){
+
+        save.completed = {};
+      }
+
+      save.completed[
+        this.levelId
+      ] = true;
+
+      save.xp =
+        (Number(save.xp) || 0) +
+        (Number(completion.xp) || 0);
+
+      save.stars =
+        (Number(save.stars) || 0) +
+        (Number(completion.stars) || 0);
+
+      if(!save.unlockedLevels){
+
+        save.unlockedLevels = [
+          "1-A"
+        ];
+      }
 
       if(
+        completion.unlocks &&
         !save.unlockedLevels.includes(
           completion.unlocks
         )
       ){
+
         save.unlockedLevels.push(
           completion.unlocks
         );
       }
 
-      save.currentLevel = completion.unlocks;
+      if(completion.unlocks){
+
+        save.currentLevel =
+          completion.unlocks;
+      }
+
+      save.currentCheckpoint =
+        "opening";
     }
 
-    saveGame(save);
+    progress.currentSection =
+      "complete";
+
+    save.reviewMode = false;
+
+    this.scene.save =
+      saveGame(save);
 
     if(this.scene.refreshHUD){
+
       this.scene.refreshHUD();
     }
 
-    const title = this.scene.add.text(
-      0,
-      -150,
-      "Level 1-A Complete!",
-      {
-        fontSize: "37px",
-        fontStyle: "bold",
-        color: "#102342"
-      }
-    ).setOrigin(0.5);
+    this.showCompletionScreen();
+  }
 
-    const reward = this.scene.add.text(
-      0,
-      -45,
-      "⭐ +1 Star     XP +25",
-      {
-        fontSize: "29px",
-        fontStyle: "bold",
-        color: "#174ea6"
-      }
-    ).setOrigin(0.5);
+  showCompletionScreen(){
 
-    const body = this.scene.add.text(
-      0,
-      55,
-      completion.message,
-      {
-        fontSize: "24px",
-        fontStyle: "bold",
-        color: "#102342",
-        align: "center"
-      }
-    ).setOrigin(0.5);
+    this.setSection("complete");
+
+    const completion =
+      this.lesson.completion || {};
+
+    const title =
+      this.scene.add.text(
+        0,
+        -165,
+        `Level ${this.levelId} Complete!`,
+        {
+          fontSize: "37px",
+          fontStyle: "bold",
+          color: "#102342"
+        }
+      )
+      .setOrigin(0.5);
+
+    const reward =
+      this.scene.add.text(
+        0,
+        -60,
+        `⭐ +${completion.stars || 0} Star     XP +${completion.xp || 0}`,
+        {
+          fontSize: "28px",
+          fontStyle: "bold",
+          color: "#174ea6"
+        }
+      )
+      .setOrigin(0.5);
+
+    const body =
+      this.scene.add.text(
+        0,
+        50,
+        completion.message ||
+          "Your lesson and Academy progress have been saved.",
+        {
+          fontSize: "24px",
+          fontStyle: "bold",
+          color: "#102342",
+          align: "center",
+          wordWrap: {
+            width: 650
+          }
+        }
+      )
+      .setOrigin(0.5);
 
     const returnButton =
       this.scene.panels.makeButton(
         0,
-        155,
+        165,
         "Return to Academy",
         () => {
+
           this.scene.panels.close();
+
+          if(this.scene.refreshHUD){
+
+            this.scene.refreshHUD();
+          }
         }
       );
 
@@ -1608,56 +2537,169 @@ class LessonEngine {
         returnButton
       ],
       {
-        width: 720,
-        height: 440
+        width: 750,
+        height: 460
+      }
+    );
+  }
+
+  finishReview(){
+
+    this.stopMedia();
+
+    this.scene.save.reviewMode =
+      false;
+
+    saveGame(
+      this.scene.save
+    );
+
+    const title =
+      this.scene.add.text(
+        0,
+        -105,
+        "Review Complete",
+        {
+          fontSize: "36px",
+          fontStyle: "bold",
+          color: "#102342"
+        }
+      )
+      .setOrigin(0.5);
+
+    const body =
+      this.scene.add.text(
+        0,
+        5,
+        "You reviewed this lesson.\n\nNo duplicate rewards or build pieces were added.",
+        {
+          fontSize: "24px",
+          fontStyle: "bold",
+          color: "#174ea6",
+          align: "center",
+          wordWrap: {
+            width: 610
+          }
+        }
+      )
+      .setOrigin(0.5);
+
+    const returnButton =
+      this.scene.panels.makeButton(
+        0,
+        130,
+        "Return to Academy",
+        () => {
+
+          this.scene.panels.close();
+        }
+      );
+
+    this.scene.panels.open(
+      [
+        title,
+        body,
+        returnButton
+      ],
+      {
+        width: 690,
+        height: 390
       }
     );
   }
 
   speakText(text){
-    if("speechSynthesis" in window){
-      window.speechSynthesis.cancel();
 
-      const utterance =
-        new SpeechSynthesisUtterance(text);
+    if(
+      !("speechSynthesis" in window)
+    ){
 
-      utterance.lang = "en-US";
-      utterance.rate = 0.82;
-      utterance.pitch = 1;
-
-      window.speechSynthesis.speak(
-        utterance
-      );
+      return;
     }
+
+    window.speechSynthesis.cancel();
+
+    const utterance =
+      new SpeechSynthesisUtterance(
+        String(text || "")
+      );
+
+    utterance.lang =
+      "en-US";
+
+    utterance.rate =
+      0.82;
+
+    utterance.pitch =
+      1;
+
+    window.speechSynthesis.speak(
+      utterance
+    );
   }
 
-  playMedia(videoPath, audioPath){
+  playMedia(
+    videoPath,
+    audioPath
+  ){
+
     this.stopMedia();
 
     if(videoPath){
+
       const video =
-        document.createElement("video");
+        document.createElement(
+          "video"
+        );
 
-      video.src = videoPath;
-      video.controls = true;
-      video.autoplay = true;
+      video.src =
+        videoPath;
 
-      video.style.position = "fixed";
-      video.style.left = "50%";
-      video.style.top = "50%";
+      video.controls =
+        true;
+
+      video.autoplay =
+        true;
+
+      video.playsInline =
+        true;
+
+      video.style.position =
+        "fixed";
+
+      video.style.left =
+        "50%";
+
+      video.style.top =
+        "50%";
+
       video.style.transform =
         "translate(-50%, -50%)";
-      video.style.width = "min(80vw, 900px)";
-      video.style.maxHeight = "78vh";
-      video.style.zIndex = "99999";
-      video.style.background = "#000";
+
+      video.style.width =
+        "min(86vw, 960px)";
+
+      video.style.maxHeight =
+        "80vh";
+
+      video.style.zIndex =
+        "99999";
+
+      video.style.background =
+        "#000000";
+
       video.style.border =
         "6px solid #f6c744";
-      video.style.borderRadius = "12px";
 
-      document.body.appendChild(video);
+      video.style.borderRadius =
+        "14px";
 
-      this.mediaElement = video;
+      document.body.appendChild(
+        video
+      );
+
+      this.mediaElement =
+        video;
 
       video.addEventListener(
         "ended",
@@ -1667,14 +2709,20 @@ class LessonEngine {
       video.addEventListener(
         "error",
         () => {
+
           this.stopMedia();
 
           if(audioPath){
-            this.playAudio(audioPath);
+
+            this.playAudio(
+              audioPath
+            );
+
           }else{
+
             this.scene.panels.message(
-              "Media Needed",
-              "Upload the completed song file to the matching assets folder."
+              "Media File Needed",
+              "Upload the matching video or audio file to the Fritz Academy assets folder."
             );
           }
         }
@@ -1684,29 +2732,69 @@ class LessonEngine {
     }
 
     if(audioPath){
-      this.playAudio(audioPath);
+
+      this.playAudio(
+        audioPath
+      );
+
+      return;
     }
+
+    this.scene.panels.message(
+      "Media File Needed",
+      "The lesson is ready, but this song file has not been uploaded yet."
+    );
   }
 
   playAudio(audioPath){
+
     const audio =
-      document.createElement("audio");
+      document.createElement(
+        "audio"
+      );
 
-    audio.src = audioPath;
-    audio.controls = true;
-    audio.autoplay = true;
+    audio.src =
+      audioPath;
 
-    audio.style.position = "fixed";
-    audio.style.left = "50%";
-    audio.style.bottom = "30px";
+    audio.controls =
+      true;
+
+    audio.autoplay =
+      true;
+
+    audio.style.position =
+      "fixed";
+
+    audio.style.left =
+      "50%";
+
+    audio.style.bottom =
+      "30px";
+
     audio.style.transform =
       "translateX(-50%)";
-    audio.style.width = "min(80vw, 700px)";
-    audio.style.zIndex = "99999";
 
-    document.body.appendChild(audio);
+    audio.style.width =
+      "min(82vw, 720px)";
 
-    this.mediaElement = audio;
+    audio.style.zIndex =
+      "99999";
+
+    audio.style.background =
+      "#ffffff";
+
+    audio.style.border =
+      "4px solid #f6c744";
+
+    audio.style.borderRadius =
+      "12px";
+
+    document.body.appendChild(
+      audio
+    );
+
+    this.mediaElement =
+      audio;
 
     audio.addEventListener(
       "ended",
@@ -1716,25 +2804,34 @@ class LessonEngine {
     audio.addEventListener(
       "error",
       () => {
+
         this.stopMedia();
 
         this.scene.panels.message(
           "Song File Needed",
-          "The lesson is ready, but the song file still needs to be uploaded to GitHub."
+          "Upload the completed song file to the matching assets folder."
         );
       }
     );
   }
 
   stopMedia(){
-    if("speechSynthesis" in window){
+
+    if(
+      "speechSynthesis" in window
+    ){
+
       window.speechSynthesis.cancel();
     }
 
     if(this.mediaElement){
+
       try{
+
         this.mediaElement.pause();
+
       }catch(error){
+
         console.warn(
           "Unable to pause media:",
           error
@@ -1742,7 +2839,9 @@ class LessonEngine {
       }
 
       this.mediaElement.remove();
-      this.mediaElement = null;
+
+      this.mediaElement =
+        null;
     }
   }
 }
