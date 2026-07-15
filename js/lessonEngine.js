@@ -48,7 +48,7 @@ class LessonEngine {
 
     this.resumeFromCheckpoint(checkpoint);
   }
-
+}
   ensureLessonSave(){
     const save = this.scene.save;
 
