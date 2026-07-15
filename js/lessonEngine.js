@@ -46,9 +46,8 @@ class LessonEngine {
       saveGame(this.scene.save);
     }
 
-       this.preloadLessonImages(() => {
-      this.resumeFromCheckpoint(checkpoint);
-    });
+    this.resumeFromCheckpoint(checkpoint);
+  }
 
   ensureLessonSave(){
     const save = this.scene.save;
@@ -82,7 +81,6 @@ class LessonEngine {
     save.currentLevel = this.levelId;
     saveGame(save);
   }
-
   progress(){
     return this.scene.save.lessonProgress[this.levelId];
   }
