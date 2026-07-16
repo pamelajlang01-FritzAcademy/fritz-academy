@@ -19,7 +19,12 @@ class LessonEngine {
   start(levelId, location = "Fritz Academy", options = {}){
     const lesson = findLevel(levelId);
 
-    if(!lesson || !lesson.story || !lesson.reader1 || !lesson.reader2){
+    if(
+      !lesson ||
+      !lesson.story ||
+      !lesson.reader1 ||
+      !lesson.reader2
+    ){
       this.scene.panels.message(
         "Adventure Locked",
         "This lesson is still being built."
@@ -34,21 +39,28 @@ class LessonEngine {
       this.scene.save.studentName ||
       "Academy Student";
 
-    this.scene.save.reviewMode = Boolean(options.reviewMode);
+    this.scene.save.reviewMode =
+      Boolean(options.reviewMode);
+
     this.ensureLessonSave();
 
     const checkpoint = options.restart
       ? "opening"
-      : this.progress().currentSection || "opening";
+      : (
+          this.progress().currentSection ||
+          "opening"
+        );
 
     if(options.restart){
-      this.progress().currentSection = "opening";
+      this.progress().currentSection =
+        "opening";
+
       saveGame(this.scene.save);
     }
 
     this.resumeFromCheckpoint(checkpoint);
   }
-}
+
   ensureLessonSave(){
     const save = this.scene.save;
 
