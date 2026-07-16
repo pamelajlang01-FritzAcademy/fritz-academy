@@ -432,7 +432,7 @@ const LEVELS = [
     }
   },
 
-  {
+    {
     id: "1-B",
     chapter: "Week 1",
     title: "How Was Your Week?",
@@ -617,8 +617,7 @@ const LEVELS = [
 
     /*
       This duplicate field keeps Lesson 1-B compatible
-      with the current Version 31 lesson engine until
-      the generalized Version 32 engine is installed.
+      with the current working lesson engine.
     */
     feelingsActivity: {
       title: "What Did You Do?",
@@ -664,44 +663,30 @@ const LEVELS = [
 
     story: {
       title: "Bear's Missing Backpack",
-      imageBasePath:
-        "assets/readers/lesson-1b/teacher-story",
       pages: [
         {
           text:
-            "Bear runs into the courtyard. His backpack is missing.",
-          image:
-            "assets/readers/lesson-1b/teacher-story/page-1.png"
+            "Bear runs into the courtyard. His backpack is missing."
         },
         {
           text:
-            "“I had it this morning,” Bear says.",
-          image:
-            "assets/readers/lesson-1b/teacher-story/page-2.png"
+            "“I had it this morning,” Bear says."
         },
         {
           text:
-            "Bash asks, “What did you do before you came here?”",
-          image:
-            "assets/readers/lesson-1b/teacher-story/page-3.png"
+            "Bash asks, “What did you do before you came here?”"
         },
         {
           text:
-            "Bear thinks. “I read a book near the garden.”",
-          image:
-            "assets/readers/lesson-1b/teacher-story/page-4.png"
+            "Bear thinks. “I read a book near the garden.”"
         },
         {
           text:
-            "The friends look beside the reading bench.",
-          image:
-            "assets/readers/lesson-1b/teacher-story/page-5.png"
+            "The friends look beside the reading bench."
         },
         {
           text:
-            "The backpack is under the bench. Bear smiles. “Thank you!”",
-          image:
-            "assets/readers/lesson-1b/teacher-story/page-6.png"
+            "The backpack is under the bench. Bear smiles. “Thank you!”"
         }
       ],
       questions: [
@@ -810,39 +795,12 @@ const LEVELS = [
     reader1: {
       title: "Reader 1: Tony Finds a Book",
       level: "Easy",
-      imageBasePath:
-        "assets/readers/lesson-1b/reader-1",
       pages: [
-        {
-          text:
-            "Tony walks beside the garden.",
-          image:
-            "assets/readers/lesson-1b/reader-1/page-1.png"
-        },
-        {
-          text:
-            "He sees a blue book.",
-          image:
-            "assets/readers/lesson-1b/reader-1/page-2.png"
-        },
-        {
-          text:
-            "The book is near a bush.",
-          image:
-            "assets/readers/lesson-1b/reader-1/page-3.png"
-        },
-        {
-          text:
-            "Tony picks up the book.",
-          image:
-            "assets/readers/lesson-1b/reader-1/page-4.png"
-        },
-        {
-          text:
-            "“This book belongs to Bear,” he says.",
-          image:
-            "assets/readers/lesson-1b/reader-1/page-5.png"
-        }
+        "Tony walks beside the garden.",
+        "He sees a blue book.",
+        "The book is near a bush.",
+        "Tony picks up the book.",
+        "“This book belongs to Bear,” he says."
       ],
       check: {
         prompt: "What does Tony find?",
@@ -866,45 +824,13 @@ const LEVELS = [
     reader2: {
       title: "Reader 2: The Clue in the Book",
       level: "Stretch",
-      imageBasePath:
-        "assets/readers/lesson-1b/reader-2",
       pages: [
-        {
-          text:
-            "Tony carries the blue book to Bear.",
-          image:
-            "assets/readers/lesson-1b/reader-2/page-1.png"
-        },
-        {
-          text:
-            "A small garden map falls from the pages.",
-          image:
-            "assets/readers/lesson-1b/reader-2/page-2.png"
-        },
-        {
-          text:
-            "The map shows a path, a bench, and a tall tree.",
-          image:
-            "assets/readers/lesson-1b/reader-2/page-3.png"
-        },
-        {
-          text:
-            "Rascal points to a mark beside the tree.",
-          image:
-            "assets/readers/lesson-1b/reader-2/page-4.png"
-        },
-        {
-          text:
-            "“Maybe this is our next garden clue,” Nola says.",
-          image:
-            "assets/readers/lesson-1b/reader-2/page-5.png"
-        },
-        {
-          text:
-            "The friends decide to follow the map next time.",
-          image:
-            "assets/readers/lesson-1b/reader-2/page-6.png"
-        }
+        "Tony carries the blue book to Bear.",
+        "A small garden map falls from the pages.",
+        "The map shows a path, a bench, and a tall tree.",
+        "Rascal points to a mark beside the tree.",
+        "“Maybe this is our next garden clue,” Nola says.",
+        "The friends decide to follow the map next time."
       ],
       check: {
         prompt:
