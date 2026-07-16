@@ -948,19 +948,19 @@ class LessonEngine {
       }
     ).setOrigin(0.5);
 
-    const hear = this.scene.panels.makeButton(
+        const hear = this.scene.panels.makeButton(
       -155,
       185,
       "Hear the Sound",
       () => this.speakText(
-        `${phonics.letterUpper}. ${phonics.soundLabel}. ${
-  phonics.examples.map(example => example.word).join(". ")
-}.`
+        `${phonics.letterUpper}. ${phonics.soundLabel}. ${phonics.examples
+          .map(example => example.word)
+          .join(". ")}.`
+      ),
       {
         backgroundColor: "#ffffff"
       }
     );
-
     const practice =
       this.scene.panels.makeButton(
         155,
