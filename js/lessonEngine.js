@@ -15,13 +15,21 @@ class LessonEngine {
   start(levelId, location = "Fritz Academy"){
     const lesson = findLevel(levelId);
 
-    if(!lesson || levelId !== "1-A"){
-      this.scene.panels.message(
-        "Adventure Locked",
-        "This adventure is still being built. Complete Level 1-A first."
-      );
-      return;
-    }
+    if(
+  !lesson ||
+  !lesson.story ||
+  !lesson.phonics ||
+  !lesson.reader1 ||
+  !lesson.reader2 ||
+  !lesson.build ||
+  !lesson.completion
+){
+  this.scene.panels.message(
+    "Adventure Locked",
+    "This lesson is still being built."
+  );
+  return;
+}
 
     this.lesson = lesson;
     this.levelId = levelId;
@@ -90,7 +98,7 @@ class LessonEngine {
     const title = this.scene.add.text(
       0,
       -205,
-      "Level 1-A",
+      `Level ${this.levelId}`,
       {
         fontSize: "34px",
         fontStyle: "bold",
@@ -945,8 +953,9 @@ class LessonEngine {
       185,
       "Hear the Sound",
       () => this.speakText(
-        "A. Short a. Apple. Ant. Map."
-      ),
+        `${phonics.letterUpper}. ${phonics.soundLabel}. ${
+  phonics.examples.map(example => example.word).join(". ")
+}.`
       {
         backgroundColor: "#ffffff"
       }
@@ -980,16 +989,17 @@ class LessonEngine {
     const phonics = this.lesson.phonics;
 
     const questions = [
-      phonics.recognitionQuestion,
-      phonics.lowercaseQuestion
-    ];
+  phonics.recognitionQuestion,
+  phonics.lowercaseQuestion,
+  phonics.wordQuestion
+].filter(Boolean);
 
     const question = questions[index];
 
     if(!question){
       this.rewardPiece(
         phonics.rewardPiece,
-        "You learned uppercase A and lowercase a!",
+       `You learned uppercase ${phonics.letterUpper} and lowercase ${phonics.letterLower}!`,
         () => this.startReader(
           this.lesson.reader1,
           1
@@ -1559,7 +1569,7 @@ class LessonEngine {
     const title = this.scene.add.text(
       0,
       -150,
-      "Level 1-A Complete!",
+      `Level ${this.levelId} Complete!`,
       {
         fontSize: "37px",
         fontStyle: "bold",
