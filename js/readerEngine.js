@@ -2,13 +2,14 @@
 ====================================================
 FRITZ ACADEMY
 Reader Engine
-Version 42.0.0
+Version 42.1.0
 ====================================================
 
 Purpose:
 - Render Reader 1 and Reader 2 in sequence.
-- Support both legacy string pages and illustrated page objects.
-- Keep comprehension checks after the student has seen every page.
+- Support text-only and illustrated page objects.
+- Keep comprehension checks after every page.
+- Use the shared Question Engine for assessment.
 - Award each reader's build piece before continuing.
 */
 
@@ -16,6 +17,10 @@ class ReaderEngine {
   constructor(scene, lessonEngine){
     this.scene = scene;
     this.lessonEngine = lessonEngine;
+    this.questionEngine = new QuestionEngine(
+      scene,
+      lessonEngine
+    );
     this.lesson = null;
     this.reader = null;
     this.readerKey = "";
@@ -63,7 +68,7 @@ class ReaderEngine {
 
   showPage(){
     if(this.pageIndex >= this.reader.pages.length){
-      this.showCheck();
+      this.startCheck();
       return;
     }
 
@@ -242,89 +247,26 @@ class ReaderEngine {
     this.scene.load.start();
   }
 
-  showCheck(){
+  startCheck(){
     const check = this.reader.check;
 
     if(
       !check ||
       !Array.isArray(check.options) ||
-      !check.answer
+      typeof check.answer === "undefined"
     ){
       this.finishReader();
       return;
     }
 
-    const title = this.scene.add.text(
-      0,
-      -185,
-      "Reader Check",
-      {
-        fontSize: "32px",
-        fontStyle: "bold",
-        color: "#102342"
-      }
-    ).setOrigin(0.5);
-
-    const prompt = this.scene.add.text(
-      0,
-      -85,
-      check.prompt,
-      {
-        fontSize: "27px",
-        fontStyle: "bold",
-        color: "#102342",
-        align: "center",
-        wordWrap: {
-          width: 650
-        }
-      }
-    ).setOrigin(0.5);
-
-    const objects = [
-      title,
-      prompt
-    ];
-
-    const optionCount = check.options.length;
-    const startY = 20;
-    const gap = optionCount > 3 ? 52 : 65;
-
-    check.options.forEach(
-      (option, index) => {
-        const button =
-          this.scene.panels.makeButton(
-            0,
-            startY + index * gap,
-            option,
-            () => {
-              if(option === check.answer){
-                this.lessonEngine.showCorrectAnswer(
-                  "Correct!",
-                  option,
-                  () => this.finishReader()
-                );
-              }else{
-                this.lessonEngine.showTryAgain(
-                  () => this.showCheck()
-                );
-              }
-            },
-            {
-              fontSize: "21px"
-            }
-          );
-
-        objects.push(button);
-      }
-    );
-
-    this.scene.panels.open(
-      objects,
-      {
-        width: 760,
-        height: 540
-      }
-    );
+    this.questionEngine.start({
+      title: "Reader Check",
+      questions: [check],
+      successMessage: "Correct!",
+      retryMessage:
+        "Look back at the reader and try again.",
+      onComplete: () => this.finishReader()
+    });
   }
 
   finishReader(){
