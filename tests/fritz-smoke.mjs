@@ -27,12 +27,19 @@ try {
     const requiredGlobals = [
       "Phaser", "LEVELS", "findLevel", "LessonValidator", "PanelManager",
       "QuestionEngine", "StoryEngine", "ReaderEngine", "BuilderEngine",
-      "PhonicsEngine", "MediaEngine", "CompletionEngine", "LessonEngine", "World"
+      "PhonicsEngine", "MediaEngine", "CompletionEngine", "LessonEngine", "World",
+      "StudentProfileEngine", "createStudent", "selectStudent", "listStudents"
     ];
 
     requiredGlobals.forEach(name => {
       if(typeof window[name] === "undefined") errors.push(`Missing global: ${name}`);
     });
+
+    const profileOverlay = document.querySelector(".fritz-profile-overlay");
+    if(!profileOverlay) errors.push("Student chooser did not open at startup.");
+
+    const switchButton = document.querySelector("#fritz-switch-student");
+    if(!switchButton) errors.push("Switch Student button was not created.");
 
     const lessonIds = ["1-C", "1-D", "1-E"];
     const assets = new Set();
@@ -78,7 +85,7 @@ try {
   });
 
   failures.push(...result.errors);
-  console.log(`Checked ${result.lessonCount} lessons and ${result.checkedAssets.length} referenced assets.`);
+  console.log(`Checked ${result.lessonCount} lessons, student startup, and ${result.checkedAssets.length} referenced assets.`);
 } catch(error) {
   failures.push(`Smoke test exception: ${error.stack || error.message}`);
 } finally {
