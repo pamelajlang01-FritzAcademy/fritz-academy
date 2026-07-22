@@ -116,13 +116,15 @@ class World extends Phaser.Scene {
   }
 
   prepareSaveData(){
-    if(!this.save.completed){
-      this.save.completed = {};
-    }
+   if(!this.save.unlockedLevels){
+  this.save.unlockedLevels = ["1-A"];
+}
 
-    if(!this.save.unlockedLevels){
-      this.save.unlockedLevels = ["1-A"];
-    }
+["1-B", "1-C", "1-D"].forEach((lessonId) => {
+  if(!this.save.unlockedLevels.includes(lessonId)){
+    this.save.unlockedLevels.push(lessonId);
+  }
+});
 
     if(!this.save.lessonProgress){
       this.save.lessonProgress = {};

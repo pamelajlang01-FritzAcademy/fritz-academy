@@ -63,6 +63,12 @@ class LessonEngine {
       save.unlockedLevels = ["1-A"];
     }
 
+    ["1-B", "1-C", "1-D"].forEach((lessonId) => {
+      if(!save.unlockedLevels.includes(lessonId)){
+        save.unlockedLevels.push(lessonId);
+      }
+    });
+
     saveGame(save);
   }
 
