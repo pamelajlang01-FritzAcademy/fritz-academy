@@ -1,0 +1,1 @@
+Version 43.2 adds visible story/reader fallback illustrations, improved browser narration voice selection, and song playback controls that preserve lesson flow.

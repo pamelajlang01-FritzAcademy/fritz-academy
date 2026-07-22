@@ -1,0 +1,1 @@
+Version 43.2 verifies that the runtime loads IllustrationEngine and the classroom stabilization patch. The patch provides visible fallback illustrations when lesson artwork is missing, selects the best available English narration voice, and keeps song playback inside the lesson flow with explicit Return to Lesson and Continue Lesson controls.
