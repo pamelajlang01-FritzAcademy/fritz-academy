@@ -1,0 +1,42 @@
+name: Fritz Academy Smoke Test
+
+on:
+  push:
+    branches:
+      - version-42-engine-rebuild
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  smoke-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install Playwright
+        run: |
+          npm init -y
+          npm install --save-dev playwright
+          npx playwright install --with-deps chromium
+
+      - name: Start Fritz Academy server
+        run: |
+          python3 -m http.server 5500 > /tmp/fritz-server.log 2>&1 &
+          echo $! > /tmp/fritz-server.pid
+          sleep 2
+
+      - name: Run browser smoke test
+        run: node tests/fritz-smoke.mjs
+
+      - name: Print server log after failure
+        if: failure()
+        run: cat /tmp/fritz-server.log || true
