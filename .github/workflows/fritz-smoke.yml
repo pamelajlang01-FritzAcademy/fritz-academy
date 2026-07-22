@@ -24,9 +24,9 @@ jobs:
 
       - name: Install Playwright
         run: |
-          npm init -y
-          npm install --save-dev playwright
-          npx playwright install --with-deps chromium
+          npm init -y >/dev/null 2>&1
+          npm install --silent --save-dev playwright
+          npx playwright install chromium >/dev/null 2>&1
 
       - name: Start Fritz Academy server
         run: |
@@ -35,8 +35,12 @@ jobs:
           sleep 2
 
       - name: Run browser smoke test
-        run: node tests/fritz-smoke.mjs
+        run: node tests/fritz-smoke.mjs 2>&1 | tee /tmp/fritz-smoke.log
 
-      - name: Print server log after failure
+      - name: Print concise failure report
         if: failure()
-        run: cat /tmp/fritz-server.log || true
+        run: |
+          echo "===== FRITZ SMOKE REPORT ====="
+          tail -n 80 /tmp/fritz-smoke.log || true
+          echo "===== SERVER LOG ====="
+          tail -n 40 /tmp/fritz-server.log || true
