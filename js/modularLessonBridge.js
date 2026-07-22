@@ -2,7 +2,7 @@
 ====================================================
 FRITZ ACADEMY
 Modular Lesson Bridge
-Version 42.1.0
+Version 42.2.0
 ====================================================
 */
 
@@ -18,6 +18,33 @@ LessonEngine = class LessonEngine extends FritzLegacyLessonEngine {
     this.completionEngine = new CompletionEngine(scene, this);
   }
 
+  start(levelId, location = "Fritz Academy"){
+    const lesson = findLevel(levelId);
+    const strictLessons = ["1-C", "1-D", "1-E"];
+
+    if(
+      strictLessons.includes(levelId) &&
+      typeof LessonValidator !== "undefined"
+    ){
+      const result = LessonValidator.validate(lesson);
+
+      if(!result.valid){
+        console.error(
+          `Fritz Academy lesson ${levelId} failed validation:`,
+          result.errors
+        );
+
+        this.scene.panels.message(
+          "Lesson Check Required",
+          `Level ${levelId} cannot start because its learning content is incomplete.\n\n${result.errors.slice(0, 4).join("\n")}`
+        );
+        return;
+      }
+    }
+
+    super.start(levelId, location);
+  }
+
   startReader(reader, readerKey){
     this.readerEngine.start(this.lesson, readerKey, () => {
       if(readerKey === "reader1"){
@@ -29,15 +56,20 @@ LessonEngine = class LessonEngine extends FritzLegacyLessonEngine {
   }
 
   showBuildSummary(){
-    this.builderEngine.start(this.lesson, () => this.showClosingSong());
+    this.builderEngine.start(
+      this.lesson,
+      () => this.showClosingSong()
+    );
   }
 
   showAlphabetSong(){
     this.setSection("alphabet-song");
+
     if(!this.lesson.alphabetSong){
       this.showPhonics();
       return;
     }
+
     this.mediaEngine.showLessonMedia({
       heading: "Music Box Unlocked!",
       icon: "🎵",
@@ -57,10 +89,12 @@ LessonEngine = class LessonEngine extends FritzLegacyLessonEngine {
 
   showClosingSong(){
     this.setSection("closing-song");
+
     if(!this.lesson.closingSong){
       this.completeLesson();
       return;
     }
+
     this.mediaEngine.showLessonMedia({
       heading: "Academy Celebration",
       icon: "🎶 ⭐ 🎶",
@@ -82,7 +116,6 @@ LessonEngine = class LessonEngine extends FritzLegacyLessonEngine {
   stopMedia(){
     if(this.mediaEngine){
       this.mediaEngine.stop();
-      return;
     }
   }
 
