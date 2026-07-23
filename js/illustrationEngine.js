@@ -1,166 +1,104 @@
-/*
-====================================================
-FRITZ ACADEMY
-Illustration Engine
-Version 43.2.0
-====================================================
-
-Purpose:
-- Ensure every story and reader page always shows an illustration.
-- Render a bright, age-appropriate Academy scene when a page image is missing.
-- Keep the lesson usable while bespoke artwork is produced and reviewed.
-*/
-
+/* Fritz Academy Illustration Engine v46.0 */
 class IllustrationEngine {
   constructor(scene){
-    this.scene = scene;
+    this.scene=scene;
+    this.library=window.FritzIllustrationLibrary||{characters:{},avatars:[],environments:{}};
   }
 
-  addScene(objects, text, options = {}){
-    const centerX = Number(options.x) || 0;
-    const centerY = Number(options.y) || -92;
-    const width = Number(options.width) || 560;
-    const height = Number(options.height) || 230;
-    const lowerText = String(text || "").toLowerCase();
+  character(id){ return this.library.characters[id]||null; }
+  environment(id){ return this.library.environments[id]||this.library.environments.campus||null; }
+  studentAvatar(){
+    const id=this.scene&&this.scene.save&&this.scene.save.avatar;
+    return this.library.avatars.find(a=>a.id===id)||null;
+  }
 
-    const background = this.scene.add.rectangle(
-      centerX,
-      centerY,
-      width,
-      height,
-      0xdff2ff,
-      1
-    ).setStrokeStyle(4, 0x174ea6);
+  preloadSceneAssets(config={}){
+    if(!this.scene||!this.scene.load) return;
+    const env=this.environment(config.environment||"campus");
+    if(env&&!this.scene.textures.exists(`fa-env-${env.id}`)) this.scene.load.image(`fa-env-${env.id}`,env.src);
+    (config.characters||[]).forEach(entry=>{
+      const id=typeof entry==="string"?entry:entry.id;
+      const c=this.character(id);
+      if(c&&!this.scene.textures.exists(`fa-char-${id}`)) this.scene.load.image(`fa-char-${id}`,c.primary||c.fallback);
+    });
+    if(config.includeStudent){
+      const avatar=this.studentAvatar();
+      if(avatar&&!this.scene.textures.exists(`fa-avatar-${avatar.id}`)) this.scene.load.image(`fa-avatar-${avatar.id}`,avatar.src);
+    }
+  }
 
-    const grass = this.scene.add.rectangle(
-      centerX,
-      centerY + height * 0.28,
-      width - 8,
-      height * 0.42,
-      0xbfe3a1,
-      1
-    );
+  addScene(objects,text,options={}){
+    const x=Number(options.x)||0;
+    const y=Number(options.y)||-92;
+    const width=Number(options.width)||620;
+    const height=Number(options.height)||250;
+    const config=options.scene||{};
+    const env=this.environment(config.environment||options.environment||"campus");
 
-    const sun = this.scene.add.circle(
-      centerX + width * 0.37,
-      centerY - height * 0.30,
-      24,
-      0xf6c744,
-      1
-    ).setStrokeStyle(3, 0xd59b00);
+    const frame=this.scene.add.rectangle(x,y,width,height,0xffffff,1).setStrokeStyle(5,0x174ea6);
+    objects.push(frame);
 
-    const path = this.scene.add.polygon(
-      centerX,
-      centerY + height * 0.28,
-      [
-        -58, -10,
-        58, -10,
-        118, 86,
-        -118, 86
-      ],
-      0xd8c4a8,
-      1
-    ).setStrokeStyle(3, 0x8c7359);
-
-    objects.push(background, grass, sun, path);
-
-    if(lowerText.includes("gate")){
-      const leftPost = this.scene.add.rectangle(
-        centerX - 150,
-        centerY + 15,
-        18,
-        112,
-        0x8b5a2b,
-        1
-      );
-      const rightPost = this.scene.add.rectangle(
-        centerX + 150,
-        centerY + 15,
-        18,
-        112,
-        0x8b5a2b,
-        1
-      );
-      const arch = this.scene.add.rectangle(
-        centerX,
-        centerY - 34,
-        300,
-        18,
-        0x8b5a2b,
-        1
-      );
-      objects.push(leftPost, rightPost, arch);
+    if(env){
+      const key=`fa-runtime-env-${env.id}`;
+      const image=this.scene.add.image(x,y,env.src).setDisplaySize(width-8,height-8);
+      image.setCrop(0,0,image.width||width,image.height||height);
+      objects.push(image);
+    } else {
+      objects.push(this.scene.add.rectangle(x,y,width-8,height-8,0xdff2ff,1));
     }
 
-    if(lowerText.includes("garden") || lowerText.includes("flower")){
-      [-205, -165, 165, 205].forEach((offset, index) => {
-        const flower = this.scene.add.text(
-          centerX + offset,
-          centerY + 55 + (index % 2) * 12,
-          index % 2 ? "🌷" : "🌼",
-          { fontSize: "32px" }
-        ).setOrigin(0.5);
-        objects.push(flower);
-      });
-    }
+    const actorSpecs=Array.isArray(config.characters)&&config.characters.length
+      ? config.characters
+      : [{id:"fritz",x:-0.20},{id:"bash",x:0.05},{id:"bear",x:0.27}];
 
-    if(lowerText.includes("tree")){
-      const tree = this.scene.add.text(
-        centerX + 190,
-        centerY - 5,
-        "🌳",
-        { fontSize: "72px" }
-      ).setOrigin(0.5);
-      objects.push(tree);
-    }
+    actorSpecs.forEach((spec,index)=>{
+      const id=typeof spec==="string"?spec:spec.id;
+      const c=this.character(id);
+      if(!c) return;
+      const actorX=x+(Number(spec.x)||(-0.24+index*0.24))*width;
+      const actorY=y+height*0.24+(Number(spec.y)||0);
+      const actor=this.scene.add.image(actorX,actorY,c.primary||c.fallback);
+      const baseHeight=height*0.58*(Number(spec.scale)||c.scale||1);
+      actor.setDisplaySize(baseHeight*0.62,baseHeight).setDepth(5+index);
+      objects.push(actor);
+      this.applyMotion(actor,spec.motion||"idle",index);
+    });
 
-    const fritz = this.scene.add.text(
-      centerX - 78,
-      centerY + 15,
-      "🐶",
-      { fontSize: "66px" }
-    ).setOrigin(0.5);
-
-    const student = this.scene.add.text(
-      centerX + 68,
-      centerY + 18,
-      "🧒",
-      { fontSize: "60px" }
-    ).setOrigin(0.5);
-
-    objects.push(fritz, student);
-
-    if(lowerText.includes("wave") || lowerText.includes("hello")){
-      const greeting = this.scene.add.text(
-        centerX,
-        centerY - 78,
-        "Hello! 👋",
-        {
-          fontSize: "24px",
-          fontStyle: "bold",
-          color: "#102342",
-          backgroundColor: "#ffffff",
-          padding: { x: 12, y: 7 }
-        }
-      ).setOrigin(0.5);
-      objects.push(greeting);
-    }
-
-    const caption = this.scene.add.text(
-      centerX - width * 0.39,
-      centerY - height * 0.38,
-      options.label || "Fritz Academy Story Scene",
-      {
-        fontSize: "15px",
-        fontStyle: "bold",
-        color: "#174ea6",
-        backgroundColor: "#ffffff",
-        padding: { x: 8, y: 4 }
+    if(config.includeStudent){
+      const avatar=this.studentAvatar();
+      if(avatar){
+        const actor=this.scene.add.image(x-width*0.34,y+height*0.24,avatar.src).setDisplaySize(height*0.36,height*0.54).setDepth(7);
+        objects.push(actor);
+        this.applyMotion(actor,"idle",9);
       }
-    ).setOrigin(0, 0.5);
+    }
 
+    const caption=this.scene.add.text(x,y+height*0.39,options.label||config.caption||"Fritz Academy Story Scene",{
+      fontSize:"16px",fontStyle:"bold",color:"#102342",backgroundColor:"rgba(255,255,255,.94)",padding:{x:10,y:5},align:"center",wordWrap:{width:width*0.82}
+    }).setOrigin(0.5).setDepth(20);
     objects.push(caption);
   }
-}
 
-window.IllustrationEngine = IllustrationEngine;
+  applyMotion(actor,motion="idle",delayIndex=0){
+    if(!this.scene||!this.scene.tweens||!actor) return;
+    const delay=delayIndex*110;
+    if(motion==="wave"||motion==="celebrate"){
+      this.scene.tweens.add({targets:actor,angle:{from:-2,to:2},y:actor.y-8,duration:520,yoyo:true,repeat:-1,delay,ease:"Sine.easeInOut"});
+    } else if(motion==="walk"){
+      this.scene.tweens.add({targets:actor,x:actor.x+28,duration:1200,yoyo:true,repeat:-1,delay,ease:"Sine.easeInOut"});
+    } else {
+      this.scene.tweens.add({targets:actor,y:actor.y-5,scaleX:actor.scaleX*1.01,scaleY:actor.scaleY*1.01,duration:1300,yoyo:true,repeat:-1,delay,ease:"Sine.easeInOut"});
+    }
+  }
+
+  validateScene(config={}){
+    const errors=[];
+    if(!this.environment(config.environment||"campus")) errors.push("Unknown environment");
+    (config.characters||[]).forEach(spec=>{
+      const id=typeof spec==="string"?spec:spec.id;
+      if(!this.character(id)) errors.push(`Unknown character: ${id}`);
+    });
+    return {valid:errors.length===0,errors};
+  }
+}
+window.IllustrationEngine=IllustrationEngine;
