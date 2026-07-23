@@ -1,4 +1,4 @@
-/* Fritz Academy Illustration Engine v46.0 */
+/* Fritz Academy Illustration Engine v46.1 */
 class IllustrationEngine {
   constructor(scene){
     this.scene=scene;
@@ -12,22 +12,40 @@ class IllustrationEngine {
     return this.library.avatars.find(a=>a.id===id)||null;
   }
 
-  preloadSceneAssets(config={}){
-    if(!this.scene||!this.scene.load) return;
+  textureEntries(config={}){
+    const entries=[];
     const env=this.environment(config.environment||"campus");
-    if(env&&!this.scene.textures.exists(`fa-env-${env.id}`)) this.scene.load.image(`fa-env-${env.id}`,env.src);
-    (config.characters||[]).forEach(entry=>{
-      const id=typeof entry==="string"?entry:entry.id;
+    if(env) entries.push({key:`fa-env-${env.id}`,src:env.src});
+    (config.characters||[]).forEach(spec=>{
+      const id=typeof spec==="string"?spec:spec.id;
+      if(id==="student"){
+        const a=this.studentAvatar();
+        if(a) entries.push({key:`fa-avatar-${a.id}`,src:a.src});
+        return;
+      }
       const c=this.character(id);
-      if(c&&!this.scene.textures.exists(`fa-char-${id}`)) this.scene.load.image(`fa-char-${id}`,c.primary||c.fallback);
+      if(c) entries.push({key:`fa-char-${id}`,src:c.primary||c.fallback});
     });
-    if(config.includeStudent){
-      const avatar=this.studentAvatar();
-      if(avatar&&!this.scene.textures.exists(`fa-avatar-${avatar.id}`)) this.scene.load.image(`fa-avatar-${avatar.id}`,avatar.src);
-    }
+    return entries.filter((entry,index,array)=>array.findIndex(item=>item.key===entry.key)===index);
+  }
+
+  ensureAssets(config={},done){
+    const missing=this.textureEntries(config).filter(entry=>!this.scene.textures.exists(entry.key));
+    if(!missing.length){ done(); return; }
+    let settled=false;
+    const finish=()=>{ if(settled) return; settled=true; done(); };
+    missing.forEach(entry=>this.scene.load.image(entry.key,entry.src));
+    this.scene.load.once("complete",finish);
+    this.scene.load.once("loaderror",()=>{});
+    this.scene.load.start();
   }
 
   addScene(objects,text,options={}){
+    const config=options.scene||{};
+    this.ensureAssets(config,()=>this.drawScene(objects,text,options));
+  }
+
+  drawScene(objects,text,options={}){
     const x=Number(options.x)||0;
     const y=Number(options.y)||-92;
     const width=Number(options.width)||620;
@@ -35,59 +53,78 @@ class IllustrationEngine {
     const config=options.scene||{};
     const env=this.environment(config.environment||options.environment||"campus");
 
-    const frame=this.scene.add.rectangle(x,y,width,height,0xffffff,1).setStrokeStyle(5,0x174ea6);
+    const frame=this.scene.add.rectangle(x,y,width,height,0xffffff,1).setStrokeStyle(5,0x174ea6).setDepth(0);
     objects.push(frame);
 
-    if(env){
-      const key=`fa-runtime-env-${env.id}`;
-      const image=this.scene.add.image(x,y,env.src).setDisplaySize(width-8,height-8);
-      image.setCrop(0,0,image.width||width,image.height||height);
-      objects.push(image);
-    } else {
-      objects.push(this.scene.add.rectangle(x,y,width-8,height-8,0xdff2ff,1));
+    if(env&&this.scene.textures.exists(`fa-env-${env.id}`)){
+      const bg=this.scene.add.image(x,y,`fa-env-${env.id}`).setDisplaySize(width-8,height-8).setDepth(1);
+      objects.push(bg);
+    }else{
+      objects.push(this.scene.add.rectangle(x,y,width-8,height-8,0xdff2ff,1).setDepth(1));
     }
 
-    const actorSpecs=Array.isArray(config.characters)&&config.characters.length
-      ? config.characters
-      : [{id:"fritz",x:-0.20},{id:"bash",x:0.05},{id:"bear",x:0.27}];
+    const shade=this.scene.add.rectangle(x,y+height*.32,width-8,height*.35,0x234a22,.16).setDepth(2);
+    objects.push(shade);
 
-    actorSpecs.forEach((spec,index)=>{
+    (config.props||[]).forEach((spec,index)=>{
+      const prop=this.makeProp(spec,x,y,width,height,index);
+      if(prop){ objects.push(prop); this.applyMotion(prop,spec.motion||"idle",12+index); }
+    });
+
+    (config.characters||[]).forEach((spec,index)=>{
       const id=typeof spec==="string"?spec:spec.id;
-      const c=this.character(id);
-      if(!c) return;
-      const actorX=x+(Number(spec.x)||(-0.24+index*0.24))*width;
-      const actorY=y+height*0.24+(Number(spec.y)||0);
-      const actor=this.scene.add.image(actorX,actorY,c.primary||c.fallback);
-      const baseHeight=height*0.58*(Number(spec.scale)||c.scale||1);
-      actor.setDisplaySize(baseHeight*0.62,baseHeight).setDepth(5+index);
+      let key=""; let scale=.75;
+      if(id==="student"){
+        const a=this.studentAvatar();
+        if(!a) return;
+        key=`fa-avatar-${a.id}`; scale=Number(spec.scale)||.72;
+      }else{
+        const c=this.character(id);
+        if(!c) return;
+        key=`fa-char-${id}`; scale=Number(spec.scale)||c.scale||1;
+      }
+      if(!this.scene.textures.exists(key)) return;
+      const actorX=x+(Number(spec.x)||0)*width;
+      const actorY=y+height*.24+(Number(spec.y)||0)*height;
+      const actor=this.scene.add.image(actorX,actorY,key).setDepth(8+index);
+      const baseHeight=height*.57*scale;
+      actor.setDisplaySize(baseHeight*.64,baseHeight);
       objects.push(actor);
       this.applyMotion(actor,spec.motion||"idle",index);
     });
 
-    if(config.includeStudent){
-      const avatar=this.studentAvatar();
-      if(avatar){
-        const actor=this.scene.add.image(x-width*0.34,y+height*0.24,avatar.src).setDisplaySize(height*0.36,height*0.54).setDepth(7);
-        objects.push(actor);
-        this.applyMotion(actor,"idle",9);
-      }
-    }
-
-    const caption=this.scene.add.text(x,y+height*0.39,options.label||config.caption||"Fritz Academy Story Scene",{
-      fontSize:"16px",fontStyle:"bold",color:"#102342",backgroundColor:"rgba(255,255,255,.94)",padding:{x:10,y:5},align:"center",wordWrap:{width:width*0.82}
-    }).setOrigin(0.5).setDepth(20);
+    const caption=this.scene.add.text(x,y+height*.39,options.label||config.caption||text||"Fritz Academy Story Scene",{
+      fontSize:"16px",fontStyle:"bold",color:"#102342",backgroundColor:"rgba(255,255,255,.94)",padding:{x:10,y:5},align:"center",wordWrap:{width:width*.84}
+    }).setOrigin(.5).setDepth(30);
     objects.push(caption);
+
+    if(typeof options.onReady==="function") options.onReady();
+  }
+
+  makeProp(spec,x,y,width,height,index){
+    const symbols={
+      gate:"🏫",flag:"🚩",path:"🪨",speech:"💬","name-tag":"🏷️",sparkles:"✨",flowers:"🌼🌷",butterfly:"🦋","empty-bed":"🟫","flower-basket":"🧺🌷","young-tree":"🌳",question:"❓","backpack-outline":"◻️🎒",backpack:"🎒",thought:"💭",book:"📘",bench:"🪑",magnifier:"🔎",bush:"🌿",map:"🗺️","map-mark":"❌",idea:"💡",arrow:"➡️","garden-sign":"🪧"
+    };
+    const symbol=symbols[spec.kind]||"⭐";
+    return this.scene.add.text(x+(Number(spec.x)||0)*width,y+(Number(spec.y)||0)*height,symbol,{
+      fontSize:`${Math.round(42*(Number(spec.scale)||1))}px`,align:"center"
+    }).setOrigin(.5).setDepth(5+index);
   }
 
   applyMotion(actor,motion="idle",delayIndex=0){
     if(!this.scene||!this.scene.tweens||!actor) return;
-    const delay=delayIndex*110;
-    if(motion==="wave"||motion==="celebrate"){
-      this.scene.tweens.add({targets:actor,angle:{from:-2,to:2},y:actor.y-8,duration:520,yoyo:true,repeat:-1,delay,ease:"Sine.easeInOut"});
-    } else if(motion==="walk"){
-      this.scene.tweens.add({targets:actor,x:actor.x+28,duration:1200,yoyo:true,repeat:-1,delay,ease:"Sine.easeInOut"});
-    } else {
-      this.scene.tweens.add({targets:actor,y:actor.y-5,scaleX:actor.scaleX*1.01,scaleY:actor.scaleY*1.01,duration:1300,yoyo:true,repeat:-1,delay,ease:"Sine.easeInOut"});
+    const delay=delayIndex*90;
+    const base={targets:actor,delay,ease:"Sine.easeInOut",yoyo:true,repeat:-1};
+    if(["wave","celebrate","pop","surprised"].includes(motion)){
+      this.scene.tweens.add({...base,angle:{from:-3,to:3},y:actor.y-8,duration:520});
+    }else if(["walk","sweep"].includes(motion)){
+      this.scene.tweens.add({...base,x:actor.x+30,duration:1250});
+    }else if(motion==="fall"){
+      this.scene.tweens.add({...base,y:actor.y+28,angle:12,duration:900});
+    }else if(["float","thinking","reading","point","glow","sway"].includes(motion)){
+      this.scene.tweens.add({...base,y:actor.y-7,duration:1150});
+    }else{
+      this.scene.tweens.add({...base,y:actor.y-4,duration:1450});
     }
   }
 
@@ -96,7 +133,7 @@ class IllustrationEngine {
     if(!this.environment(config.environment||"campus")) errors.push("Unknown environment");
     (config.characters||[]).forEach(spec=>{
       const id=typeof spec==="string"?spec:spec.id;
-      if(!this.character(id)) errors.push(`Unknown character: ${id}`);
+      if(id!=="student"&&!this.character(id)) errors.push(`Unknown character: ${id}`);
     });
     return {valid:errors.length===0,errors};
   }
