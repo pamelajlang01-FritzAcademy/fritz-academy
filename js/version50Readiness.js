@@ -1,0 +1,1 @@
+window.FRITZ_VISUAL_REPAIR_READY=true;
