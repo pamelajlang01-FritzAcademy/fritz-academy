@@ -1,0 +1,1 @@
+window.FritzVisualFixManifest={version:"50.0",fixes:["remove edge-connected character mattes","keep actors inside story frame","replace prop emojis with drawn objects","use distinct scene environments","keep Builder pieces inside board","correct Lesson 1-A scene choreography"]};
