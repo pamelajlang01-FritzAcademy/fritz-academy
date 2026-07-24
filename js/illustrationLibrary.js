@@ -1,4 +1,4 @@
-/* Fritz Academy Illustration Library v46.0 */
+/* Fritz Academy Illustration Library v50.2 */
 (function(){
   "use strict";
 
@@ -48,26 +48,26 @@
     ["girl-4","assets/avatars/girl/ChatGPT Image Jul 13, 2026, 06_04_48 PM.png"],
     ["girl-5","assets/avatars/girl/ChatGPT Image Jul 13, 2026, 06_26_03 PM.png"],
     ["girl-6","assets/avatars/girl/ChatGPT Image Jul 13, 2026, 06_53_21 PM.png"],
-    ["boy-1","assets/assets/avatars/boy/ChatGPT Image Jul 13, 2026, 04_52_40 PM.png"],
-    ["boy-2","assets/assets/avatars/boy/ChatGPT Image Jul 13, 2026, 05_30_53 PM.png"],
-    ["boy-3","assets/assets/avatars/boy/ChatGPT Image Jul 13, 2026, 05_43_25 PM.png"],
-    ["boy-4","assets/assets/avatars/boy/ChatGPT Image Jul 13, 2026, 05_52_10 PM.png"],
-    ["boy-5","assets/assets/avatars/boy/ChatGPT Image Jul 13, 2026, 06_18_19 PM.png"],
-    ["boy-6","assets/assets/avatars/boy/ChatGPT Image Jul 13, 2026, 06_47_19 PM.png"]
+    ["boy-1","assets/avatars/boy/ChatGPT Image Jul 13, 2026, 04_52_40 PM.png"],
+    ["boy-2","assets/avatars/boy/ChatGPT Image Jul 13, 2026, 05_30_53 PM.png"],
+    ["boy-3","assets/avatars/boy/ChatGPT Image Jul 13, 2026, 05_43_25 PM.png"],
+    ["boy-4","assets/avatars/boy/ChatGPT Image Jul 13, 2026, 05_52_10 PM.png"],
+    ["boy-5","assets/avatars/boy/ChatGPT Image Jul 13, 2026, 06_18_19 PM.png"],
+    ["boy-6","assets/avatars/boy/ChatGPT Image Jul 13, 2026, 06_47_19 PM.png"]
   ].map(([id,src])=>({id,name:id.replace("-"," ").replace(/\b\w/g,c=>c.toUpperCase()),src,type:"student-avatar"}));
 
   const environments = {
     campus:{id:"campus",name:"Fritz Academy Campus",src:"assets/fritz_academy_world_map.png",tags:["outdoor","campus","map"]},
-    academyFront:{id:"academy-front",name:"Academy Front",src:"assets/academy.png",tags:["outdoor","entrance"]},
-    welcomeGarden:{id:"welcome-garden",name:"Welcome Garden",src:"assets/fritz_academy_world_map.png",tags:["outdoor","garden"]},
-    readingRoom:{id:"reading-room",name:"Reading Room",src:"assets/academy.png",tags:["indoor","reading"]},
+    "academy-front":{id:"academy-front",name:"Academy Front",src:"assets/academy.png",tags:["outdoor","entrance"]},
+    "welcome-garden":{id:"welcome-garden",name:"Welcome Garden",src:"assets/fritz_academy_world_map.png",tags:["outdoor","garden"]},
+    "reading-room":{id:"reading-room",name:"Reading Room",src:"assets/academy.png",tags:["indoor","reading"]},
     classroom:{id:"classroom",name:"Classroom",src:"assets/academy.png",tags:["indoor","school"]},
-    musicRoom:{id:"music-room",name:"Music Room",src:"assets/academy.png",tags:["indoor","music"]},
+    "music-room":{id:"music-room",name:"Music Room",src:"assets/academy.png",tags:["indoor","music"]},
     playground:{id:"playground",name:"Playground",src:"assets/fritz_academy_world_map.png",tags:["outdoor","play"]}
   };
 
   const expressions=["happy","laughing","thinking","surprised","sad","proud","curious","worried","excited","focused"];
   const poses=["standing","sitting","walking","running","jumping","waving","pointing","reading","listening","building","singing","celebrating"];
 
-  window.FritzIllustrationLibrary={version:"46.0",characters,avatars,environments,expressions,poses};
+  window.FritzIllustrationLibrary={version:"50.2",characters,avatars,environments,expressions,poses};
 })();
