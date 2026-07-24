@@ -1,4 +1,4 @@
-/* Fritz Academy Illustrated Lesson Pages v46.1 */
+/* Fritz Academy Illustrated Lesson Pages v50.7 */
 (function(){
   "use strict";
 
@@ -22,28 +22,37 @@
     const sceneSpec=specFor(engine,type);
     const objects=[];
     const titleY=isReader?-225:-220;
-    const title=engine.scene.add.text(0,titleY,`${collection.title} — Page ${engine.pageIndex+1} of ${collection.pages.length}`,{
+    objects.push(engine.scene.add.text(0,titleY,`${collection.title} — Page ${engine.pageIndex+1} of ${collection.pages.length}`,{
       fontSize:"20px",fontStyle:"bold",color:"#46566f",align:"center",wordWrap:{width:720}
-    }).setOrigin(.5);
-    objects.push(title);
+    }).setOrigin(.5));
 
     if(isReader&&collection.level){
       objects.push(engine.scene.add.text(0,-190,collection.level,{fontSize:"17px",fontStyle:"bold",color:"#174ea6"}).setOrigin(.5));
     }
 
     const openPanel=()=>{
-      const text=engine.scene.add.text(0,92,engine.lessonEngine.replaceName(page.text),{
+      objects.push(engine.scene.add.text(0,92,engine.lessonEngine.replaceName(page.text),{
         fontSize:"24px",fontStyle:"bold",color:"#102342",align:"center",lineSpacing:6,wordWrap:{width:700}
-      }).setOrigin(.5).setDepth(40);
-      objects.push(text);
+      }).setOrigin(.5).setDepth(40));
 
-      const read=engine.scene.panels.makeButton(-160,218,"Read Aloud",()=>engine.lessonEngine.speakText(engine.lessonEngine.replaceName(page.text)),{backgroundColor:"#ffffff"});
-      const next=engine.scene.panels.makeButton(160,218,engine.pageIndex===collection.pages.length-1?(isReader?"Reader Check":"Story Check"):"Next Page",()=>{
+      if(engine.pageIndex>0){
+        objects.push(engine.scene.panels.makeButton(-270,218,"Back Page",()=>{
+          engine.lessonEngine.stopMedia();
+          engine.pageIndex=Math.max(0,engine.pageIndex-1);
+          engine.showPage();
+        },{backgroundColor:"#eaf1ff"}));
+      }
+
+      objects.push(engine.scene.panels.makeButton(0,218,"Read Aloud",()=>{
+        engine.lessonEngine.speakText(engine.lessonEngine.replaceName(page.text));
+      },{backgroundColor:"#ffffff"}));
+
+      objects.push(engine.scene.panels.makeButton(270,218,engine.pageIndex===collection.pages.length-1?(isReader?"Reader Check":"Story Check"):"Next Page",()=>{
         engine.lessonEngine.stopMedia();
         engine.pageIndex++;
         engine.showPage();
-      });
-      objects.push(read,next);
+      }));
+
       engine.scene.panels.open(objects,{width:860,height:610});
     };
 
@@ -58,17 +67,11 @@
       }
     }
 
-    const fallback=engine.scene.add.rectangle(0,-70,680,285,0xdff2ff,1).setStrokeStyle(5,0x174ea6);
-    const note=engine.scene.add.text(0,-70,"Illustration scene is being prepared.",{fontSize:"23px",fontStyle:"bold",color:"#102342"}).setOrigin(.5);
-    objects.push(fallback,note);
+    objects.push(engine.scene.add.rectangle(0,-70,680,285,0xdff2ff,1).setStrokeStyle(5,0x174ea6));
+    objects.push(engine.scene.add.text(0,-70,"Illustration scene is being prepared.",{fontSize:"23px",fontStyle:"bold",color:"#102342"}).setOrigin(.5));
     openPanel();
   }
 
-  if(typeof StoryEngine!=="undefined"){
-    StoryEngine.prototype.showPage=function(){ renderPage(this,"story",false); };
-  }
-
-  if(typeof ReaderEngine!=="undefined"){
-    ReaderEngine.prototype.showPage=function(){ renderPage(this,this.readerKey,true); };
-  }
+  if(typeof StoryEngine!=="undefined") StoryEngine.prototype.showPage=function(){ renderPage(this,"story",false); };
+  if(typeof ReaderEngine!=="undefined") ReaderEngine.prototype.showPage=function(){ renderPage(this,this.readerKey,true); };
 })();
