@@ -1,4 +1,4 @@
-/* Fritz Academy Illustration Engine v50.6 */
+/* Fritz Academy Illustration Engine v50.7 */
 class IllustrationEngine {
   constructor(scene){
     this.scene=scene;
@@ -41,7 +41,7 @@ class IllustrationEngine {
   }
 
   cleanOuterBackground(key){
-    const cleanKey=`${key}-edge-clean-v506`;
+    const cleanKey=`${key}-edge-clean-v507`;
     if(this.scene.textures.exists(cleanKey)) return cleanKey;
     const texture=this.scene.textures.get(key);
     const source=texture&&texture.getSourceImage&&texture.getSourceImage();
@@ -49,32 +49,39 @@ class IllustrationEngine {
 
     try{
       const canvas=document.createElement("canvas");
-      canvas.width=source.width; canvas.height=source.height;
+      canvas.width=source.width;
+      canvas.height=source.height;
       const ctx=canvas.getContext("2d",{willReadFrequently:true});
       ctx.drawImage(source,0,0);
       const image=ctx.getImageData(0,0,canvas.width,canvas.height);
       const data=image.data,w=canvas.width,h=canvas.height;
       const visited=new Uint8Array(w*h);
-      const queue=[];
-      const seeds=[[0,0],[w-1,0],[0,h-1],[w-1,h-1]];
       const pixel=(x,y)=>{ const i=(y*w+x)*4; return [data[i],data[i+1],data[i+2],data[i+3]]; };
       const distance=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1],a[2]-b[2]);
+      const corners=[[0,0],[w-1,0],[0,h-1],[w-1,h-1]];
 
-      seeds.forEach(([sx,sy])=>{
+      corners.forEach(([sx,sy])=>{
         const seed=pixel(sx,sy);
-        queue.push([sx,sy,seed]);
+        const brightness=(seed[0]+seed[1]+seed[2])/3;
+        const blueDominant=seed[2]>seed[0]*1.12&&seed[2]>seed[1]*1.04;
+        const nearWhite=brightness>235&&Math.max(seed[0],seed[1],seed[2])-Math.min(seed[0],seed[1],seed[2])<22;
+        if(!nearWhite&&!blueDominant&&seed[3]>20) return;
+
+        const tolerance=nearWhite?18:24;
+        const queue=[[sx,sy]];
         while(queue.length){
-          const [x,y,target]=queue.pop();
+          const [x,y]=queue.pop();
           if(x<0||x>=w||y<0||y>=h) continue;
           const idx=y*w+x;
           if(visited[idx]) continue;
           visited[idx]=1;
           const current=pixel(x,y);
-          if(current[3]>20&&distance(current,target)>52) continue;
+          if(current[3]>20&&distance(current,seed)>tolerance) continue;
           data[idx*4+3]=0;
-          queue.push([x-1,y,target],[x+1,y,target],[x,y-1,target],[x,y+1,target]);
+          queue.push([x-1,y],[x+1,y],[x,y-1],[x,y+1]);
         }
       });
+
       ctx.putImageData(image,0,0);
       this.scene.textures.addCanvas(cleanKey,canvas);
       return cleanKey;
@@ -152,7 +159,6 @@ class IllustrationEngine {
       this.applyMotion(actor,spec.motion||"idle",index);
     });
 
-    // Border is drawn last so the complete blue frame is always visible.
     objects.push(this.scene.add.rectangle(x,y,width,height,0xffffff,0).setStrokeStyle(5,0x174ea6).setDepth(40));
     if(typeof options.onReady==="function") options.onReady();
   }
