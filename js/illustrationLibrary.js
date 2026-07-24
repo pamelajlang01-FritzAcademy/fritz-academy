@@ -1,4 +1,4 @@
-/* Fritz Academy Illustration Library v46.0 */
+/* Fritz Academy Illustration Library v46.1 */
 (function(){
   "use strict";
 
@@ -48,12 +48,12 @@
     ["girl-4","assets/avatars/girl/ChatGPT Image Jul 13, 2026, 06_04_48 PM.png"],
     ["girl-5","assets/avatars/girl/ChatGPT Image Jul 13, 2026, 06_26_03 PM.png"],
     ["girl-6","assets/avatars/girl/ChatGPT Image Jul 13, 2026, 06_53_21 PM.png"],
-    ["boy-1","assets/assets/avatars/boy/ChatGPT Image Jul 13, 2026, 04_52_40 PM.png"],
-    ["boy-2","assets/assets/avatars/boy/ChatGPT Image Jul 13, 2026, 05_30_53 PM.png"],
-    ["boy-3","assets/assets/avatars/boy/ChatGPT Image Jul 13, 2026, 05_43_25 PM.png"],
-    ["boy-4","assets/assets/avatars/boy/ChatGPT Image Jul 13, 2026, 05_52_10 PM.png"],
-    ["boy-5","assets/assets/avatars/boy/ChatGPT Image Jul 13, 2026, 06_18_19 PM.png"],
-    ["boy-6","assets/assets/avatars/boy/ChatGPT Image Jul 13, 2026, 06_47_19 PM.png"]
+    ["boy-1","assets/avatars/boy/ChatGPT Image Jul 13, 2026, 04_52_40 PM.png"],
+    ["boy-2","assets/avatars/boy/ChatGPT Image Jul 13, 2026, 05_30_53 PM.png"],
+    ["boy-3","assets/avatars/boy/ChatGPT Image Jul 13, 2026, 05_43_25 PM.png"],
+    ["boy-4","assets/avatars/boy/ChatGPT Image Jul 13, 2026, 05_52_10 PM.png"],
+    ["boy-5","assets/avatars/boy/ChatGPT Image Jul 13, 2026, 06_18_19 PM.png"],
+    ["boy-6","assets/avatars/boy/ChatGPT Image Jul 13, 2026, 06_47_19 PM.png"]
   ].map(([id,src])=>({id,name:id.replace("-"," ").replace(/\b\w/g,c=>c.toUpperCase()),src,type:"student-avatar"}));
 
   const environments = {
@@ -68,6 +68,8 @@
 
   const expressions=["happy","laughing","thinking","surprised","sad","proud","curious","worried","excited","focused"];
   const poses=["standing","sitting","walking","running","jumping","waving","pointing","reading","listening","building","singing","celebrating"];
+  const canonicalCharacterIds=Object.freeze(Object.keys(characters));
+  const canonicalEnvironmentIds=Object.freeze(Object.keys(environments));
 
-  window.FritzIllustrationLibrary={version:"46.0",characters,avatars,environments,expressions,poses};
+  window.FritzIllustrationLibrary={version:"46.1",characters,avatars,environments,expressions,poses,canonicalCharacterIds,canonicalEnvironmentIds};
 })();
