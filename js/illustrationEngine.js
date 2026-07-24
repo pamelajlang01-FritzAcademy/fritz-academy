@@ -1,4 +1,4 @@
-/* Fritz Academy Illustration Engine v46.1 */
+/* Fritz Academy Illustration Engine v50.3 */
 class IllustrationEngine {
   constructor(scene){
     this.scene=scene;
@@ -11,6 +11,7 @@ class IllustrationEngine {
     const id=this.scene&&this.scene.save&&this.scene.save.avatar;
     return this.library.avatars.find(a=>a.id===id)||null;
   }
+  clamp(value,min,max){ return Math.min(max,Math.max(min,value)); }
 
   textureEntries(config={}){
     const entries=[];
@@ -19,12 +20,12 @@ class IllustrationEngine {
     (config.characters||[]).forEach(spec=>{
       const id=typeof spec==="string"?spec:spec.id;
       if(id==="student"){
-        const a=this.studentAvatar();
-        if(a) entries.push({key:`fa-avatar-${a.id}`,src:a.src});
+        const avatar=this.studentAvatar();
+        if(avatar) entries.push({key:`fa-avatar-${avatar.id}`,src:avatar.src});
         return;
       }
-      const c=this.character(id);
-      if(c) entries.push({key:`fa-char-${id}`,src:c.primary||c.fallback});
+      const character=this.character(id);
+      if(character) entries.push({key:`fa-char-${id}`,src:character.primary||character.fallback});
     });
     return entries.filter((entry,index,array)=>array.findIndex(item=>item.key===entry.key)===index);
   }
@@ -52,45 +53,76 @@ class IllustrationEngine {
     const height=Number(options.height)||250;
     const config=options.scene||{};
     const env=this.environment(config.environment||options.environment||"campus");
+    const innerWidth=width-10;
+    const innerHeight=height-10;
+    const left=x-innerWidth/2;
+    const right=x+innerWidth/2;
+    const top=y-innerHeight/2;
+    const bottom=y+innerHeight/2;
 
     const frame=this.scene.add.rectangle(x,y,width,height,0xffffff,1).setStrokeStyle(5,0x174ea6).setDepth(0);
     objects.push(frame);
 
+    const maskShape=this.scene.make.graphics({x:0,y:0,add:false});
+    maskShape.fillStyle(0xffffff,1);
+    maskShape.fillRect(left,top,innerWidth,innerHeight);
+    const sceneMask=maskShape.createGeometryMask();
+
     if(env&&this.scene.textures.exists(`fa-env-${env.id}`)){
-      const bg=this.scene.add.image(x,y,`fa-env-${env.id}`).setDisplaySize(width-8,height-8).setDepth(1);
+      const bg=this.scene.add.image(x,y,`fa-env-${env.id}`).setDepth(1).setMask(sceneMask);
+      const source=bg.texture.getSourceImage();
+      const sourceRatio=source&&source.height?source.width/source.height:1;
+      const frameRatio=innerWidth/innerHeight;
+      if(sourceRatio>frameRatio) bg.setDisplaySize(innerHeight*sourceRatio,innerHeight);
+      else bg.setDisplaySize(innerWidth,innerWidth/sourceRatio);
       objects.push(bg);
     }else{
-      objects.push(this.scene.add.rectangle(x,y,width-8,height-8,0xdff2ff,1).setDepth(1));
+      objects.push(this.scene.add.rectangle(x,y,innerWidth,innerHeight,0xdff2ff,1).setDepth(1).setMask(sceneMask));
     }
 
-    const shade=this.scene.add.rectangle(x,y+height*.32,width-8,height*.35,0x234a22,.16).setDepth(2);
+    const shade=this.scene.add.rectangle(x,y+height*.32,innerWidth,height*.35,0x234a22,.12).setDepth(2).setMask(sceneMask);
     objects.push(shade);
 
     (config.props||[]).forEach((spec,index)=>{
       const prop=this.makeProp(spec,x,y,width,height,index);
-      if(prop){ objects.push(prop); this.applyMotion(prop,spec.motion||"idle",12+index); }
+      if(!prop) return;
+      prop.x=this.clamp(prop.x,left+34,right-34);
+      prop.y=this.clamp(prop.y,top+28,bottom-38);
+      prop.setMask(sceneMask);
+      objects.push(prop);
+      this.applyMotion(prop,spec.motion||"idle",12+index,{left,right,top,bottom});
     });
 
     (config.characters||[]).forEach((spec,index)=>{
       const id=typeof spec==="string"?spec:spec.id;
-      let key=""; let scale=.75;
+      let key="";
+      let scale=.75;
       if(id==="student"){
-        const a=this.studentAvatar();
-        if(!a) return;
-        key=`fa-avatar-${a.id}`; scale=Number(spec.scale)||.72;
+        const avatar=this.studentAvatar();
+        if(!avatar) return;
+        key=`fa-avatar-${avatar.id}`;
+        scale=Number(spec.scale)||.72;
       }else{
-        const c=this.character(id);
-        if(!c) return;
-        key=`fa-char-${id}`; scale=Number(spec.scale)||c.scale||1;
+        const character=this.character(id);
+        if(!character) return;
+        key=`fa-char-${id}`;
+        scale=Number(spec.scale)||character.scale||1;
       }
       if(!this.scene.textures.exists(key)) return;
-      const actorX=x+(Number(spec.x)||0)*width;
-      const actorY=y+height*.24+(Number(spec.y)||0)*height;
-      const actor=this.scene.add.image(actorX,actorY,key).setDepth(8+index);
-      const baseHeight=height*.57*scale;
-      actor.setDisplaySize(baseHeight*.64,baseHeight);
+
+      const source=this.scene.textures.get(key).getSourceImage();
+      const ratio=source&&source.height?source.width/source.height:.64;
+      const maxHeight=Math.min(innerHeight*.62,150);
+      const actorHeight=this.clamp(maxHeight*scale,56,maxHeight);
+      const actorWidth=Math.min(actorHeight*ratio,innerWidth*.28);
+      const halfW=actorWidth/2;
+      const halfH=actorHeight/2;
+      const actorX=this.clamp(x+(Number(spec.x)||0)*width,left+halfW+6,right-halfW-6);
+      const actorY=this.clamp(y+height*.20+(Number(spec.y)||0)*height,top+halfH+6,bottom-halfH-30);
+      const actor=this.scene.add.image(actorX,actorY,key).setDepth(8+index).setMask(sceneMask);
+      actor.setDisplaySize(actorWidth,actorHeight);
       objects.push(actor);
-      this.applyMotion(actor,spec.motion||"idle",index);
+      this.applyMotion(actor,spec.motion||"idle",index,{left:left+halfW+6,right:right-halfW-6,top:top+halfH+6,bottom:bottom-halfH-30});
     });
 
     const caption=this.scene.add.text(x,y+height*.39,options.label||config.caption||text||"Fritz Academy Story Scene",{
@@ -107,24 +139,26 @@ class IllustrationEngine {
     };
     const symbol=symbols[spec.kind]||"⭐";
     return this.scene.add.text(x+(Number(spec.x)||0)*width,y+(Number(spec.y)||0)*height,symbol,{
-      fontSize:`${Math.round(42*(Number(spec.scale)||1))}px`,align:"center"
+      fontSize:`${Math.min(48,Math.max(22,Math.round(38*(Number(spec.scale)||1))))}px`,align:"center"
     }).setOrigin(.5).setDepth(5+index);
   }
 
-  applyMotion(actor,motion="idle",delayIndex=0){
+  applyMotion(actor,motion="idle",delayIndex=0,bounds=null){
     if(!this.scene||!this.scene.tweens||!actor) return;
-    const delay=delayIndex*90;
+    const delay=delayIndex*70;
     const base={targets:actor,delay,ease:"Sine.easeInOut",yoyo:true,repeat:-1};
+    const safeX=(value)=>bounds?this.clamp(value,bounds.left,bounds.right):value;
+    const safeY=(value)=>bounds?this.clamp(value,bounds.top,bounds.bottom):value;
     if(["wave","celebrate","pop","surprised"].includes(motion)){
-      this.scene.tweens.add({...base,angle:{from:-3,to:3},y:actor.y-8,duration:520});
+      this.scene.tweens.add({...base,angle:{from:-2,to:2},y:safeY(actor.y-4),duration:620});
     }else if(["walk","sweep"].includes(motion)){
-      this.scene.tweens.add({...base,x:actor.x+30,duration:1250});
+      this.scene.tweens.add({...base,x:safeX(actor.x+12),duration:1150});
     }else if(motion==="fall"){
-      this.scene.tweens.add({...base,y:actor.y+28,angle:12,duration:900});
+      this.scene.tweens.add({...base,y:safeY(actor.y+10),angle:6,duration:850});
     }else if(["float","thinking","reading","point","glow","sway"].includes(motion)){
-      this.scene.tweens.add({...base,y:actor.y-7,duration:1150});
+      this.scene.tweens.add({...base,y:safeY(actor.y-4),duration:1100});
     }else{
-      this.scene.tweens.add({...base,y:actor.y-4,duration:1450});
+      this.scene.tweens.add({...base,y:safeY(actor.y-2),duration:1400});
     }
   }
 
