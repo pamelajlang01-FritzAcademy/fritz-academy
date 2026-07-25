@@ -1,10 +1,21 @@
-/* Fritz Academy reliable environment rasterizer v50.24 */
+/* Fritz Academy reliable environment rasterizer v50.25 */
 (function(){
   "use strict";
   if(typeof IllustrationEngine==="undefined") return;
 
+  function addImageToCanvasTexture(scene,key,image){
+    const canvas=document.createElement("canvas");
+    canvas.width=1280;
+    canvas.height=720;
+    const context=canvas.getContext("2d");
+    context.clearRect(0,0,canvas.width,canvas.height);
+    context.drawImage(image,0,0,canvas.width,canvas.height);
+    if(scene.textures.exists(key)) scene.textures.remove(key);
+    scene.textures.addCanvas(key,canvas);
+  }
+
   function rasterizeSvg(scene,key,src){
-    return fetch(src,{cache:"no-store"})
+    return fetch(`${src}${src.includes("?")?"&":"?"}environmentBuild=50.25`,{cache:"no-store"})
       .then(response=>{
         if(!response.ok) throw new Error(`Environment request failed: ${response.status} ${src}`);
         return response.text();
@@ -15,14 +26,7 @@
         const image=new Image();
         image.onload=()=>{
           try{
-            const canvas=document.createElement("canvas");
-            canvas.width=1280;
-            canvas.height=720;
-            const context=canvas.getContext("2d");
-            context.clearRect(0,0,canvas.width,canvas.height);
-            context.drawImage(image,0,0,canvas.width,canvas.height);
-            if(scene.textures.exists(key)) scene.textures.remove(key);
-            scene.textures.addCanvas(key,canvas);
+            addImageToCanvasTexture(scene,key,image);
             URL.revokeObjectURL(url);
             resolve();
           }catch(error){
@@ -38,18 +42,33 @@
       }));
   }
 
+  function loadLegacyFallback(scene,key){
+    return new Promise(resolve=>{
+      const image=new Image();
+      image.onload=()=>{
+        try{ addImageToCanvasTexture(scene,key,image); }
+        catch(error){ console.error("[Fritz Academy] Legacy environment fallback failed",error); }
+        resolve();
+      };
+      image.onerror=()=>resolve();
+      image.src=`assets/academy.png?environmentFallback=50.25`;
+    });
+  }
+
   IllustrationEngine.prototype.ensureAssets=function(config={},done){
-    const missing=this.textureEntries(config).filter(entry=>!this.scene.textures.exists(entry.key));
-    if(!missing.length){ done(); return; }
+    const entries=this.textureEntries(config);
+    const svgEntries=entries.filter(entry=>entry.type==="environment"&&/\.svg(?:\?|$)/i.test(entry.src));
+    const imageEntries=entries.filter(entry=>!svgEntries.includes(entry)&&!this.scene.textures.exists(entry.key));
 
-    const svgEntries=missing.filter(entry=>entry.type==="environment"&&/\.svg(?:\?|$)/i.test(entry.src));
-    const imageEntries=missing.filter(entry=>!svgEntries.includes(entry));
-
-    const svgWork=Promise.all(svgEntries.map(entry=>
-      rasterizeSvg(this.scene,entry.key,entry.src).catch(error=>{
+    /* Always replace environment textures. Earlier loaders may have already
+       registered a blank SVG texture under the correct key. */
+    const svgWork=Promise.all(svgEntries.map(entry=>{
+      if(this.scene.textures.exists(entry.key)) this.scene.textures.remove(entry.key);
+      return rasterizeSvg(this.scene,entry.key,entry.src).catch(error=>{
         console.error("[Fritz Academy] Environment rasterization failed",entry.src,error);
-      })
-    ));
+        return loadLegacyFallback(this.scene,entry.key);
+      });
+    }));
 
     const imageWork=new Promise(resolve=>{
       if(!imageEntries.length){ resolve(); return; }
