@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 720" role="img" aria-label="Fritz Academy Welcome Garden building area">
+<defs>
+ <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#75c9ff"/><stop offset="1" stop-color="#dff4ff"/></linearGradient>
+ <linearGradient id="grass" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#86c963"/><stop offset="1" stop-color="#3f8f46"/></linearGradient>
+ <linearGradient id="stone" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#e8dfcc"/><stop offset="1" stop-color="#a89d89"/></linearGradient>
+ <filter id="shadow"><feDropShadow dx="0" dy="8" stdDeviation="8" flood-opacity=".25"/></filter>
+</defs>
+<rect width="1200" height="720" fill="url(#sky)"/>
+<circle cx="1040" cy="105" r="54" fill="#ffd86b" opacity=".95"/>
+<g fill="#fff" opacity=".9"><ellipse cx="170" cy="105" rx="86" ry="30"/><ellipse cx="230" cy="105" rx="70" ry="38"/><ellipse cx="880" cy="145" rx="92" ry="32"/><ellipse cx="950" cy="145" rx="62" ry="40"/></g>
+<path d="M0 330 Q180 245 360 330 T720 320 T1200 300 V720 H0Z" fill="#69a952"/>
+<path d="M0 390 Q210 310 430 395 T850 380 T1200 350 V720 H0Z" fill="url(#grass)"/>
+<g filter="url(#shadow)">
+ <path d="M430 338 L600 180 L770 338 V462 H430Z" fill="#f5e6c6" stroke="#133d72" stroke-width="10"/>
+ <path d="M390 342 L600 145 L810 342 L770 358 L600 205 L430 358Z" fill="#173f78"/>
+ <rect x="505" y="302" width="190" height="160" rx="8" fill="#fff7e8" stroke="#cda85f" stroke-width="8"/>
+ <rect x="570" y="344" width="60" height="118" rx="6" fill="#164e78"/>
+ <g fill="#9edbff" stroke="#164e78" stroke-width="6"><rect x="465" y="360" width="55" height="65" rx="5"/><rect x="680" y="360" width="55" height="65" rx="5"/></g>
+ <circle cx="600" cy="247" r="43" fill="#f6c744" stroke="#0b2e63" stroke-width="8"/><path d="M600 220 l10 20 23 3-17 16 4 23-20-11-20 11 4-23-17-16 23-3Z" fill="#0b2e63"/>
+</g>
+<path d="M550 720 C555 610 530 545 590 462 C640 392 665 365 690 338" fill="none" stroke="#cfc4aa" stroke-width="92" stroke-linecap="round"/>
+<path d="M550 720 C555 610 530 545 590 462 C640 392 665 365 690 338" fill="none" stroke="#f3ebdc" stroke-width="72" stroke-linecap="round" stroke-dasharray="35 18"/>
+<g fill="none" stroke="#fff" stroke-width="6" stroke-dasharray="14 10" opacity=".95">
+ <ellipse cx="230" cy="420" rx="128" ry="102"/>
+ <ellipse cx="530" cy="540" rx="165" ry="78"/>
+ <ellipse cx="870" cy="475" rx="130" ry="72"/>
+ <rect x="785" y="570" width="190" height="105" rx="30"/>
+ <path d="M350 655 C480 610 650 615 760 665"/>
+</g>
+<g font-family="Arial,sans-serif" font-weight="700" font-size="25" text-anchor="middle" fill="#fff" stroke="#173f78" stroke-width="6" paint-order="stroke">
+ <text x="230" y="425">TREE</text><text x="530" y="545">FLOWER BED</text><text x="870" y="480">BENCH</text><text x="880" y="632">FENCE</text><text x="555" y="672">STONE PATH</text>
+</g>
+<g fill="#fff" opacity=".8"><circle cx="75" cy="600" r="8"/><circle cx="110" cy="560" r="7"/><circle cx="1070" cy="555" r="8"/><circle cx="1120" cy="610" r="7"/></g>
+</svg>
