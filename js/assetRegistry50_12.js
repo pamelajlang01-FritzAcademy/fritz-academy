@@ -1,4 +1,4 @@
-/* Fritz Academy Central Asset Registry v50.26 */
+/* Fritz Academy Central Asset Registry v50.27 */
 (function(){
   "use strict";
 
@@ -21,7 +21,9 @@
     rascal:character("rascal","Rascal","assets/characters/rascal/standing.png","assets/rascal.png",.84,true,{species:"Golden Retriever",voice:"rascal"})
   };
 
-  const sharedLegacy="assets/academy.png";
+  /* Verified PNG used as a safe temporary background while the individual
+     environment artwork is converted and validated as PNG. */
+  const sharedLegacy="assets/fa_master_campus_v1.png";
   const outdoor={left:{x:-.27,y:.16},center:{x:0,y:.16},right:{x:.27,y:.16}};
   const indoor={left:{x:-.26,y:.18},center:{x:0,y:.18},right:{x:.26,y:.18}};
   const environments={
@@ -69,5 +71,5 @@
     return rows;
   }
 
-  window.FritzAssetRegistry={version:"50.26",characters,environments,props,selected,markReady,audit};
+  window.FritzAssetRegistry={version:"50.27",characters,environments,props,selected,markReady,audit};
 })();
