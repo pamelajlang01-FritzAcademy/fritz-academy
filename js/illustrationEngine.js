@@ -1,4 +1,4 @@
-/* Fritz Academy Illustration Engine v50.8 */
+/* Fritz Academy Illustration Engine v50.9 */
 class IllustrationEngine {
   constructor(scene){
     this.scene=scene;
@@ -20,7 +20,7 @@ class IllustrationEngine {
       const id=typeof spec==="string"?spec:spec.id;
       if(id==="student"){
         const avatar=this.studentAvatar();
-        if(avatar) entries.push({key:`fa-avatar-${avatar.id}`,src:avatar.src});
+        if(avatar) entries.push({key:`fa-avatar-${avatar.id}`,src:String(avatar.src||"").replace(/^assets\/assets\//,"assets/")});
       }else{
         const character=this.character(id);
         if(character) entries.push({key:`fa-char-${id}`,src:character.primary||character.fallback});
@@ -40,7 +40,7 @@ class IllustrationEngine {
   }
 
   cleanOuterBackground(key){
-    const cleanKey=`${key}-edge-clean-v508`;
+    const cleanKey=`${key}-edge-clean-v509`;
     if(this.scene.textures.exists(cleanKey)) return cleanKey;
     const texture=this.scene.textures.get(key);
     const source=texture&&texture.getSourceImage&&texture.getSourceImage();
@@ -62,9 +62,7 @@ class IllustrationEngine {
       const isBackground=(r,g,b,a)=>{
         if(a<20) return true;
         const spread=Math.max(r,g,b)-Math.min(r,g,b);
-        const nearWhite=r>232&&g>232&&b>232&&spread<24;
-        const blueEdge=b>105&&b>r*1.08&&b>g*1.02;
-        return nearWhite||blueEdge;
+        return r>232&&g>232&&b>232&&spread<24;
       };
       while(queue.length){
         const [x,y]=queue.pop();
@@ -124,10 +122,11 @@ class IllustrationEngine {
 
     (config.characters||[]).forEach((spec,index)=>{
       const id=typeof spec==="string"?spec:spec.id;
-      let key="",scale=.75;
+      let key="",scale=.75,avatarId="";
       if(id==="student"){
         const avatar=this.studentAvatar();
         if(!avatar) return;
+        avatarId=avatar.id;
         key=`fa-avatar-${avatar.id}`;
         scale=Number(spec.scale)||.72;
       }else{
@@ -137,7 +136,11 @@ class IllustrationEngine {
         scale=Number(spec.scale)||character.scale||1;
       }
       if(!this.scene.textures.exists(key)) return;
-      key=this.cleanOuterBackground(key);
+      if(id==="student"&&window.FritzAvatarAssetPipeline){
+        key=window.FritzAvatarAssetPipeline.cleanPhaserTexture(this.scene,key,avatarId);
+      }else{
+        key=this.cleanOuterBackground(key);
+      }
       const source=this.scene.textures.get(key).getSourceImage();
       const ratio=source&&source.height?source.width/source.height:.64;
       const maxHeight=Math.min(innerHeight*.52,126);
