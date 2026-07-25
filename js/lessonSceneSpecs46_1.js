@@ -1,4 +1,4 @@
-/* Fritz Academy Lesson Scene Specifications v46.1 */
+/* Fritz Academy Lesson Scene Specifications v50.12 */
 (function(){
   "use strict";
   const C=(id,x,scale,motion="idle",y=0)=>({id,x,scale,motion,y});
@@ -51,7 +51,7 @@
         {environment:"welcome-garden",caption:"The map shows a path, a bench, and a tall tree.",characters:[C("bear",-.22,.84,"point")],props:[P("map",.05,-.05,1),P("bench",.28,.18,.7),P("young-tree",.34,-.02,.75,"sway")]},
         {environment:"welcome-garden",caption:"Rascal points to a mark beside the tree.",characters:[C("rascal",-.13,.84,"point")],props:[P("map",.14,-.05,1),P("map-mark",.27,-.02,.7,"pulse")]},
         {environment:"welcome-garden",caption:"Nola thinks it may be the next garden clue.",characters:[C("nola",-.17,1,"thinking"),C("tony",.22,.58,"idle")],props:[P("map",.02,.02,.85),P("idea",.12,-.2,.8,"glow")]},
-        {environment:"campus",caption:"The friends decide to follow the map next time.",characters:[C("nola",-.3,1,"walk"),C("tony",-.08,.58,"walk"),C("rascal",.14,.84,"celebrate"),C("student",.33,.72,"walk")],props:[P("map",.03,-.08,.7,"float"),P("arrow",.28,-.15,.8,"sweep")]}
+        {environment:"welcome-garden",caption:"The friends decide to follow the garden map next time.",characters:[C("nola",-.3,1,"walk"),C("tony",-.08,.58,"walk"),C("rascal",.14,.84,"celebrate"),C("student",.33,.72,"walk")],props:[P("map",.03,-.08,.7,"float"),P("arrow",.28,-.15,.8,"sweep")]}
       ]
     }
   };
