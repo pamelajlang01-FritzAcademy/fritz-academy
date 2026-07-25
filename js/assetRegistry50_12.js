@@ -1,4 +1,4 @@
-/* Fritz Academy Central Asset Registry v50.12 */
+/* Fritz Academy Central Asset Registry v50.13 */
 (function(){
   "use strict";
 
@@ -14,11 +14,11 @@
 
   const characters={
     fritz:character("fritz","Captain Fritz","assets/characters/captain-fritz/standing.png","assets/captain_fritz.png",1,true,{species:"Dalmatian",voice:"captain-fritz"}),
-    bash:character("bash","Bash","assets/characters/bash/standing.png","assets/bash.png",1.08,false,{species:"German Shepherd",voice:"bash",rules:["left ear floppy","slightly taller than Captain Fritz"]}),
-    bear:character("bear","Bear","assets/characters/bear/standing.png","assets/bear.png",.84,false,{species:"German Shepherd",voice:"bear",rules:["more tan than black","navy Academy hoodie"]}),
-    nola:character("nola","Nola","assets/characters/nola/standing.png","assets/nola.png",1,false,{species:"Cane Corso",voice:"nola"}),
-    tony:character("tony","Tony","assets/characters/tony/standing.png","assets/tony.png",.58,false,{species:"White Schnoodle",voice:"tony"}),
-    rascal:character("rascal","Rascal","assets/characters/rascal/standing.png","assets/rascal.png",.84,false,{species:"Golden Retriever",voice:"rascal"})
+    bash:character("bash","Bash","assets/characters/bash/standing.png","assets/bash.png",1.08,true,{species:"German Shepherd",voice:"bash",rules:["left ear floppy","slightly taller than Captain Fritz"]}),
+    bear:character("bear","Bear","assets/characters/bear/standing.png","assets/bear.png",.84,true,{species:"German Shepherd",voice:"bear",rules:["more tan than black","navy Academy hoodie"]}),
+    nola:character("nola","Nola","assets/characters/nola/standing.png","assets/nola.png",1,true,{species:"Cane Corso",voice:"nola"}),
+    tony:character("tony","Tony","assets/characters/tony/standing.png","assets/tony.png",.58,true,{species:"White Schnoodle",voice:"tony"}),
+    rascal:character("rascal","Rascal","assets/characters/rascal/standing.png","assets/rascal.png",.84,true,{species:"Golden Retriever",voice:"rascal"})
   };
 
   const sharedLegacy="assets/academy.png";
@@ -66,5 +66,5 @@
     return rows;
   }
 
-  window.FritzAssetRegistry={version:"50.12",characters,environments,props,selected,markReady,audit};
+  window.FritzAssetRegistry={version:"50.13",characters,environments,props,selected,markReady,audit};
 })();
