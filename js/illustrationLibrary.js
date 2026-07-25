@@ -1,45 +1,28 @@
-/* Fritz Academy Illustration Library v50.11 */
+/* Fritz Academy Illustration Library v50.12 */
 (function(){
   "use strict";
 
-  const characters = {
-    fritz: {
-      id:"fritz", name:"Captain Fritz", species:"Dalmatian", role:"adult teacher and Academy leader",
-      scale:1.0, primary:"assets/captain_fritz.png", fallback:"assets/captain_fritz.png",
-      uniform:"white captain uniform", ageGroup:"adult",
-      rules:["Only adult dog in the main cast","Always clearly taller and more mature than the student dogs","White captain uniform is canonical"]
-    },
-    bash: {
-      id:"bash", name:"Bash", species:"German Shepherd", role:"oversized younger puppy and protective big brother",
-      scale:1.08, primary:"assets/bash.png", fallback:"assets/bash.png",
-      uniform:"navy Academy vest", ageGroup:"puppy",
-      rules:["Largest student dog","Slightly taller than Captain Fritz and Nola","One ear upright and one floppy","More black than tan","Must retain a youthful puppy face"]
-    },
-    bear: {
-      id:"bear", name:"Bear", species:"German Shepherd", role:"older brother, builder and thoughtful helper",
-      scale:0.84, primary:"assets/bear.png", fallback:"assets/bear.png",
-      uniform:"green Academy vest", ageGroup:"puppy",
-      rules:["Smaller than Bash, Fritz and Nola","Same general height tier as Rascal","More tan than black","Older than Bash"]
-    },
-    nola: {
-      id:"nola", name:"Nola", species:"Cane Corso", role:"confident, creative and caring student",
-      scale:1.0, primary:"assets/nola.png", fallback:"assets/nola.png",
-      uniform:"pink Academy collar or uniform", ageGroup:"young dog",
-      rules:["Same height tier as Captain Fritz","Cane Corso build and charcoal coat","Never relabel as Olive"]
-    },
-    tony: {
-      id:"tony", name:"Tony", species:"White Schnoodle", role:"oldest student and smallest dog",
-      scale:0.58, primary:"assets/tony.png", fallback:"assets/tony.png",
-      uniform:"purple Academy vest", ageGroup:"young dog",
-      rules:["Smallest character by a clear margin","Oldest of the student dogs","Must look tiny beside Bash","White Schnoodle: Poodle and Schnauzer mix"]
-    },
-    rascal: {
-      id:"rascal", name:"Rascal", species:"Golden Retriever", role:"youngest playful student",
-      scale:0.84, primary:"assets/rascal.png", fallback:"assets/rascal.png",
-      uniform:"orange Academy vest", ageGroup:"puppy",
-      rules:["Same general height tier as Bear","Smaller than Fritz and Nola","Golden Retriever coat and puppy features"]
-    }
-  };
+  const registry=window.FritzAssetRegistry;
+  if(!registry){
+    throw new Error("FritzAssetRegistry must load before illustrationLibrary.js");
+  }
+
+  const characters={};
+  Object.values(registry.characters).forEach(asset=>{
+    characters[asset.id]={
+      id:asset.id,
+      name:asset.name,
+      species:asset.meta&&asset.meta.species||"",
+      role:asset.meta&&asset.meta.role||"",
+      scale:asset.scale||1,
+      primary:registry.selected(asset),
+      production:asset.production,
+      fallback:asset.legacy||"",
+      productionReady:Boolean(asset.productionReady),
+      voiceId:asset.meta&&asset.meta.voice||asset.id,
+      rules:asset.meta&&asset.meta.rules||[]
+    };
+  });
 
   const avatars = [
     ["girl-1","assets/avatars/girl/ChatGPT Image Jul 13, 2026, 05_09_47 PM.png"],
@@ -56,26 +39,21 @@
     ["boy-6","assets/avatars/boy/ChatGPT Image Jul 13, 2026, 06_47_19 PM.png"]
   ].map(([id,src])=>({id,name:id.replace("-"," ").replace(/\b\w/g,c=>c.toUpperCase()),src,type:"student-avatar"}));
 
-  /*
-    Production safeguard: no lesson-scene environment may use the old
-    full-campus/world-map image. Until each approved standalone room and
-    garden panel is exported, all scene IDs use the correctly proportioned
-    Academy artwork rather than stretching the campus map behind actors.
-  */
-  const sceneBackground = "assets/academy.png";
-  const environments = {
-    campus:{id:"campus",name:"Fritz Academy",src:sceneBackground,tags:["academy","scene-safe"]},
-    "academy-front":{id:"academy-front",name:"Academy Front",src:sceneBackground,tags:["outdoor","entrance"]},
-    "welcome-garden":{id:"welcome-garden",name:"Welcome Garden",src:sceneBackground,tags:["outdoor","garden","temporary-approved-scale"]},
-    "color-garden":{id:"color-garden",name:"Color Garden",src:sceneBackground,tags:["outdoor","garden","temporary-approved-scale"]},
-    "reading-room":{id:"reading-room",name:"Reading Room",src:sceneBackground,tags:["indoor","reading","temporary-approved-scale"]},
-    classroom:{id:"classroom",name:"Classroom",src:sceneBackground,tags:["indoor","school","temporary-approved-scale"]},
-    "music-room":{id:"music-room",name:"Music Room",src:sceneBackground,tags:["indoor","music","temporary-approved-scale"]},
-    playground:{id:"playground",name:"Playground",src:sceneBackground,tags:["outdoor","play","temporary-approved-scale"]}
-  };
+  const environments={};
+  Object.values(registry.environments).forEach(asset=>{
+    environments[asset.id]={
+      id:asset.id,
+      name:asset.name,
+      src:registry.selected(asset),
+      production:asset.production,
+      fallback:asset.legacy||"",
+      productionReady:Boolean(asset.productionReady),
+      tags:asset.tags||[]
+    };
+  });
 
   const expressions=["happy","laughing","thinking","surprised","sad","proud","curious","worried","excited","focused"];
   const poses=["standing","sitting","walking","running","jumping","waving","pointing","reading","listening","building","singing","celebrating"];
 
-  window.FritzIllustrationLibrary={version:"50.11",characters,avatars,environments,expressions,poses};
+  window.FritzIllustrationLibrary={version:"50.12",characters,avatars,environments,expressions,poses};
 })();
