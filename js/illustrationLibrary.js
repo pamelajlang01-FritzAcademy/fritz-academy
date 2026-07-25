@@ -1,4 +1,4 @@
-/* Fritz Academy Illustration Library v50.2 */
+/* Fritz Academy Illustration Library v50.11 */
 (function(){
   "use strict";
 
@@ -56,18 +56,26 @@
     ["boy-6","assets/avatars/boy/ChatGPT Image Jul 13, 2026, 06_47_19 PM.png"]
   ].map(([id,src])=>({id,name:id.replace("-"," ").replace(/\b\w/g,c=>c.toUpperCase()),src,type:"student-avatar"}));
 
+  /*
+    Production safeguard: no lesson-scene environment may use the old
+    full-campus/world-map image. Until each approved standalone room and
+    garden panel is exported, all scene IDs use the correctly proportioned
+    Academy artwork rather than stretching the campus map behind actors.
+  */
+  const sceneBackground = "assets/academy.png";
   const environments = {
-    campus:{id:"campus",name:"Fritz Academy Campus",src:"assets/fritz_academy_world_map.png",tags:["outdoor","campus","map"]},
-    "academy-front":{id:"academy-front",name:"Academy Front",src:"assets/academy.png",tags:["outdoor","entrance"]},
-    "welcome-garden":{id:"welcome-garden",name:"Welcome Garden",src:"assets/fritz_academy_world_map.png",tags:["outdoor","garden"]},
-    "reading-room":{id:"reading-room",name:"Reading Room",src:"assets/academy.png",tags:["indoor","reading"]},
-    classroom:{id:"classroom",name:"Classroom",src:"assets/academy.png",tags:["indoor","school"]},
-    "music-room":{id:"music-room",name:"Music Room",src:"assets/academy.png",tags:["indoor","music"]},
-    playground:{id:"playground",name:"Playground",src:"assets/fritz_academy_world_map.png",tags:["outdoor","play"]}
+    campus:{id:"campus",name:"Fritz Academy",src:sceneBackground,tags:["academy","scene-safe"]},
+    "academy-front":{id:"academy-front",name:"Academy Front",src:sceneBackground,tags:["outdoor","entrance"]},
+    "welcome-garden":{id:"welcome-garden",name:"Welcome Garden",src:sceneBackground,tags:["outdoor","garden","temporary-approved-scale"]},
+    "color-garden":{id:"color-garden",name:"Color Garden",src:sceneBackground,tags:["outdoor","garden","temporary-approved-scale"]},
+    "reading-room":{id:"reading-room",name:"Reading Room",src:sceneBackground,tags:["indoor","reading","temporary-approved-scale"]},
+    classroom:{id:"classroom",name:"Classroom",src:sceneBackground,tags:["indoor","school","temporary-approved-scale"]},
+    "music-room":{id:"music-room",name:"Music Room",src:sceneBackground,tags:["indoor","music","temporary-approved-scale"]},
+    playground:{id:"playground",name:"Playground",src:sceneBackground,tags:["outdoor","play","temporary-approved-scale"]}
   };
 
   const expressions=["happy","laughing","thinking","surprised","sad","proud","curious","worried","excited","focused"];
   const poses=["standing","sitting","walking","running","jumping","waving","pointing","reading","listening","building","singing","celebrating"];
 
-  window.FritzIllustrationLibrary={version:"50.2",characters,avatars,environments,expressions,poses};
+  window.FritzIllustrationLibrary={version:"50.11",characters,avatars,environments,expressions,poses};
 })();
