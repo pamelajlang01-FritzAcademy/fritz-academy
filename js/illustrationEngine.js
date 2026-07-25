@@ -1,21 +1,40 @@
-/* Fritz Academy Illustration Engine v50.9 */
+/* Fritz Academy Illustration Engine v50.10 */
 class IllustrationEngine {
   constructor(scene){
     this.scene=scene;
     this.library=window.FritzIllustrationLibrary||{characters:{},avatars:[],environments:{}};
   }
   character(id){ return this.library.characters[id]||null; }
-  environment(id){ return this.library.environments[id]||this.library.environments.campus||null; }
+  environment(id){
+    const key=String(id||"").trim();
+    if(!key) return null;
+    const environment=this.library.environments[key]||null;
+    if(!environment){
+      console.warn(`[Fritz Academy] Unknown environment: ${key}`);
+      return null;
+    }
+    return environment;
+  }
+  activeStudent(){
+    if(typeof getActiveStudent==="function"){
+      const student=getActiveStudent();
+      if(student) return student;
+    }
+    if(this.scene&&this.scene.save) return this.scene.save;
+    if(typeof getSave==="function") return getSave();
+    return null;
+  }
   studentAvatar(){
-    const id=this.scene&&this.scene.save&&this.scene.save.avatar;
-    return this.library.avatars.find(a=>a.id===id)||null;
+    const student=this.activeStudent();
+    const id=student&&(student.avatar||((student.puppy&&student.puppy!=="fritz")?student.puppy:""));
+    return this.library.avatars.find(avatar=>avatar.id===id)||null;
   }
   clamp(value,min,max){ return Math.min(max,Math.max(min,value)); }
 
   textureEntries(config={}){
     const entries=[];
-    const env=this.environment(config.environment||"campus");
-    if(env) entries.push({key:`fa-env-${env.id}`,src:env.src});
+    const env=this.environment(config.environment);
+    if(env&&env.src) entries.push({key:`fa-env-${env.id}`,src:env.src});
     (config.characters||[]).forEach(spec=>{
       const id=typeof spec==="string"?spec:spec.id;
       if(id==="student"){
@@ -40,7 +59,7 @@ class IllustrationEngine {
   }
 
   cleanOuterBackground(key){
-    const cleanKey=`${key}-edge-clean-v509`;
+    const cleanKey=`${key}-edge-clean-v510`;
     if(this.scene.textures.exists(cleanKey)) return cleanKey;
     const texture=this.scene.textures.get(key);
     const source=texture&&texture.getSourceImage&&texture.getSourceImage();
@@ -94,7 +113,8 @@ class IllustrationEngine {
     const width=Number(options.width)||620;
     const height=Number(options.height)||250;
     const config=options.scene||{};
-    const env=this.environment(config.environment||options.environment||"campus");
+    const environmentId=config.environment||options.environment||"";
+    const env=this.environment(environmentId);
     const innerWidth=width-10,innerHeight=height-10;
     const left=x-innerWidth/2,right=x+innerWidth/2,top=y-innerHeight/2,bottom=y+innerHeight/2;
 
@@ -104,7 +124,9 @@ class IllustrationEngine {
       bg.setDisplaySize(innerWidth,innerHeight);
       objects.push(bg);
     }else{
-      objects.push(this.scene.add.rectangle(x,y,innerWidth,innerHeight,0xdff2ff,1).setDepth(1));
+      objects.push(this.scene.add.rectangle(x,y,innerWidth,innerHeight,0xeaf3ff,1).setDepth(1));
+      const missingLabel=environmentId?`Artwork needed: ${environmentId}`:"Scene artwork needed";
+      objects.push(this.scene.add.text(x,y,missingLabel,{fontFamily:"Arial",fontSize:"18px",fontStyle:"bold",color:"#174ea6",align:"center",wordWrap:{width:innerWidth-40}}).setOrigin(.5).setDepth(2));
     }
     objects.push(this.scene.add.rectangle(x,y+height*.34,innerWidth,height*.28,0x102342,.08).setDepth(2));
 
@@ -125,7 +147,10 @@ class IllustrationEngine {
       let key="",scale=.75,avatarId="";
       if(id==="student"){
         const avatar=this.studentAvatar();
-        if(!avatar) return;
+        if(!avatar){
+          console.warn("[Fritz Academy] Scene requests the student avatar, but the active student has no valid avatar.");
+          return;
+        }
         avatarId=avatar.id;
         key=`fa-avatar-${avatar.id}`;
         scale=Number(spec.scale)||.72;
@@ -177,7 +202,8 @@ class IllustrationEngine {
 
   validateScene(config={}){
     const errors=[];
-    if(!this.environment(config.environment||"campus")) errors.push("Unknown environment");
+    if(!config.environment) errors.push("Missing environment ID");
+    else if(!this.environment(config.environment)) errors.push(`Unknown environment: ${config.environment}`);
     (config.characters||[]).forEach(spec=>{
       const id=typeof spec==="string"?spec:spec.id;
       if(id!=="student"&&!this.character(id)) errors.push(`Unknown character: ${id}`);
