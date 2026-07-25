@@ -1,4 +1,4 @@
-/* Fritz Academy Illustration Engine v50.7 */
+/* Fritz Academy Illustration Engine v50.8 */
 class IllustrationEngine {
   constructor(scene){
     this.scene=scene;
@@ -36,12 +36,11 @@ class IllustrationEngine {
     const finish=()=>{ if(settled) return; settled=true; done(); };
     missing.forEach(entry=>this.scene.load.image(entry.key,entry.src));
     this.scene.load.once("complete",finish);
-    this.scene.load.once("loaderror",finish);
     this.scene.load.start();
   }
 
   cleanOuterBackground(key){
-    const cleanKey=`${key}-edge-clean-v507`;
+    const cleanKey=`${key}-edge-clean-v508`;
     if(this.scene.textures.exists(cleanKey)) return cleanKey;
     const texture=this.scene.textures.get(key);
     const source=texture&&texture.getSourceImage&&texture.getSourceImage();
@@ -56,32 +55,28 @@ class IllustrationEngine {
       const image=ctx.getImageData(0,0,canvas.width,canvas.height);
       const data=image.data,w=canvas.width,h=canvas.height;
       const visited=new Uint8Array(w*h);
-      const pixel=(x,y)=>{ const i=(y*w+x)*4; return [data[i],data[i+1],data[i+2],data[i+3]]; };
-      const distance=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1],a[2]-b[2]);
-      const corners=[[0,0],[w-1,0],[0,h-1],[w-1,h-1]];
-
-      corners.forEach(([sx,sy])=>{
-        const seed=pixel(sx,sy);
-        const brightness=(seed[0]+seed[1]+seed[2])/3;
-        const blueDominant=seed[2]>seed[0]*1.12&&seed[2]>seed[1]*1.04;
-        const nearWhite=brightness>235&&Math.max(seed[0],seed[1],seed[2])-Math.min(seed[0],seed[1],seed[2])<22;
-        if(!nearWhite&&!blueDominant&&seed[3]>20) return;
-
-        const tolerance=nearWhite?18:24;
-        const queue=[[sx,sy]];
-        while(queue.length){
-          const [x,y]=queue.pop();
-          if(x<0||x>=w||y<0||y>=h) continue;
-          const idx=y*w+x;
-          if(visited[idx]) continue;
-          visited[idx]=1;
-          const current=pixel(x,y);
-          if(current[3]>20&&distance(current,seed)>tolerance) continue;
-          data[idx*4+3]=0;
-          queue.push([x-1,y],[x+1,y],[x,y-1],[x,y+1]);
-        }
-      });
-
+      const queue=[];
+      const pushEdge=(x,y)=>queue.push([x,y]);
+      for(let x=0;x<w;x++){ pushEdge(x,0); pushEdge(x,h-1); }
+      for(let y=1;y<h-1;y++){ pushEdge(0,y); pushEdge(w-1,y); }
+      const isBackground=(r,g,b,a)=>{
+        if(a<20) return true;
+        const spread=Math.max(r,g,b)-Math.min(r,g,b);
+        const nearWhite=r>232&&g>232&&b>232&&spread<24;
+        const blueEdge=b>105&&b>r*1.08&&b>g*1.02;
+        return nearWhite||blueEdge;
+      };
+      while(queue.length){
+        const [x,y]=queue.pop();
+        if(x<0||x>=w||y<0||y>=h) continue;
+        const idx=y*w+x;
+        if(visited[idx]) continue;
+        visited[idx]=1;
+        const i=idx*4;
+        if(!isBackground(data[i],data[i+1],data[i+2],data[i+3])) continue;
+        data[i+3]=0;
+        queue.push([x-1,y],[x+1,y],[x,y-1],[x,y+1]);
+      }
       ctx.putImageData(image,0,0);
       this.scene.textures.addCanvas(cleanKey,canvas);
       return cleanKey;
@@ -106,7 +101,6 @@ class IllustrationEngine {
     const left=x-innerWidth/2,right=x+innerWidth/2,top=y-innerHeight/2,bottom=y+innerHeight/2;
 
     objects.push(this.scene.add.rectangle(x,y,width,height,0xffffff,1).setDepth(0));
-
     if(env&&this.scene.textures.exists(`fa-env-${env.id}`)){
       const bg=this.scene.add.image(x,y,`fa-env-${env.id}`).setDepth(1);
       bg.setDisplaySize(innerWidth,innerHeight);
@@ -114,7 +108,6 @@ class IllustrationEngine {
     }else{
       objects.push(this.scene.add.rectangle(x,y,innerWidth,innerHeight,0xdff2ff,1).setDepth(1));
     }
-
     objects.push(this.scene.add.rectangle(x,y+height*.34,innerWidth,height*.28,0x102342,.08).setDepth(2));
 
     const redundantProps=new Set(["gate","flag","path","garden-sign","academy-sign"]);
