@@ -1,4 +1,4 @@
-/* Fritz Academy Central Asset Registry v50.13 */
+/* Fritz Academy Central Asset Registry v50.22 */
 (function(){
   "use strict";
 
@@ -7,8 +7,8 @@
     src(){ return this.productionReady?this.production:this.legacy; }
   });
 
-  const environment=(id,name,production,legacy,productionReady=false,tags=[])=>({
-    id,name,type:"environment",production,legacy,productionReady,tags,
+  const environment=(id,name,production,legacy,productionReady=false,tags=[],composition={})=>({
+    id,name,type:"environment",production,legacy,productionReady,tags,composition,
     src(){ return this.productionReady?this.production:this.legacy; }
   });
 
@@ -22,16 +22,19 @@
   };
 
   const sharedLegacy="assets/academy.png";
+  const outdoor={left:{x:-.27,y:.16},center:{x:0,y:.16},right:{x:.27,y:.16}};
+  const indoor={left:{x:-.26,y:.18},center:{x:0,y:.18},right:{x:.26,y:.18}};
   const environments={
-    campus:environment("campus","Fritz Academy Campus","assets/environments/academy-front.png",sharedLegacy,false,["legacy-id","outdoor"]),
-    "academy-front":environment("academy-front","Academy Front","assets/environments/academy-front.png",sharedLegacy,false,["outdoor","entrance"]),
-    "welcome-garden":environment("welcome-garden","Welcome Garden","assets/environments/welcome-garden.png",sharedLegacy,false,["outdoor","garden"]),
-    "color-garden":environment("color-garden","Color Garden","assets/environments/color-garden.png",sharedLegacy,false,["outdoor","garden"]),
-    "reading-room":environment("reading-room","Reading Room","assets/environments/reading-room.png",sharedLegacy,false,["indoor","reading"]),
-    classroom:environment("classroom","Classroom","assets/environments/classroom.png",sharedLegacy,false,["indoor","school"]),
-    "music-room":environment("music-room","Music Room","assets/environments/music-room.png",sharedLegacy,false,["indoor","music"]),
-    playground:environment("playground","Playground","assets/environments/playground.png",sharedLegacy,false,["outdoor","play"]),
-    "builder-yard":environment("builder-yard","Builder Yard","assets/environments/builder-yard.png",sharedLegacy,false,["outdoor","builder"])
+    campus:environment("campus","Fritz Academy Campus","assets/environments/academy-front.svg",sharedLegacy,true,["legacy-id","outdoor"],outdoor),
+    "academy-gate":environment("academy-gate","Academy Gate","assets/environments/academy-gate.svg",sharedLegacy,true,["outdoor","entrance","arrival"],{fritz:{x:-.24,y:.16},student:{x:.23,y:.17},center:{x:0,y:.16}}),
+    "academy-front":environment("academy-front","Academy Front","assets/environments/academy-front.svg",sharedLegacy,true,["outdoor","entrance"],outdoor),
+    "welcome-garden":environment("welcome-garden","Welcome Garden","assets/environments/welcome-garden.svg",sharedLegacy,true,["outdoor","garden"],outdoor),
+    "color-garden":environment("color-garden","Color Garden","assets/environments/color-garden.svg",sharedLegacy,true,["outdoor","garden","colors"],outdoor),
+    "reading-room":environment("reading-room","Reading Room","assets/environments/reading-room.svg",sharedLegacy,true,["indoor","reading"],indoor),
+    classroom:environment("classroom","Classroom","assets/environments/classroom.svg",sharedLegacy,true,["indoor","school"],indoor),
+    "music-room":environment("music-room","Music Room","assets/environments/music-room.svg",sharedLegacy,true,["indoor","music"],indoor),
+    playground:environment("playground","Playground","assets/environments/playground.svg",sharedLegacy,true,["outdoor","play"],outdoor),
+    "builder-yard":environment("builder-yard","Builder Yard","assets/environments/builder-yard.svg",sharedLegacy,true,["outdoor","builder"],outdoor)
   };
 
   const props={
@@ -66,5 +69,5 @@
     return rows;
   }
 
-  window.FritzAssetRegistry={version:"50.13",characters,environments,props,selected,markReady,audit};
+  window.FritzAssetRegistry={version:"50.22",characters,environments,props,selected,markReady,audit};
 })();
