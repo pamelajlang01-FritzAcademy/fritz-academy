@@ -1,4 +1,4 @@
-/* Fritz Academy Illustration Engine v50.10 */
+/* Fritz Academy Illustration Engine v50.23 */
 class IllustrationEngine {
   constructor(scene){
     this.scene=scene;
@@ -34,15 +34,15 @@ class IllustrationEngine {
   textureEntries(config={}){
     const entries=[];
     const env=this.environment(config.environment);
-    if(env&&env.src) entries.push({key:`fa-env-${env.id}`,src:env.src});
+    if(env&&env.src) entries.push({key:`fa-env-${env.id}`,src:env.src,type:"environment"});
     (config.characters||[]).forEach(spec=>{
       const id=typeof spec==="string"?spec:spec.id;
       if(id==="student"){
         const avatar=this.studentAvatar();
-        if(avatar) entries.push({key:`fa-avatar-${avatar.id}`,src:String(avatar.src||"").replace(/^assets\/assets\//,"assets/")});
+        if(avatar) entries.push({key:`fa-avatar-${avatar.id}`,src:String(avatar.src||"").replace(/^assets\/assets\//,"assets/"),type:"image"});
       }else{
         const character=this.character(id);
-        if(character) entries.push({key:`fa-char-${id}`,src:character.primary||character.fallback});
+        if(character) entries.push({key:`fa-char-${id}`,src:character.primary||character.fallback,type:"image"});
       }
     });
     return entries.filter((entry,index,array)=>array.findIndex(item=>item.key===entry.key)===index);
@@ -53,8 +53,15 @@ class IllustrationEngine {
     if(!missing.length){ done(); return; }
     let settled=false;
     const finish=()=>{ if(settled) return; settled=true; done(); };
-    missing.forEach(entry=>this.scene.load.image(entry.key,entry.src));
+    missing.forEach(entry=>{
+      if(entry.type==="environment"&&/\.svg(?:\?|$)/i.test(entry.src)){
+        this.scene.load.svg(entry.key,entry.src,{width:1280,height:720});
+      }else{
+        this.scene.load.image(entry.key,entry.src);
+      }
+    });
     this.scene.load.once("complete",finish);
+    this.scene.load.once("loaderror",file=>console.error("[Fritz Academy] Asset failed to load",file&&file.src));
     this.scene.load.start();
   }
 
@@ -121,7 +128,14 @@ class IllustrationEngine {
     objects.push(this.scene.add.rectangle(x,y,width,height,0xffffff,1).setDepth(0));
     if(env&&this.scene.textures.exists(`fa-env-${env.id}`)){
       const bg=this.scene.add.image(x,y,`fa-env-${env.id}`).setDepth(1);
-      bg.setDisplaySize(innerWidth,innerHeight);
+      const source=bg.texture&&bg.texture.getSourceImage&&bg.texture.getSourceImage();
+      if(source&&source.width&&source.height){
+        const scale=Math.max(innerWidth/source.width,innerHeight/source.height);
+        bg.setDisplaySize(source.width*scale,source.height*scale);
+      }else bg.setDisplaySize(innerWidth,innerHeight);
+      const maskShape=this.scene.make.graphics({x:0,y:0,add:false});
+      maskShape.fillStyle(0xffffff).fillRect(left,top,innerWidth,innerHeight);
+      bg.setMask(maskShape.createGeometryMask());
       objects.push(bg);
     }else{
       objects.push(this.scene.add.rectangle(x,y,innerWidth,innerHeight,0xeaf3ff,1).setDepth(1));
