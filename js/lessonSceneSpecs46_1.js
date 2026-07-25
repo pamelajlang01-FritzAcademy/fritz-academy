@@ -1,4 +1,4 @@
-/* Fritz Academy Lesson Scene Specifications v50.12 */
+/* Fritz Academy Lesson Scene Specifications v50.22 */
 (function(){
   "use strict";
   const C=(id,x,scale,motion="idle",y=0)=>({id,x,scale,motion,y});
@@ -7,26 +7,26 @@
   window.FritzLessonSceneSpecs={
     "1-A":{
       story:[
-        {environment:"academy-front",caption:"Captain Fritz waits beside the Academy gate.",characters:[C("fritz",-0.18,1,"idle")],props:[P("gate",0.24,0.06,1.1),P("flag",0.34,-0.18,.8,"wave")]},
-        {environment:"academy-front",caption:"A new Academy Builder walks up the path.",characters:[C("fritz",.18,1,"idle"),C("student",-.20,.72,"walk")],props:[P("path",0,.23,1.2)]},
-        {environment:"academy-front",caption:"Captain Fritz waves and says hello.",characters:[C("fritz",-.08,1,"wave"),C("student",.22,.72,"idle")],props:[P("speech",.05,-.22,.9,"pop")]},
-        {environment:"academy-front",caption:"The new student introduces themself.",characters:[C("fritz",-.19,1,"idle"),C("student",.18,.72,"wave")],props:[P("name-tag",.02,-.18,.9,"float")]},
-        {environment:"academy-front",caption:"Captain Fritz smiles. It is nice to meet you.",characters:[C("fritz",-.16,1,"celebrate"),C("student",.17,.72,"celebrate")],props:[P("sparkles",0,-.23,1,"float")]},
-        {environment:"welcome-garden",caption:"Together, they walk toward the unfinished Welcome Garden.",characters:[C("fritz",-.16,1,"walk"),C("student",.11,.72,"walk")],props:[P("flowers",-.32,.22,.8,"sway"),P("garden-sign",.31,.07,.85)]}
+        {environment:"academy-gate",caption:"Captain Fritz waits beside the Academy gate.",characters:[C("fritz",-0.24,1,"idle")],props:[]},
+        {environment:"academy-gate",caption:"A new Academy Builder walks up the path.",characters:[C("fritz",-.22,1,"idle"),C("student",.22,.72,"walk")],props:[]},
+        {environment:"academy-gate",caption:"Captain Fritz waves and says hello.",characters:[C("fritz",-.22,1,"wave"),C("student",.22,.72,"idle")],props:[]},
+        {environment:"academy-gate",caption:"The new student introduces themself.",characters:[C("fritz",-.22,1,"idle"),C("student",.22,.72,"wave")],props:[P("name-tag",.02,-.18,.9,"float")]},
+        {environment:"academy-gate",caption:"Captain Fritz smiles. It is nice to meet you.",characters:[C("fritz",-.22,1,"celebrate"),C("student",.22,.72,"celebrate")],props:[]},
+        {environment:"welcome-garden",caption:"Together, they walk toward the unfinished Welcome Garden.",characters:[C("fritz",-.16,1,"walk"),C("student",.11,.72,"walk")],props:[P("flowers",-.32,.22,.8,"sway")]}
       ],
       reader1:[
-        {environment:"academy-front",caption:"Tony is near the gate.",characters:[C("tony",-.12,.58,"idle")],props:[P("gate",.24,.06,1)]},
-        {environment:"academy-front",caption:"Tony sees a new friend.",characters:[C("tony",-.18,.58,"idle"),C("student",.17,.72,"walk")],props:[P("sparkles",0,-.2,.7,"float")]},
-        {environment:"academy-front",caption:"Tony says hello.",characters:[C("tony",-.16,.58,"wave"),C("student",.18,.72,"idle")],props:[P("speech",0,-.2,.75,"pop")]},
-        {environment:"academy-front",caption:"The new friend waves.",characters:[C("tony",-.16,.58,"idle"),C("student",.18,.72,"wave")],props:[P("speech",0,-.2,.75,"pop")]},
-        {environment:"welcome-garden",caption:"Tony is happy.",characters:[C("tony",0,.58,"celebrate")],props:[P("flowers",-.28,.22,.8,"sway"),P("butterfly",.25,-.12,.8,"float")]}
+        {environment:"academy-gate",caption:"Tony is near the gate.",characters:[C("tony",-.12,.58,"idle")],props:[]},
+        {environment:"academy-gate",caption:"Tony sees a new friend.",characters:[C("tony",-.18,.58,"idle"),C("student",.17,.72,"walk")],props:[]},
+        {environment:"academy-gate",caption:"Tony says hello.",characters:[C("tony",-.16,.58,"wave"),C("student",.18,.72,"idle")],props:[]},
+        {environment:"academy-gate",caption:"The new friend waves.",characters:[C("tony",-.16,.58,"idle"),C("student",.18,.72,"wave")],props:[]},
+        {environment:"welcome-garden",caption:"Tony is happy.",characters:[C("tony",0,.58,"celebrate")],props:[P("flowers",-.28,.22,.8,"sway")]}
       ],
       reader2:[
-        {environment:"welcome-garden",caption:"Tony and the student walk to the garden.",characters:[C("tony",-.18,.58,"walk"),C("student",.15,.72,"walk")],props:[P("path",0,.22,1.1)]},
-        {environment:"welcome-garden",caption:"The garden has a path, but it needs flowers.",characters:[C("tony",-.2,.58,"thinking"),C("student",.18,.72,"idle")],props:[P("path",0,.22,1.1),P("empty-bed",.28,.2,.9)]},
+        {environment:"welcome-garden",caption:"Tony and the student walk to the garden.",characters:[C("tony",-.18,.58,"walk"),C("student",.15,.72,"walk")],props:[]},
+        {environment:"welcome-garden",caption:"The garden has a path, but it needs flowers.",characters:[C("tony",-.2,.58,"thinking"),C("student",.18,.72,"idle")],props:[P("empty-bed",.28,.2,.9)]},
         {environment:"welcome-garden",caption:"Nola brings a basket of bright flowers.",characters:[C("nola",-.08,1,"walk"),C("tony",.26,.58,"celebrate")],props:[P("flower-basket",-.28,.12,.9,"float")]},
         {environment:"welcome-garden",caption:"Bash carries a small tree to the garden.",characters:[C("bash",-.04,1.08,"walk"),C("student",.29,.72,"idle")],props:[P("young-tree",-.29,.04,.95,"sway")]},
-        {environment:"welcome-garden",caption:"The friends are ready to build together.",characters:[C("bash",-.27,1.08,"celebrate"),C("nola",-.02,1,"celebrate"),C("tony",.21,.58,"celebrate"),C("student",.36,.72,"celebrate")],props:[P("flowers",0,.23,1,"sway"),P("sparkles",0,-.22,1,"float")]}
+        {environment:"welcome-garden",caption:"The friends are ready to build together.",characters:[C("bash",-.27,1.08,"celebrate"),C("nola",-.02,1,"celebrate"),C("tony",.21,.58,"celebrate"),C("student",.36,.72,"celebrate")],props:[P("flowers",0,.23,1,"sway")]}
       ]
     },
     "1-B":{
@@ -36,7 +36,7 @@
         {environment:"academy-front",caption:"Bash asks what Bear did before coming to school.",characters:[C("bash",-.17,1.08,"idle"),C("bear",.18,.84,"thinking")],props:[P("question",0,-.2,.9,"pop")]},
         {environment:"welcome-garden",caption:"Bear remembers reading a book near the garden.",characters:[C("bear",-.03,.84,"reading")],props:[P("book",.15,.13,.85,"float"),P("flowers",-.3,.22,.75,"sway")]},
         {environment:"welcome-garden",caption:"The friends look beside the reading bench.",characters:[C("bash",-.24,1.08,"walk"),C("bear",.03,.84,"walk"),C("student",.29,.72,"walk")],props:[P("bench",0,.18,1),P("magnifier",.2,-.12,.75,"sweep")]},
-        {environment:"welcome-garden",caption:"They find the backpack under the bench.",characters:[C("bash",-.24,1.08,"celebrate"),C("bear",.04,.84,"celebrate"),C("student",.3,.72,"celebrate")],props:[P("bench",0,.18,1),P("backpack",.05,.18,.85,"pop"),P("sparkles",0,-.2,1,"float")]}
+        {environment:"welcome-garden",caption:"They find the backpack under the bench.",characters:[C("bash",-.24,1.08,"celebrate"),C("bear",.04,.84,"celebrate"),C("student",.3,.72,"celebrate")],props:[P("bench",0,.18,1),P("backpack",.05,.18,.85,"pop")]}
       ],
       reader1:[
         {environment:"welcome-garden",caption:"Tony walks beside the garden.",characters:[C("tony",-.1,.58,"walk")],props:[P("flowers",.25,.22,.75,"sway")]},
