@@ -1,4 +1,4 @@
-/* Fritz Academy Central Asset Registry v50.22 */
+/* Fritz Academy Central Asset Registry v50.26 */
 (function(){
   "use strict";
 
@@ -25,16 +25,16 @@
   const outdoor={left:{x:-.27,y:.16},center:{x:0,y:.16},right:{x:.27,y:.16}};
   const indoor={left:{x:-.26,y:.18},center:{x:0,y:.18},right:{x:.26,y:.18}};
   const environments={
-    campus:environment("campus","Fritz Academy Campus","assets/environments/academy-front.svg",sharedLegacy,true,["legacy-id","outdoor"],outdoor),
-    "academy-gate":environment("academy-gate","Academy Gate","assets/environments/academy-gate.svg",sharedLegacy,true,["outdoor","entrance","arrival"],{fritz:{x:-.24,y:.16},student:{x:.23,y:.17},center:{x:0,y:.16}}),
-    "academy-front":environment("academy-front","Academy Front","assets/environments/academy-front.svg",sharedLegacy,true,["outdoor","entrance"],outdoor),
-    "welcome-garden":environment("welcome-garden","Welcome Garden","assets/environments/welcome-garden.svg",sharedLegacy,true,["outdoor","garden"],outdoor),
-    "color-garden":environment("color-garden","Color Garden","assets/environments/color-garden.svg",sharedLegacy,true,["outdoor","garden","colors"],outdoor),
-    "reading-room":environment("reading-room","Reading Room","assets/environments/reading-room.svg",sharedLegacy,true,["indoor","reading"],indoor),
-    classroom:environment("classroom","Classroom","assets/environments/classroom.svg",sharedLegacy,true,["indoor","school"],indoor),
-    "music-room":environment("music-room","Music Room","assets/environments/music-room.svg",sharedLegacy,true,["indoor","music"],indoor),
-    playground:environment("playground","Playground","assets/environments/playground.svg",sharedLegacy,true,["outdoor","play"],outdoor),
-    "builder-yard":environment("builder-yard","Builder Yard","assets/environments/builder-yard.svg",sharedLegacy,true,["outdoor","builder"],outdoor)
+    campus:environment("campus","Fritz Academy Campus","assets/environments/academy-front.svg",sharedLegacy,false,["legacy-id","outdoor"],outdoor),
+    "academy-gate":environment("academy-gate","Academy Gate","assets/environments/academy-gate.svg",sharedLegacy,false,["outdoor","entrance","arrival"],{fritz:{x:-.24,y:.16},student:{x:.23,y:.17},center:{x:0,y:.16}}),
+    "academy-front":environment("academy-front","Academy Front","assets/environments/academy-front.svg",sharedLegacy,false,["outdoor","entrance"],outdoor),
+    "welcome-garden":environment("welcome-garden","Welcome Garden","assets/environments/welcome-garden.svg",sharedLegacy,false,["outdoor","garden"],outdoor),
+    "color-garden":environment("color-garden","Color Garden","assets/environments/color-garden.svg",sharedLegacy,false,["outdoor","garden","colors"],outdoor),
+    "reading-room":environment("reading-room","Reading Room","assets/environments/reading-room.svg",sharedLegacy,false,["indoor","reading"],indoor),
+    classroom:environment("classroom","Classroom","assets/environments/classroom.svg",sharedLegacy,false,["indoor","school"],indoor),
+    "music-room":environment("music-room","Music Room","assets/environments/music-room.svg",sharedLegacy,false,["indoor","music"],indoor),
+    playground:environment("playground","Playground","assets/environments/playground.svg",sharedLegacy,false,["outdoor","play"],outdoor),
+    "builder-yard":environment("builder-yard","Builder Yard","assets/environments/builder-yard.svg",sharedLegacy,false,["outdoor","builder"],outdoor)
   };
 
   const props={
@@ -69,5 +69,5 @@
     return rows;
   }
 
-  window.FritzAssetRegistry={version:"50.22",characters,environments,props,selected,markReady,audit};
+  window.FritzAssetRegistry={version:"50.26",characters,environments,props,selected,markReady,audit};
 })();
