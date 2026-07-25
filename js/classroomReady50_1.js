@@ -1,4 +1,4 @@
-/* Fritz Academy classroom-ready safeguards v50.1 */
+/* Fritz Academy classroom-ready safeguards v50.21 */
 (function(){
   "use strict";
 
@@ -76,25 +76,6 @@
     }
   }
 
-  function makeBuilderNonBlocking(){
-    if(typeof BuilderEngine==="undefined") return;
-    const original=BuilderEngine.prototype.showBuilder;
-    BuilderEngine.prototype.showBuilder=function(){
-      try{
-        const required=(this.build&&Array.isArray(this.build.requiredPieces))?this.build.requiredPieces:[];
-        const earned=typeof this.earnedPieces==="function"?this.earnedPieces():[];
-        const placements=typeof this.placements==="function"?this.placements():{};
-        required.forEach((id,index)=>{
-          if(earned.includes(id)&&(!placements[id]||typeof placements[id]!=="object")){
-            placements[id]={x:22+(index%3)*28,y:32+Math.floor(index/3)*30,z:index+10};
-          }
-        });
-        if(this.scene&&this.scene.save&&typeof saveGame==="function") saveGame(this.scene.save);
-      }catch(error){ console.warn("Builder auto-placement safeguard",error); }
-      return original.call(this);
-    };
-  }
-
   function improveVisibleLabels(){
     if(typeof LessonEngine!=="undefined"){
       const original=LessonEngine.prototype.showMissionOpening;
@@ -111,7 +92,6 @@
 
   normalizeGreetings();
   makeAvatarChoiceMandatoryForExistingStudents();
-  makeBuilderNonBlocking();
   improveVisibleLabels();
 
   const observer=new MutationObserver(()=>repairAvatarImages(document));
