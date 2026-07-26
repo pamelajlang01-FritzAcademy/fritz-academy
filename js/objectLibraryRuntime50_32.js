@@ -1,5 +1,6 @@
-/* Fritz Academy object library runtime v50.32
-   Ensures builder tray, placed objects, and earned-piece screens use the approved PNG object library. */
+/* Fritz Academy object library runtime v50.33
+   Ensures builder tray, placed objects, and earned-piece screens use the approved PNG object library.
+   v50.33: makes DOM updates idempotent and prevents MutationObserver feedback loops. */
 (function(){
   "use strict";
 
@@ -14,9 +15,8 @@
     "reading-chair":{label:"Reading Chair",asset:"assets/objects/reading_chair.png",width:155},
     "book-cart":{label:"Book Cart",asset:"assets/objects/book_cart.png",width:180},
     "reading-circle":{label:"Reading Circle",asset:"assets/objects/reading_circle.png",width:210},
-    "story-tree-stump":{label:"Story Tree Stump",asset:"assets/objects/story_tree_stump.png",width:170},
     "outdoor-story-stump":{label:"Outdoor Story Stump",asset:"assets/objects/outdoor_story_stump.png",width:180},
-    "fritz-statue":{label:"Captain Fritz Statue",asset:"assets/objects/fritz_statue.png",width:145},
+    "captain-fritz-statue":{label:"Captain Fritz Statue",asset:"assets/objects/captain_fritz_statue.png",width:145},
     "academy-flag":{label:"Academy Flag",asset:"assets/objects/academy_flag.png",width:170},
     "academy-mailbox":{label:"Academy Mailbox",asset:"assets/objects/academy_mailbox.png",width:165},
     "academy-bell":{label:"Academy Bell",asset:"assets/objects/academy_bell.png",width:170},
@@ -25,9 +25,11 @@
   };
 
   function installStyles(){
-    if(document.getElementById("fritz-object-library-runtime-50-32")) return;
+    if(document.getElementById("fritz-object-library-runtime-50-33")) return;
+    const old=document.getElementById("fritz-object-library-runtime-50-32");
+    if(old) old.remove();
     const style=document.createElement("style");
-    style.id="fritz-object-library-runtime-50-32";
+    style.id="fritz-object-library-runtime-50-33";
     style.textContent=`
       .fritz-piece-preview{display:grid!important;place-items:center!important;overflow:hidden!important}
       .fritz-piece-preview img{display:block!important;width:96%!important;height:96%!important;object-fit:contain!important}
@@ -36,6 +38,22 @@
       .fritz-builder-object span:not(.fritz-object-label){display:none!important}
     `;
     document.head.appendChild(style);
+  }
+
+  function setImage(container,def){
+    if(!container||!def) return false;
+    let img=container.querySelector(":scope > img");
+    let changed=false;
+    if(!img){
+      container.replaceChildren();
+      img=document.createElement("img");
+      container.appendChild(img);
+      changed=true;
+    }
+    const current=img.getAttribute("src")||"";
+    if(current!==def.asset){ img.setAttribute("src",def.asset); changed=true; }
+    if(img.alt!==def.label){ img.alt=def.label; changed=true; }
+    return changed;
   }
 
   function applyBuilderAssets(){
@@ -48,30 +66,46 @@
         preview.className="fritz-piece-preview";
         button.prepend(preview);
       }
-      preview.className="fritz-piece-preview";
-      preview.innerHTML=`<img src="${def.asset}" alt="${def.label}">`;
+      setImage(preview,def);
     });
 
     document.querySelectorAll(".fritz-builder-object[data-piece-id]").forEach(item=>{
       const def=OBJECTS[item.dataset.pieceId];
       if(!def) return;
-      const selected=item.classList.contains("is-selected");
-      item.className="fritz-builder-object object-library-piece"+(selected?" is-selected":"");
+      item.classList.add("object-library-piece");
       item.style.width=`${def.width}px`;
       item.style.height=`${Math.round(def.width*0.8)}px`;
-      item.innerHTML=`<img src="${def.asset}" alt="${def.label}"><span class="fritz-object-label">${def.label}</span>`;
+      setImage(item,def);
+      let label=item.querySelector(":scope > .fritz-object-label");
+      if(!label){
+        label=document.createElement("span");
+        label.className="fritz-object-label";
+        item.appendChild(label);
+      }
+      if(label.textContent!==def.label) label.textContent=def.label;
     });
   }
 
+  let scheduled=false;
   function scheduleBuilderApply(){
-    requestAnimationFrame(applyBuilderAssets);
-    setTimeout(applyBuilderAssets,40);
-    setTimeout(applyBuilderAssets,140);
-    setTimeout(applyBuilderAssets,350);
+    if(scheduled) return;
+    scheduled=true;
+    requestAnimationFrame(()=>{
+      scheduled=false;
+      applyBuilderAssets();
+    });
   }
 
   installStyles();
-  const observer=new MutationObserver(scheduleBuilderApply);
+  const observer=new MutationObserver(mutations=>{
+    const relevant=mutations.some(m=>[...m.addedNodes].some(node=>
+      node.nodeType===1 && (
+        node.matches?.(".fritz-builder-overlay,.fritz-builder-piece,.fritz-builder-object") ||
+        node.querySelector?.(".fritz-builder-piece,.fritz-builder-object")
+      )
+    ));
+    if(relevant) scheduleBuilderApply();
+  });
   observer.observe(document.documentElement,{childList:true,subtree:true});
 
   if(typeof BuilderEngine!=="undefined"){
@@ -131,5 +165,5 @@
     };
   }
 
-  window.FritzObjectLibraryRuntime={version:"50.32",objects:OBJECTS,apply:applyBuilderAssets};
+  window.FritzObjectLibraryRuntime={version:"50.33",objects:OBJECTS,apply:applyBuilderAssets};
 })();
