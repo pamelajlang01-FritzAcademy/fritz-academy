@@ -1,12 +1,14 @@
-/* Fritz Academy Builder viewport and recovery repair v50.19 */
+/* Fritz Academy Builder viewport and recovery repair v50.33 */
 (function(){
   "use strict";
   if(typeof BuilderEngine==="undefined") return;
 
   function installStyles(){
-    if(document.getElementById("fritz-builder-viewport-50-19")) return;
+    if(document.getElementById("fritz-builder-viewport-50-33")) return;
+    const old=document.getElementById("fritz-builder-viewport-50-19");
+    if(old) old.remove();
     const style=document.createElement("style");
-    style.id="fritz-builder-viewport-50-19";
+    style.id="fritz-builder-viewport-50-33";
     style.textContent=`
       .fritz-builder-overlay{padding:4px!important;overflow:hidden!important;align-items:stretch!important}
       .fritz-builder-shell{width:calc(100vw - 8px)!important;height:calc(100dvh - 8px)!important;max-width:none!important;max-height:none!important;border-width:4px!important;border-radius:18px!important;grid-template-rows:auto minmax(0,1fr) auto!important}
@@ -46,11 +48,12 @@
     const stage=overlay&&overlay.querySelector(".fritz-builder-stage");
     const tray=overlay&&overlay.querySelector(".fritz-builder-tray");
     const footer=overlay&&overlay.querySelector(".fritz-builder-footer");
-    if(!overlay||!stage||!tray||!footer||overlay.dataset.viewport5019==="1") return;
-    overlay.dataset.viewport5019="1";
+    if(!overlay||!stage||!tray||!footer||overlay.dataset.viewport5033==="1") return;
+    overlay.dataset.viewport5033="1";
 
     const placements=engine.placements();
     const clampAll=()=>{
+      if(!overlay.isConnected||!stage.isConnected) return;
       stage.querySelectorAll(".fritz-builder-object[data-piece-id]").forEach(item=>{
         const id=item.dataset.pieceId;
         const current=placements[id]&&typeof placements[id]==="object"?placements[id]:{x:50,y:50,z:10};
@@ -65,23 +68,32 @@
 
     requestAnimationFrame(clampAll);
     setTimeout(clampAll,140);
-    window.addEventListener("resize",clampAll,{passive:true});
+    const onResize=()=>clampAll();
+    window.addEventListener("resize",onResize,{passive:true});
 
     const recoverButton=document.createElement("button");
     recoverButton.type="button";
     recoverButton.textContent="Return All Pieces to Tray";
-    recoverButton.title="Recover any piece that was placed off-screen";
-    recoverButton.addEventListener("click",()=>{
+    recoverButton.title="Return every placed piece to the Builder Pack";
+    recoverButton.addEventListener("click",event=>{
+      event.preventDefault();
+      event.stopPropagation();
+      if(recoverButton.disabled) return;
+      recoverButton.disabled=true;
       (engine.build.requiredPieces||[]).forEach(id=>delete placements[id]);
       if(typeof saveGame==="function") saveGame(engine.scene.save);
+      window.removeEventListener("resize",onResize);
       overlay.remove();
-      engine.showBuilder();
+      requestAnimationFrame(()=>engine.showBuilder());
     });
 
     const centerButton=document.createElement("button");
     centerButton.type="button";
     centerButton.textContent="Bring Pieces Into View";
-    centerButton.addEventListener("click",clampAll);
+    centerButton.addEventListener("click",event=>{
+      event.preventDefault();
+      clampAll();
+    });
 
     const finish=footer.querySelector(".primary");
     if(finish) footer.insertBefore(recoverButton,finish);
@@ -89,11 +101,18 @@
     if(finish) footer.insertBefore(centerButton,finish);
     else footer.appendChild(centerButton);
 
-    // Keep the currently selected tray card visible.
     tray.addEventListener("click",event=>{
       const card=event.target.closest(".fritz-builder-piece");
       if(card) card.scrollIntoView({block:"nearest",behavior:"smooth"});
     });
+
+    const cleanup=new MutationObserver(()=>{
+      if(!overlay.isConnected){
+        window.removeEventListener("resize",onResize);
+        cleanup.disconnect();
+      }
+    });
+    cleanup.observe(document.body,{childList:true,subtree:true});
   }
 
   installStyles();
