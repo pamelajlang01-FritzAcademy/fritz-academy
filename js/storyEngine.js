@@ -64,7 +64,7 @@ class StoryEngine {
 
     const label = this.scene.add.text(
       0,
-      -215,
+      -230,
       `${this.story.title} — Page ${this.pageIndex + 1} of ${this.story.pages.length}`,
       {
         fontSize: "20px",
@@ -86,19 +86,19 @@ class StoryEngine {
       if(imageKey){
         const image = this.scene.add.image(
           0,
-          -95,
+          -105,
           imageKey
         ).setOrigin(0.5);
 
         const scale = Math.min(
           560 / image.width,
-          235 / image.height,
+          205 / image.height,
           1
         );
 
         image.setScale(scale);
         objects.push(image);
-        textY = 80;
+        textY = 110;
         fontSize = "25px";
       }
 
@@ -122,7 +122,7 @@ class StoryEngine {
 
       const read = this.scene.panels.makeButton(
         -150,
-        205,
+        240,
         "Read Aloud",
         () => {
           this.lessonEngine.speakText(
@@ -136,7 +136,7 @@ class StoryEngine {
 
       const next = this.scene.panels.makeButton(
         150,
-        205,
+        240,
         this.pageIndex === this.story.pages.length - 1
           ? "Story Check"
           : "Next Page",
@@ -153,7 +153,7 @@ class StoryEngine {
         objects,
         {
           width: 820,
-          height: 570
+          height: 620
         }
       );
     };
