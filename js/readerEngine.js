@@ -80,7 +80,7 @@ class ReaderEngine {
 
     const title = this.scene.add.text(
       0,
-      -220,
+      -230,
       `${this.reader.title} — Page ${this.pageIndex + 1} of ${this.reader.pages.length}`,
       {
         fontSize: "20px",
@@ -98,10 +98,10 @@ class ReaderEngine {
     if(this.reader.level){
       const level = this.scene.add.text(
         0,
-        -180,
+        -198,
         this.reader.level,
         {
-          fontSize: "19px",
+          fontSize: "18px",
           fontStyle: "bold",
           color: "#174ea6"
         }
@@ -118,20 +118,20 @@ class ReaderEngine {
       if(imageKey){
         const image = this.scene.add.image(
           0,
-          -80,
+          -105,
           imageKey
         ).setOrigin(0.5);
 
         const scale = Math.min(
           560 / image.width,
-          220 / image.height,
+          205 / image.height,
           1
         );
 
         image.setScale(scale);
         objects.push(image);
 
-        textY = 90;
+        textY = 110;
         fontSize = "25px";
         textWidth = 700;
       }
@@ -156,7 +156,7 @@ class ReaderEngine {
 
       const readButton = this.scene.panels.makeButton(
         -150,
-        210,
+        240,
         "Read Aloud",
         () => {
           this.lessonEngine.speakText(
@@ -170,7 +170,7 @@ class ReaderEngine {
 
       const nextButton = this.scene.panels.makeButton(
         150,
-        210,
+        240,
         this.pageIndex === this.reader.pages.length - 1
           ? "Reader Check"
           : "Next Page",
@@ -190,7 +190,7 @@ class ReaderEngine {
         objects,
         {
           width: 820,
-          height: 585
+          height: 620
         }
       );
     };
