@@ -1,7 +1,8 @@
-/* Fritz Academy Builder usability repair v50.34
+/* Fritz Academy Builder usability repair v50.35
    - Enlarges approved object assets for the garden scale.
    - Creates a clear build meadow over the finished environment artwork.
-   - Replaces unreliable drag handoff with deterministic click/tap and drop placement.
+   - Uses the existing Builder 2.0 placement system, with a dependable
+     select-then-click/tap placement layer that does not block native events.
 */
 (function(){
   "use strict";
@@ -28,17 +29,17 @@
   };
 
   function installStyles(){
-    if(document.getElementById("fritz-builder-usability-50-34")) return;
+    if(document.getElementById("fritz-builder-usability-50-35")) return;
+    document.getElementById("fritz-builder-usability-50-34")?.remove();
     const style=document.createElement("style");
-    style.id="fritz-builder-usability-50-34";
+    style.id="fritz-builder-usability-50-35";
     style.textContent=`
       .fritz-builder-stage{isolation:isolate!important;cursor:default!important}
       .fritz-builder-stage::after{
         content:""!important;display:block!important;position:absolute!important;
         left:8%!important;right:8%!important;top:24%!important;bottom:7%!important;
         z-index:1!important;border-radius:46% 46% 18% 18%/28% 28% 18% 18%!important;
-        background:
-          radial-gradient(ellipse at 50% 58%,rgba(104,166,72,.96) 0 42%,rgba(88,143,61,.92) 64%,rgba(45,91,48,.40) 86%,transparent 100%)!important;
+        background:radial-gradient(ellipse at 50% 58%,rgba(104,166,72,.96) 0 42%,rgba(88,143,61,.92) 64%,rgba(45,91,48,.40) 86%,transparent 100%)!important;
         box-shadow:inset 0 0 34px rgba(255,255,255,.18),0 14px 30px rgba(17,57,29,.22)!important;
         pointer-events:none!important;
       }
@@ -73,8 +74,8 @@
     const overlay=document.querySelector(".fritz-builder-overlay");
     const stage=overlay&&overlay.querySelector(".fritz-builder-stage");
     const tray=overlay&&overlay.querySelector(".fritz-builder-tray");
-    if(!overlay||!stage||!tray||overlay.dataset.usability5034==="1") return;
-    overlay.dataset.usability5034="1";
+    if(!overlay||!stage||!tray||overlay.dataset.usability5035==="1") return;
+    overlay.dataset.usability5035="1";
 
     const placements=engine.placements();
     let selectedId="";
@@ -95,55 +96,45 @@
     const commitPlacement=(id,clientX,clientY)=>{
       if(!id) return;
       const point=pointFor(stage,clientX,clientY);
-      placements[id]={x:point.x,y:point.y,z:Math.max(20,...Object.values(placements).map(p=>p&&p.z||0))+1};
+      const previous=placements[id]&&typeof placements[id]==="object"?placements[id]:{};
+      placements[id]={x:point.x,y:point.y,z:previous.z||Math.max(20,...Object.values(placements).map(p=>p&&p.z||0))+1};
       if(typeof saveGame==="function") saveGame(engine.scene.save);
       select("");
-      overlay.remove();
       requestAnimationFrame(()=>engine.showBuilder());
     };
 
     buttons().forEach(button=>{
-      button.draggable=true;
-      button.addEventListener("click",event=>{
-        if(button.disabled) return;
-        event.preventDefault();
-        event.stopImmediatePropagation();
-        select(button.dataset.pieceId);
-      },true);
+      button.addEventListener("pointerdown",()=>{
+        if(!button.disabled) select(button.dataset.pieceId);
+      });
+      button.addEventListener("click",()=>{
+        if(!button.disabled) select(button.dataset.pieceId);
+      });
       button.addEventListener("dragstart",event=>{
         if(button.disabled){event.preventDefault();return;}
         const id=button.dataset.pieceId;
         select(id);
         event.dataTransfer?.setData("text/plain",id);
         if(event.dataTransfer) event.dataTransfer.effectAllowed="copy";
-      },true);
+      });
     });
 
-    stage.addEventListener("click",event=>{
-      if(!selectedId) return;
-      event.preventDefault();
-      event.stopImmediatePropagation();
-      commitPlacement(selectedId,event.clientX,event.clientY);
-    },true);
-
     stage.addEventListener("pointerup",event=>{
-      if(!selectedId||event.pointerType==="mouse") return;
-      event.preventDefault();
-      event.stopImmediatePropagation();
+      if(!selectedId) return;
+      if(event.target.closest?.(".fritz-builder-object")) return;
       commitPlacement(selectedId,event.clientX,event.clientY);
-    },true);
+    });
 
     stage.addEventListener("dragover",event=>{
       event.preventDefault();
       if(event.dataTransfer) event.dataTransfer.dropEffect="copy";
-    },true);
+    });
 
     stage.addEventListener("drop",event=>{
       event.preventDefault();
-      event.stopImmediatePropagation();
       const id=event.dataTransfer?.getData("text/plain")||selectedId;
       commitPlacement(id,event.clientX,event.clientY);
-    },true);
+    });
 
     applySizes(overlay);
     requestAnimationFrame(()=>applySizes(overlay));
