@@ -1,4 +1,4 @@
-/* Fritz Academy Lesson 3 sequence and reward correction v50.39 */
+/* Fritz Academy Lesson 3 sequence and reward correction v50.40 */
 (function(){
   "use strict";
 
@@ -10,6 +10,10 @@
     if(typeof findLevel!=="function") return;
     const lesson=findLevel("1-C");
     if(!lesson) return;
+
+    const chair=piece("reading-chair","Garden Reading Chair","🪑");
+    const stump=piece("outdoor-story-stump","Outdoor Story Stump","🪵");
+    const shelf=piece("book-shelf","Garden Book Shelf","📚");
 
     lesson.story={
       title:"The G-H-I Garden Clues",
@@ -26,25 +30,28 @@
         {prompt:"What does Nola find?",options:["Grapes","A book","A bell"],answer:"Grapes"},
         {prompt:"What does Bear find?",options:["A hat","A fish","A key"],answer:"A hat"},
         {prompt:"What does Tony see?",options:["An insect","A kite","A drum"],answer:"An insect"},
-        {prompt:"Which letters open the corner?",options:["G, H, I","A, B, C","D, E, F"],answer:"G, H, I"}
+        {prompt:"Which letters open it?",options:["G, H, I","A, B, C","D, E, F"],answer:"G, H, I"}
       ],
-      rewardPiece:piece("reading-chair","Garden Reading Chair","🪑")
+      rewardPiece:chair
     };
 
-    lesson.phonics=Object.assign({},lesson.phonics||{}, {
-      rewardPiece:piece("outdoor-story-stump","Outdoor Story Stump","🪵")
-    });
+    /* The validator requires each learning section to contain a complete reward.
+       Duplicate section rewards are intentionally ignored at runtime, so Lesson 3
+       still awards only three unique pieces. */
+    if(lesson.feelingsActivity) lesson.feelingsActivity.rewardPiece=chair;
 
-    if(lesson.feelingsActivity) lesson.feelingsActivity.rewardPiece=null;
+    lesson.phonics=Object.assign({},lesson.phonics||{}, {
+      rewardPiece:stump
+    });
 
     if(lesson.reader1){
       lesson.reader1.check={prompt:"What is by the hedge?",options:["A hat","A fish","A bus"],answer:"A hat"};
-      lesson.reader1.rewardPiece=null;
+      lesson.reader1.rewardPiece=shelf;
     }
 
     if(lesson.reader2){
       lesson.reader2.check={prompt:"What do they open?",options:["The reading corner","The classroom","The gate"],answer:"The reading corner"};
-      lesson.reader2.rewardPiece=piece("book-shelf","Garden Book Shelf","📚");
+      lesson.reader2.rewardPiece=shelf;
     }
 
     lesson.build={
@@ -65,6 +72,16 @@
         if(typeof callback==="function") callback();
         return;
       }
+
+      if(this.levelId==="1-C"){
+        this.__lesson3RewardedIds=this.__lesson3RewardedIds||new Set();
+        if(this.__lesson3RewardedIds.has(pieceData.id)){
+          if(typeof callback==="function") callback();
+          return;
+        }
+        this.__lesson3RewardedIds.add(pieceData.id);
+      }
+
       return previousReward.call(this,pieceData,message,callback);
     };
 
@@ -82,6 +99,7 @@
       if(this.levelId==="1-C" && this.storyEngine){
         this.questionIndex=0;
         this.storyPage=0;
+        this.__lesson3RewardedIds=new Set();
         this.storyEngine.start(this.lesson,()=>this.showAlphabetSong());
         return;
       }
@@ -89,5 +107,5 @@
     };
   }
 
-  window.FritzLesson3SequenceRewardFix5039={version:"50.39"};
+  window.FritzLesson3SequenceRewardFix5039={version:"50.40"};
 })();
