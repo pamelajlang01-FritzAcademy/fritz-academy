@@ -1,4 +1,4 @@
-/* Fritz Academy Lesson 3 cast, scene, reader, and phonics alignment v50.43 */
+/* Fritz Academy Lesson 3 cast, scene, reader, and phonics alignment v50.44 */
 (function(){
   "use strict";
 
@@ -71,10 +71,10 @@
     recognitionQuestion:{prompt:"Choose the new uppercase letters.",options:["G, H, I","C, D, E","A, B, C"],answer:"G, H, I"},
     lowercaseQuestion:{prompt:"Choose the new lowercase letters.",options:["g, h, i","c, d, e","a, b, c"],answer:"g, h, i"},
     wordQuestion:{prompt:"Which words begin with G, H, and I?",options:["garden, hat, insect","cat, dog, egg","apple, ball, car"],answer:"garden, hat, insect"},
-    rewardPiece:null
+    rewardPiece:piece("book-shelf","Garden Book Shelf","📚")
   });
 
-  if(lesson.feelingsActivity) lesson.feelingsActivity.rewardPiece=null;
+  if(lesson.feelingsActivity) lesson.feelingsActivity.rewardPiece=piece("reading-chair","Garden Reading Chair","🪑");
 
   lesson.build={
     areaId:"welcome-garden",
@@ -108,5 +108,5 @@
     ]
   };
 
-  window.FritzLesson3CastAndSceneFix5043={version:"50.43",lessonId:"1-C"};
+  window.FritzLesson3CastAndSceneFix5044={version:"50.44",lessonId:"1-C"};
 })();
