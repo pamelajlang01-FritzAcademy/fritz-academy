@@ -1,0 +1,144 @@
+{
+  "library": "Fritz Academy Object Library",
+  "pack": 1,
+  "asset_count": 17,
+  "repository_target": "assets/objects",
+  "assets": [
+    {
+      "id": "welcome_flowers",
+      "file": "assets/objects/welcome_flowers.png",
+      "category": "garden",
+      "width": 1536,
+      "height": 1024,
+      "mode": "RGBA"
+    },
+    {
+      "id": "stone_path",
+      "file": "assets/objects/stone_path.png",
+      "category": "garden",
+      "width": 1536,
+      "height": 1024,
+      "mode": "RGBA"
+    },
+    {
+      "id": "reading_bench",
+      "file": "assets/objects/reading_bench.png",
+      "category": "garden",
+      "width": 1536,
+      "height": 1024,
+      "mode": "RGBA"
+    },
+    {
+      "id": "garden_tree",
+      "file": "assets/objects/garden_tree.png",
+      "category": "garden",
+      "width": 1536,
+      "height": 1024,
+      "mode": "RGBA"
+    },
+    {
+      "id": "garden_fence",
+      "file": "assets/objects/garden_fence.png",
+      "category": "garden",
+      "width": 1536,
+      "height": 1024,
+      "mode": "RGBA"
+    },
+    {
+      "id": "story_rug",
+      "file": "assets/objects/story_rug.png",
+      "category": "reading",
+      "width": 1536,
+      "height": 1024,
+      "mode": "RGBA"
+    },
+    {
+      "id": "book_shelf",
+      "file": "assets/objects/book_shelf.png",
+      "category": "reading",
+      "width": 1536,
+      "height": 1024,
+      "mode": "RGBA"
+    },
+    {
+      "id": "reading_chair",
+      "file": "assets/objects/reading_chair.png",
+      "category": "reading",
+      "width": 1536,
+      "height": 1024,
+      "mode": "RGBA"
+    },
+    {
+      "id": "book_cart",
+      "file": "assets/objects/book_cart.png",
+      "category": "reading",
+      "width": 1536,
+      "height": 1024,
+      "mode": "RGBA"
+    },
+    {
+      "id": "reading_circle",
+      "file": "assets/objects/reading_circle.png",
+      "category": "reading",
+      "width": 1536,
+      "height": 1024,
+      "mode": "RGBA"
+    },
+    {
+      "id": "outdoor_story_stump",
+      "file": "assets/objects/outdoor_story_stump.png",
+      "category": "garden",
+      "width": 1536,
+      "height": 1024,
+      "mode": "RGBA"
+    },
+    {
+      "id": "captain_fritz_statue",
+      "file": "assets/objects/captain_fritz_statue.png",
+      "category": "academy",
+      "width": 1122,
+      "height": 1402,
+      "mode": "RGBA"
+    },
+    {
+      "id": "academy_flag",
+      "file": "assets/objects/academy_flag.png",
+      "category": "academy",
+      "width": 1402,
+      "height": 1122,
+      "mode": "RGBA"
+    },
+    {
+      "id": "academy_mailbox",
+      "file": "assets/objects/academy_mailbox.png",
+      "category": "academy",
+      "width": 1402,
+      "height": 1122,
+      "mode": "RGBA"
+    },
+    {
+      "id": "academy_bell",
+      "file": "assets/objects/academy_bell.png",
+      "category": "academy",
+      "width": 1402,
+      "height": 1122,
+      "mode": "RGBA"
+    },
+    {
+      "id": "trophy_display",
+      "file": "assets/objects/trophy_display.png",
+      "category": "academy",
+      "width": 1402,
+      "height": 1122,
+      "mode": "RGBA"
+    },
+    {
+      "id": "paw_print_stepping_stones",
+      "file": "assets/objects/paw_print_stepping_stones.png",
+      "category": "garden",
+      "width": 1536,
+      "height": 1024,
+      "mode": "RGBA"
+    }
+  ]
+}
