@@ -12,7 +12,9 @@
     const registry = Array.isArray(window.FRITZ_AVATARS) ? window.FRITZ_AVATARS : [];
     registry.forEach(avatar => {
       if(!avatar || !avatar.id || !avatar.src) return;
-      avatar.src = avatar.src.replace(/^assets\/assets\//, "assets/");
+      // Keep the repository path exactly as registered. The approved girl
+      // avatars live under assets/avatars/girl while the approved boy avatars
+      // currently live under assets/assets/avatars/boy.
       avatarIds.add(avatar.id);
     });
     return registry;
@@ -66,20 +68,20 @@
 
   function preparedSource(src){
     if(!src) return Promise.resolve(src);
-    const normalized = src.replace(/^assets\/assets\//, "assets/");
-    if(processedSources.has(normalized)) return processedSources.get(normalized);
+    const canonical = src;
+    if(processedSources.has(canonical)) return processedSources.get(canonical);
     const promise = new Promise(resolve => {
       const image = new Image();
       image.onload = () => {
         try{
           const canvas = cleanCanvas(image);
-          resolve(canvas ? canvas.toDataURL("image/png") : normalized);
-        }catch(error){ resolve(normalized); }
+          resolve(canvas ? canvas.toDataURL("image/png") : canonical);
+        }catch(error){ resolve(canonical); }
       };
-      image.onerror = () => resolve(normalized);
-      image.src = normalized;
+      image.onerror = () => resolve(canonical);
+      image.src = canonical;
     });
-    processedSources.set(normalized,promise);
+    processedSources.set(canonical,promise);
     return promise;
   }
 
@@ -93,7 +95,7 @@
   function prepareImage(image){
     if(!isAvatarImage(image) || image.dataset.fritzAvatarPrepared === "true") return;
     image.dataset.fritzAvatarPrepared = "true";
-    const original = (image.getAttribute("src") || "").replace(/^assets\/assets\//,"assets/");
+    const original = image.getAttribute("src") || "";
     preparedSource(original).then(cleaned => {
       if(cleaned) image.src = cleaned;
       image.style.background = "transparent";
@@ -136,7 +138,7 @@
 
   canonicalizeRegistry();
   window.FritzAvatarAssetPipeline = {
-    version:"50.9",
+    version:"50.9.1",
     registry:window.FRITZ_AVATARS || [],
     prepareSource:preparedSource,
     prepareImage,
