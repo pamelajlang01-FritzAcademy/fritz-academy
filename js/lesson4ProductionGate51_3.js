@@ -1,4 +1,4 @@
-/* Fritz Academy 51.5 — force Lesson 4 to use authored image assets only */
+/* Fritz Academy 51.6 — force Lesson 4 to use authored image assets only */
 (function(){
   "use strict";
   if(typeof findLevel!=="function") return;
@@ -43,18 +43,28 @@
   }
   bindReward(lesson.story);bindReward(lesson.reader1);bindReward(lesson.reader2);
 
-  /* Lesson 4 awards Builder pieces only after story, Reader 1, and Reader 2 questions. */
-  if(lesson.feelingsActivity) delete lesson.feelingsActivity.rewardPiece;
-  if(lesson.phonics) delete lesson.phonics.rewardPiece;
+  if(lesson.feelingsActivity){
+    delete lesson.feelingsActivity.rewardPiece;
+    if(Array.isArray(lesson.feelingsActivity.questions)){
+      lesson.feelingsActivity.questions.forEach(question=>{if(question){question.emoji="";question.image="";}});
+    }
+  }
+  if(Array.isArray(lesson.feelingChoices)){
+    lesson.feelingChoices.forEach(choice=>{if(choice)choice.emoji="";});
+  }
 
-  lesson.phonics.examples=[
-    {word:"Who = person",image:scenePaths[0]},
-    {word:"What = thing",image:scenePaths[1]},
-    {word:"Where = place",image:scenePaths[2]},
-    {word:"When = time",image:scenePaths[3]},
-    {word:"Why = what made it happen",image:scenePaths[4]},
-    {word:"How = the way",image:scenePaths[5]}
-  ];
+  if(lesson.phonics){
+    delete lesson.phonics.rewardPiece;
+    lesson.phonics.examples=[
+      {word:"Who = person",image:scenePaths[0],icon:""},
+      {word:"What = thing",image:scenePaths[1],icon:""},
+      {word:"Where = place",image:scenePaths[2],icon:""},
+      {word:"When = time",image:scenePaths[3],icon:""},
+      {word:"Why = what made it happen",image:scenePaths[4],icon:""},
+      {word:"How = the way",image:scenePaths[5],icon:""}
+    ];
+  }
+
   lesson.build.requiredPieces=["question-garden-sign","question-flower-bed","question-lantern"];
   window.FRITZ_LESSON4_PRODUCTION_VISUALS=true;
 })();
