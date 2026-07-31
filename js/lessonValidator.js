@@ -2,11 +2,12 @@
 ====================================================
 FRITZ ACADEMY
 Lesson Integrity Validator
-Version 42.0.0
+Version 51.4.0
 ====================================================
 
 Stops incomplete lesson data before class flow begins.
 Every required learning section is checked in sequence.
+Production reward pieces may use either an image asset or a legacy icon.
 */
 
 class LessonValidator {
@@ -29,40 +30,15 @@ class LessonValidator {
     ];
 
     requiredObjects.forEach(key => {
-      if(!lesson[key]){
-        errors.push(`${key} is missing.`);
-      }
+      if(!lesson[key]) errors.push(`${key} is missing.`);
     });
 
-    this.validateActivity(
-      lesson.feelingsActivity,
-      "Feelings activity",
-      errors
-    );
-
-    this.validateReading(
-      lesson.story,
-      "Teacher story",
-      errors,
-      true
-    );
-
-    this.validateReading(
-      lesson.reader1,
-      "Reader 1",
-      errors,
-      false
-    );
-
-    this.validateReading(
-      lesson.reader2,
-      "Reader 2",
-      errors,
-      false
-    );
-
-    this.validatePhonics(lesson.phonics, errors);
-    this.validateBuild(lesson, errors);
+    this.validateActivity(lesson.feelingsActivity,"Feelings activity",errors);
+    this.validateReading(lesson.story,"Teacher story",errors,true);
+    this.validateReading(lesson.reader1,"Reader 1",errors,false);
+    this.validateReading(lesson.reader2,"Reader 2",errors,false);
+    this.validatePhonics(lesson.phonics,errors);
+    this.validateBuild(lesson,errors);
 
     if(
       !lesson.completion ||
@@ -73,29 +49,17 @@ class LessonValidator {
       errors.push("Completion rewards or next-level unlock are incomplete.");
     }
 
-    return {
-      valid: errors.length === 0,
-      errors
-    };
+    return { valid:errors.length===0, errors };
   }
 
-  static validateActivity(activity, label, errors){
-    if(!activity){
-      return;
-    }
+  static validateActivity(activity,label,errors){
+    if(!activity) return;
 
-    if(
-      !Array.isArray(activity.questions) ||
-      activity.questions.length === 0
-    ){
+    if(!Array.isArray(activity.questions) || activity.questions.length===0){
       errors.push(`${label} has no questions.`);
     }else{
-      activity.questions.forEach((question, index) => {
-        this.validateQuestion(
-          question,
-          `${label}, question ${index + 1}`,
-          errors
-        );
+      activity.questions.forEach((question,index)=>{
+        this.validateQuestion(question,`${label}, question ${index+1}`,errors);
       });
     }
 
@@ -104,50 +68,30 @@ class LessonValidator {
     }
   }
 
-  static validateReading(reading, label, errors, isStory){
-    if(!reading){
-      return;
-    }
+  static validateReading(reading,label,errors,isStory){
+    if(!reading) return;
 
-    if(
-      !Array.isArray(reading.pages) ||
-      reading.pages.length < 3
-    ){
+    if(!Array.isArray(reading.pages) || reading.pages.length<3){
       errors.push(`${label} needs at least three pages.`);
       return;
     }
 
-    reading.pages.forEach((page, index) => {
-      const normalized = typeof page === "string"
-        ? { text:page, image:"" }
-        : (page || {});
-
-      if(!String(normalized.text || "").trim()){
-        errors.push(`${label}, page ${index + 1}, has no text.`);
+    reading.pages.forEach((page,index)=>{
+      const normalized=typeof page==="string" ? {text:page,image:""} : (page||{});
+      if(!String(normalized.text||"").trim()){
+        errors.push(`${label}, page ${index+1}, has no text.`);
       }
-
-      /* Version 42 quality rule: new Week 1 lessons must be illustrated. */
-      if(
-        isStory &&
-        !String(normalized.image || "").trim()
-      ){
-        errors.push(`${label}, page ${index + 1}, has no illustration.`);
+      if(isStory && !String(normalized.image||"").trim()){
+        errors.push(`${label}, page ${index+1}, has no illustration.`);
       }
     });
 
-    const questions = isStory
-      ? reading.questions
-      : (reading.questions || (reading.check ? [reading.check] : []));
-
-    if(!Array.isArray(questions) || questions.length === 0){
+    const questions=isStory ? reading.questions : (reading.questions || (reading.check ? [reading.check] : []));
+    if(!Array.isArray(questions) || questions.length===0){
       errors.push(`${label} has no comprehension check.`);
     }else{
-      questions.forEach((question, index) => {
-        this.validateQuestion(
-          question,
-          `${label}, question ${index + 1}`,
-          errors
-        );
+      questions.forEach((question,index)=>{
+        this.validateQuestion(question,`${label}, question ${index+1}`,errors);
       });
     }
 
@@ -156,53 +100,33 @@ class LessonValidator {
     }
   }
 
-  static validateQuestion(question, label, errors){
-    if(!question || !String(question.prompt || "").trim()){
+  static validateQuestion(question,label,errors){
+    if(!question || !String(question.prompt||"").trim()){
       errors.push(`${label} has no prompt.`);
       return;
     }
-
-    if(
-      !Array.isArray(question.options) ||
-      question.options.length < 2
-    ){
+    if(!Array.isArray(question.options) || question.options.length<2){
       errors.push(`${label} needs at least two answer choices.`);
       return;
     }
-
     if(!question.options.includes(question.answer)){
       errors.push(`${label} answer is not one of its choices.`);
     }
   }
 
-  static validatePhonics(phonics, errors){
-    if(!phonics){
-      return;
-    }
+  static validatePhonics(phonics,errors){
+    if(!phonics) return;
 
-    ["letterUpper","letterLower","soundLabel","teacherCue"].forEach(key => {
-      if(!String(phonics[key] || "").trim()){
-        errors.push(`Phonics ${key} is missing.`);
-      }
+    ["letterUpper","letterLower","soundLabel","teacherCue"].forEach(key=>{
+      if(!String(phonics[key]||"").trim()) errors.push(`Phonics ${key} is missing.`);
     });
 
-    if(
-      !Array.isArray(phonics.examples) ||
-      phonics.examples.length < 3
-    ){
+    if(!Array.isArray(phonics.examples) || phonics.examples.length<3){
       errors.push("Phonics needs at least three examples.");
     }
 
-    [
-      phonics.recognitionQuestion,
-      phonics.lowercaseQuestion,
-      phonics.wordQuestion
-    ].forEach((question, index) => {
-      this.validateQuestion(
-        question,
-        `Phonics question ${index + 1}`,
-        errors
-      );
+    [phonics.recognitionQuestion,phonics.lowercaseQuestion,phonics.wordQuestion].forEach((question,index)=>{
+      this.validateQuestion(question,`Phonics question ${index+1}`,errors);
     });
 
     if(!this.validPiece(phonics.rewardPiece)){
@@ -210,50 +134,36 @@ class LessonValidator {
     }
   }
 
-  static validateBuild(lesson, errors){
-    const build = lesson.build;
+  static validateBuild(lesson,errors){
+    const build=lesson.build;
+    if(!build) return;
 
-    if(!build){
-      return;
-    }
-
-    if(
-      !build.areaId ||
-      typeof build.stage !== "number" ||
-      !Array.isArray(build.requiredPieces) ||
-      build.requiredPieces.length === 0
-    ){
+    if(!build.areaId || typeof build.stage!=="number" || !Array.isArray(build.requiredPieces) || build.requiredPieces.length===0){
       errors.push("Build activity configuration is incomplete.");
       return;
     }
 
-    const pieceIds = [
-      lesson.feelingsActivity && lesson.feelingsActivity.rewardPiece,
-      lesson.story && lesson.story.rewardPiece,
-      lesson.phonics && lesson.phonics.rewardPiece,
-      lesson.reader1 && lesson.reader1.rewardPiece,
-      lesson.reader2 && lesson.reader2.rewardPiece
-    ].filter(Boolean).map(piece => piece.id);
+    const pieceIds=[
+      lesson.feelingsActivity&&lesson.feelingsActivity.rewardPiece,
+      lesson.story&&lesson.story.rewardPiece,
+      lesson.phonics&&lesson.phonics.rewardPiece,
+      lesson.reader1&&lesson.reader1.rewardPiece,
+      lesson.reader2&&lesson.reader2.rewardPiece
+    ].filter(Boolean).map(piece=>piece.id);
 
-    build.requiredPieces.forEach(pieceId => {
-      if(!pieceIds.includes(pieceId)){
-        errors.push(`Build requires unknown piece: ${pieceId}.`);
-      }
+    build.requiredPieces.forEach(pieceId=>{
+      if(!pieceIds.includes(pieceId)) errors.push(`Build requires unknown piece: ${pieceId}.`);
     });
 
-    if(new Set(build.requiredPieces).size !== build.requiredPieces.length){
+    if(new Set(build.requiredPieces).size!==build.requiredPieces.length){
       errors.push("Build contains a duplicate required piece.");
     }
   }
 
   static validPiece(piece){
-    return Boolean(
-      piece &&
-      piece.id &&
-      piece.name &&
-      piece.icon
-    );
+    const visual=String((piece&&piece.image)||"").trim() || String((piece&&piece.icon)||"").trim();
+    return Boolean(piece && piece.id && piece.name && visual);
   }
 }
 
-window.LessonValidator = LessonValidator;
+window.LessonValidator=LessonValidator;
