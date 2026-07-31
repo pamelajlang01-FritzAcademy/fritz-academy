@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#102342" />
+  <title>Fritz Academy Translator</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="app-shell">
+    <header class="hero">
+      <div>
+        <p class="eyebrow">Fritz Academy Classroom Tool</p>
+        <h1>English ↔ Chinese Translator</h1>
+        <p class="subtitle">Translate, listen, copy, and practice without changing lesson progress.</p>
+      </div>
+      <div class="status-pill" id="connectionStatus" role="status">Ready</div>
+    </header>
+
+    <section class="toolbar" aria-label="Translation direction">
+      <label>
+        From
+        <select id="sourceLanguage">
+          <option value="en">English</option>
+          <option value="zh-CN">简体中文 (Simplified Chinese)</option>
+        </select>
+      </label>
+
+      <button id="swapButton" class="swap-button" type="button" aria-label="Swap languages">⇄</button>
+
+      <label>
+        To
+        <select id="targetLanguage">
+          <option value="zh-CN">简体中文 (Simplified Chinese)</option>
+          <option value="en">English</option>
+        </select>
+      </label>
+    </section>
+
+    <section class="translator-grid">
+      <article class="panel">
+        <div class="panel-heading">
+          <h2 id="sourceHeading">English</h2>
+          <span id="characterCount">0 / 500</span>
+        </div>
+        <textarea id="sourceText" maxlength="500" placeholder="Type English here…" aria-label="Text to translate"></textarea>
+        <div class="button-row">
+          <button id="translateButton" class="primary" type="button">Translate</button>
+          <button id="speakSourceButton" type="button">🔊 Speak</button>
+          <button id="clearButton" type="button">Clear</button>
+        </div>
+      </article>
+
+      <article class="panel output-panel">
+        <div class="panel-heading">
+          <h2 id="targetHeading">简体中文</h2>
+          <span id="translationStatus">Waiting</span>
+        </div>
+        <div id="translatedText" class="translated-text" role="region" aria-live="polite">Your translation will appear here.</div>
+        <div class="button-row">
+          <button id="speakTargetButton" type="button">🔊 Speak</button>
+          <button id="copyButton" type="button">Copy</button>
+        </div>
+      </article>
+    </section>
+
+    <section class="quick-phrases" aria-labelledby="quickPhraseHeading">
+      <div class="section-heading">
+        <h2 id="quickPhraseHeading">Classroom Quick Phrases</h2>
+        <button id="clearHistoryButton" type="button">Clear History</button>
+      </div>
+      <div id="quickPhraseButtons" class="chip-list"></div>
+    </section>
+
+    <section class="history" aria-labelledby="historyHeading">
+      <h2 id="historyHeading">Recent Translations</h2>
+      <p class="privacy-note">History stays only in this browser and can be cleared at any time.</p>
+      <div id="historyList" class="history-list"></div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
