@@ -2,168 +2,107 @@
 ====================================================
 FRITZ ACADEMY
 Lesson Integrity Validator
-Version 51.4.0
+Version 51.5.0
 ====================================================
 
 Stops incomplete lesson data before class flow begins.
 Every required learning section is checked in sequence.
-Production reward pieces may use either an image asset or a legacy icon.
+Only reward pieces that are actually present are validated.
 */
 
 class LessonValidator {
   static validate(lesson){
-    const errors = [];
+    const errors=[];
+    if(!lesson||!lesson.id) return {valid:false,errors:["Lesson data is missing."]};
 
-    if(!lesson || !lesson.id){
-      return { valid:false, errors:["Lesson data is missing."] };
-    }
-
-    const requiredObjects = [
-      "feelingsActivity",
-      "story",
-      "alphabetSong",
-      "phonics",
-      "reader1",
-      "reader2",
-      "build",
-      "completion"
-    ];
-
-    requiredObjects.forEach(key => {
+    ["feelingsActivity","story","alphabetSong","phonics","reader1","reader2","build","completion"].forEach(key=>{
       if(!lesson[key]) errors.push(`${key} is missing.`);
     });
 
-    this.validateActivity(lesson.feelingsActivity,"Feelings activity",errors);
-    this.validateReading(lesson.story,"Teacher story",errors,true);
-    this.validateReading(lesson.reader1,"Reader 1",errors,false);
-    this.validateReading(lesson.reader2,"Reader 2",errors,false);
-    this.validatePhonics(lesson.phonics,errors);
+    this.validateActivity(lesson.feelingsActivity,"Feelings activity",errors,false);
+    this.validateReading(lesson.story,"Teacher story",errors,true,true);
+    this.validateReading(lesson.reader1,"Reader 1",errors,false,true);
+    this.validateReading(lesson.reader2,"Reader 2",errors,false,true);
+    this.validatePhonics(lesson.phonics,errors,false);
     this.validateBuild(lesson,errors);
 
-    if(
-      !lesson.completion ||
-      !lesson.completion.unlocks ||
-      typeof lesson.completion.xp !== "number" ||
-      typeof lesson.completion.stars !== "number"
-    ){
+    if(!lesson.completion||!lesson.completion.unlocks||typeof lesson.completion.xp!=="number"||typeof lesson.completion.stars!=="number"){
       errors.push("Completion rewards or next-level unlock are incomplete.");
     }
-
-    return { valid:errors.length===0, errors };
+    return {valid:errors.length===0,errors};
   }
 
-  static validateActivity(activity,label,errors){
+  static validateActivity(activity,label,errors,rewardRequired=false){
     if(!activity) return;
-
-    if(!Array.isArray(activity.questions) || activity.questions.length===0){
+    if(!Array.isArray(activity.questions)||activity.questions.length===0){
       errors.push(`${label} has no questions.`);
     }else{
-      activity.questions.forEach((question,index)=>{
-        this.validateQuestion(question,`${label}, question ${index+1}`,errors);
-      });
+      activity.questions.forEach((question,index)=>this.validateQuestion(question,`${label}, question ${index+1}`,errors));
     }
-
-    if(!this.validPiece(activity.rewardPiece)){
-      errors.push(`${label} reward piece is incomplete.`);
-    }
+    if(rewardRequired&&!this.validPiece(activity.rewardPiece)) errors.push(`${label} reward piece is incomplete.`);
+    if(activity.rewardPiece&&!this.validPiece(activity.rewardPiece)) errors.push(`${label} reward piece is incomplete.`);
   }
 
-  static validateReading(reading,label,errors,isStory){
+  static validateReading(reading,label,errors,isStory,rewardRequired=true){
     if(!reading) return;
-
-    if(!Array.isArray(reading.pages) || reading.pages.length<3){
+    if(!Array.isArray(reading.pages)||reading.pages.length<3){
       errors.push(`${label} needs at least three pages.`);
       return;
     }
-
     reading.pages.forEach((page,index)=>{
-      const normalized=typeof page==="string" ? {text:page,image:""} : (page||{});
-      if(!String(normalized.text||"").trim()){
-        errors.push(`${label}, page ${index+1}, has no text.`);
-      }
-      if(isStory && !String(normalized.image||"").trim()){
-        errors.push(`${label}, page ${index+1}, has no illustration.`);
-      }
+      const normalized=typeof page==="string"?{text:page,image:""}:(page||{});
+      if(!String(normalized.text||"").trim()) errors.push(`${label}, page ${index+1}, has no text.`);
+      if(isStory&&!String(normalized.image||"").trim()) errors.push(`${label}, page ${index+1}, has no illustration.`);
     });
-
-    const questions=isStory ? reading.questions : (reading.questions || (reading.check ? [reading.check] : []));
-    if(!Array.isArray(questions) || questions.length===0){
+    const questions=isStory?reading.questions:(reading.questions||(reading.check?[reading.check]:[]));
+    if(!Array.isArray(questions)||questions.length===0){
       errors.push(`${label} has no comprehension check.`);
     }else{
-      questions.forEach((question,index)=>{
-        this.validateQuestion(question,`${label}, question ${index+1}`,errors);
-      });
+      questions.forEach((question,index)=>this.validateQuestion(question,`${label}, question ${index+1}`,errors));
     }
-
-    if(!this.validPiece(reading.rewardPiece)){
-      errors.push(`${label} reward piece is incomplete.`);
-    }
+    if(rewardRequired&&!this.validPiece(reading.rewardPiece)) errors.push(`${label} reward piece is incomplete.`);
   }
 
   static validateQuestion(question,label,errors){
-    if(!question || !String(question.prompt||"").trim()){
+    if(!question||!String(question.prompt||"").trim()){
       errors.push(`${label} has no prompt.`);
       return;
     }
-    if(!Array.isArray(question.options) || question.options.length<2){
+    if(!Array.isArray(question.options)||question.options.length<2){
       errors.push(`${label} needs at least two answer choices.`);
       return;
     }
-    if(!question.options.includes(question.answer)){
-      errors.push(`${label} answer is not one of its choices.`);
-    }
+    if(!question.options.includes(question.answer)) errors.push(`${label} answer is not one of its choices.`);
   }
 
-  static validatePhonics(phonics,errors){
+  static validatePhonics(phonics,errors,rewardRequired=false){
     if(!phonics) return;
-
     ["letterUpper","letterLower","soundLabel","teacherCue"].forEach(key=>{
       if(!String(phonics[key]||"").trim()) errors.push(`Phonics ${key} is missing.`);
     });
-
-    if(!Array.isArray(phonics.examples) || phonics.examples.length<3){
-      errors.push("Phonics needs at least three examples.");
-    }
-
+    if(!Array.isArray(phonics.examples)||phonics.examples.length<3) errors.push("Phonics needs at least three examples.");
     [phonics.recognitionQuestion,phonics.lowercaseQuestion,phonics.wordQuestion].forEach((question,index)=>{
       this.validateQuestion(question,`Phonics question ${index+1}`,errors);
     });
-
-    if(!this.validPiece(phonics.rewardPiece)){
-      errors.push("Phonics reward piece is incomplete.");
-    }
+    if(rewardRequired&&!this.validPiece(phonics.rewardPiece)) errors.push("Phonics reward piece is incomplete.");
+    if(phonics.rewardPiece&&!this.validPiece(phonics.rewardPiece)) errors.push("Phonics reward piece is incomplete.");
   }
 
   static validateBuild(lesson,errors){
     const build=lesson.build;
     if(!build) return;
-
-    if(!build.areaId || typeof build.stage!=="number" || !Array.isArray(build.requiredPieces) || build.requiredPieces.length===0){
+    if(!build.areaId||typeof build.stage!=="number"||!Array.isArray(build.requiredPieces)||build.requiredPieces.length===0){
       errors.push("Build activity configuration is incomplete.");
       return;
     }
-
-    const pieceIds=[
-      lesson.feelingsActivity&&lesson.feelingsActivity.rewardPiece,
-      lesson.story&&lesson.story.rewardPiece,
-      lesson.phonics&&lesson.phonics.rewardPiece,
-      lesson.reader1&&lesson.reader1.rewardPiece,
-      lesson.reader2&&lesson.reader2.rewardPiece
-    ].filter(Boolean).map(piece=>piece.id);
-
-    build.requiredPieces.forEach(pieceId=>{
-      if(!pieceIds.includes(pieceId)) errors.push(`Build requires unknown piece: ${pieceId}.`);
-    });
-
-    if(new Set(build.requiredPieces).size!==build.requiredPieces.length){
-      errors.push("Build contains a duplicate required piece.");
-    }
+    const pieceIds=[lesson.feelingsActivity&&lesson.feelingsActivity.rewardPiece,lesson.story&&lesson.story.rewardPiece,lesson.phonics&&lesson.phonics.rewardPiece,lesson.reader1&&lesson.reader1.rewardPiece,lesson.reader2&&lesson.reader2.rewardPiece].filter(Boolean).map(piece=>piece.id);
+    build.requiredPieces.forEach(pieceId=>{if(!pieceIds.includes(pieceId)) errors.push(`Build requires unknown piece: ${pieceId}.`);});
+    if(new Set(build.requiredPieces).size!==build.requiredPieces.length) errors.push("Build contains a duplicate required piece.");
   }
 
   static validPiece(piece){
-    const visual=String((piece&&piece.image)||"").trim() || String((piece&&piece.icon)||"").trim();
-    return Boolean(piece && piece.id && piece.name && visual);
+    const visual=String((piece&&piece.image)||"").trim()||String((piece&&piece.icon)||"").trim();
+    return Boolean(piece&&piece.id&&piece.name&&visual);
   }
 }
-
 window.LessonValidator=LessonValidator;
