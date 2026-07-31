@@ -36,17 +36,10 @@ class StoryEngine {
 
   normalizePage(page){
     return typeof page === "string"
-      ? {
-          text: page,
-          image: ""
-        }
+      ? { text: page, image: "" }
       : {
-          text: page && page.text
-            ? page.text
-            : "",
-          image: page && page.image
-            ? page.image
-            : ""
+          text: page && page.text ? page.text : "",
+          image: page && page.image ? page.image : ""
         };
   }
 
@@ -56,10 +49,7 @@ class StoryEngine {
       return;
     }
 
-    const page = this.normalizePage(
-      this.story.pages[this.pageIndex]
-    );
-
+    const page = this.normalizePage(this.story.pages[this.pageIndex]);
     const objects = [];
 
     const label = this.scene.add.text(
@@ -71,9 +61,7 @@ class StoryEngine {
         fontStyle: "bold",
         color: "#46566f",
         align: "center",
-        wordWrap: {
-          width: 700
-        }
+        wordWrap: { width: 700 }
       }
     ).setOrigin(0.5);
 
@@ -84,18 +72,8 @@ class StoryEngine {
       let fontSize = "31px";
 
       if(imageKey){
-        const image = this.scene.add.image(
-          0,
-          -95,
-          imageKey
-        ).setOrigin(0.5);
-
-        const scale = Math.min(
-          560 / image.width,
-          235 / image.height,
-          1
-        );
-
+        const image = this.scene.add.image(0, -95, imageKey).setOrigin(0.5);
+        const scale = Math.min(560 / image.width, 235 / image.height, 1);
         image.setScale(scale);
         objects.push(image);
         textY = 80;
@@ -112,9 +90,7 @@ class StoryEngine {
           color: "#102342",
           align: "center",
           lineSpacing: 8,
-          wordWrap: {
-            width: 690
-          }
+          wordWrap: { width: 690 }
         }
       ).setOrigin(0.5);
 
@@ -124,22 +100,14 @@ class StoryEngine {
         -150,
         205,
         "Read Aloud",
-        () => {
-          this.lessonEngine.speakText(
-            this.lessonEngine.replaceName(page.text)
-          );
-        },
-        {
-          backgroundColor: "#ffffff"
-        }
+        () => this.lessonEngine.speakText(this.lessonEngine.replaceName(page.text)),
+        { backgroundColor: "#ffffff" }
       );
 
       const next = this.scene.panels.makeButton(
         150,
         205,
-        this.pageIndex === this.story.pages.length - 1
-          ? "Story Check"
-          : "Next Page",
+        this.pageIndex === this.story.pages.length - 1 ? "Story Check" : "Next Page",
         () => {
           this.lessonEngine.stopMedia();
           this.pageIndex++;
@@ -148,14 +116,7 @@ class StoryEngine {
       );
 
       objects.push(read, next);
-
-      this.scene.panels.open(
-        objects,
-        {
-          width: 820,
-          height: 570
-        }
-      );
+      this.scene.panels.open(objects, { width: 820, height: 570 });
     };
 
     if(!page.image){
@@ -163,62 +124,45 @@ class StoryEngine {
       return;
     }
 
-    const imageKey =
-      `story-${this.lesson.id}-${this.pageIndex}`;
-
+    const imageKey = `story-${this.lesson.id}-${this.pageIndex}`;
     if(this.scene.textures.exists(imageKey)){
       render(imageKey);
       return;
     }
 
-    const completeEvent =
-      `filecomplete-image-${imageKey}`;
+    const isSvg = /\.svg(?:\?|$)/i.test(page.image);
+    const fileType = isSvg ? "svg" : "image";
+    const completeEvent = `filecomplete-${fileType}-${imageKey}`;
 
     const onLoadError = file => {
       if(file && file.key === imageKey){
-        this.scene.load.off(
-          completeEvent,
-          onLoadComplete
-        );
+        this.scene.load.off(completeEvent, onLoadComplete);
         render(null);
       }
     };
 
     const onLoadComplete = () => {
-      this.scene.load.off(
-        "loaderror",
-        onLoadError
-      );
+      this.scene.load.off("loaderror", onLoadError);
       render(imageKey);
     };
 
-    this.scene.load.once(
-      completeEvent,
-      onLoadComplete
-    );
+    this.scene.load.once(completeEvent, onLoadComplete);
+    this.scene.load.once("loaderror", onLoadError);
 
-    this.scene.load.once(
-      "loaderror",
-      onLoadError
-    );
-
-    this.scene.load.image(
-      imageKey,
-      page.image
-    );
-
+    if(isSvg){
+      this.scene.load.svg(imageKey, page.image, { width: 960, height: 540 });
+    }else{
+      this.scene.load.image(imageKey, page.image);
+    }
     this.scene.load.start();
   }
 
   startQuestions(){
     this.questionEngine.start({
       title: "Story Check",
-      questions: Array.isArray(this.story.questions)
-        ? this.story.questions
-        : [],
+      questions: Array.isArray(this.story.questions) ? this.story.questions : [],
       successMessage: "Correct!",
-      retryMessage:
-        "Think about what happened in the story and try again.",
+      retryMessage: "Think about what happened in the story and try again.",
       onComplete: () => this.finishStory()
     });
   }
@@ -227,10 +171,7 @@ class StoryEngine {
     const finish = () => {
       const callback = this.onComplete;
       this.onComplete = null;
-
-      if(typeof callback === "function"){
-        callback();
-      }
+      if(typeof callback === "function") callback();
     };
 
     if(this.story.rewardPiece){
