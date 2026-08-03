@@ -2,7 +2,7 @@
 ====================================================
 FRITZ ACADEMY
 Student Profile Engine
-Version 43.0.0
+Version 43.1.0
 ====================================================
 
 Purpose:
@@ -15,12 +15,29 @@ class StudentProfileEngine {
   constructor(){
     this.overlay = null;
     this.panel = null;
+    this.continueOnceKey = "fritz_profile_continue_once";
   }
 
   start(){
     this.injectStyles();
     this.createSwitchButton();
+
+    /*
+      Creating or selecting a student requires a reload so the older game
+      engines read the newly active save. The one-time flag prevents that
+      reload from immediately reopening the chooser and trapping the user.
+    */
+    if(sessionStorage.getItem(this.continueOnceKey) === "1"){
+      sessionStorage.removeItem(this.continueOnceKey);
+      return;
+    }
+
     this.showChooser();
+  }
+
+  continueAfterReload(){
+    sessionStorage.setItem(this.continueOnceKey, "1");
+    window.location.reload();
   }
 
   students(){
@@ -147,7 +164,7 @@ class StudentProfileEngine {
 
     const ageInput = document.createElement("input");
     ageInput.type = "number";
-    ageInput.min = "4";
+    ageInput.min = "2";
     ageInput.max = "18";
     ageInput.inputMode = "numeric";
 
@@ -196,7 +213,7 @@ class StudentProfileEngine {
         student.homeLanguage = languageInput.value.trim();
         student.age = ageInput.value ? Number(ageInput.value) : null;
         saveGame(student);
-        window.location.reload();
+        this.continueAfterReload();
       }catch(error){
         message.textContent = error && error.message
           ? error.message
@@ -215,7 +232,7 @@ class StudentProfileEngine {
 
     const selected = selectStudent(studentId);
     if(selected){
-      window.location.reload();
+      this.continueAfterReload();
     }
   }
 
@@ -248,108 +265,22 @@ class StudentProfileEngine {
     const style = document.createElement("style");
     style.id = "fritz-profile-styles";
     style.textContent = `
-      .fritz-profile-overlay {
-        position: fixed;
-        inset: 0;
-        z-index: 100000;
-        display: grid;
-        place-items: center;
-        padding: 18px;
-        background: rgba(7, 20, 38, 0.92);
-      }
-      .fritz-profile-panel {
-        width: min(720px, 94vw);
-        max-height: 90vh;
-        overflow: auto;
-        box-sizing: border-box;
-        padding: 28px;
-        border: 5px solid #f6c744;
-        border-radius: 24px;
-        background: #fffdf5;
-        color: #102342;
-        box-shadow: 0 24px 70px rgba(0,0,0,.45);
-        font-family: Arial, sans-serif;
-      }
-      .fritz-profile-panel h1 {
-        margin: 0 0 8px;
-        text-align: center;
-        font-size: clamp(30px, 6vw, 46px);
-      }
-      .fritz-profile-subtitle {
-        margin: 0 0 22px;
-        text-align: center;
-        font-size: 19px;
-        line-height: 1.45;
-      }
-      .fritz-profile-list {
-        display: grid;
-        gap: 12px;
-        margin-bottom: 22px;
-      }
-      .fritz-profile-card {
-        display: grid;
-        gap: 5px;
-        width: 100%;
-        padding: 16px 18px;
-        border: 3px solid #c8d2df;
-        border-radius: 15px;
-        background: white;
-        color: #102342;
-        text-align: left;
-        cursor: pointer;
-      }
-      .fritz-profile-card strong { font-size: 24px; }
-      .fritz-profile-card span { font-size: 16px; }
-      .fritz-profile-card:hover,
-      .fritz-profile-card:focus,
-      .fritz-profile-card.is-active {
-        border-color: #174ea6;
-        background: #eef5ff;
-        outline: none;
-      }
-      .fritz-profile-actions {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 12px;
-        margin-top: 18px;
-      }
-      .fritz-profile-primary,
-      .fritz-profile-secondary,
-      #fritz-switch-student {
-        border: 0;
-        border-radius: 13px;
-        padding: 13px 18px;
-        font-weight: 700;
-        font-size: 17px;
-        cursor: pointer;
-      }
-      .fritz-profile-primary { background: #f6c744; color: #102342; }
-      .fritz-profile-secondary { background: #174ea6; color: white; }
-      .fritz-profile-form { display: grid; gap: 9px; }
-      .fritz-profile-form label { margin-top: 8px; font-weight: 700; font-size: 17px; }
-      .fritz-profile-form input {
-        box-sizing: border-box;
-        width: 100%;
-        padding: 13px;
-        border: 2px solid #aab7c8;
-        border-radius: 10px;
-        font-size: 18px;
-      }
-      .fritz-profile-error { min-height: 22px; margin: 6px 0 0; color: #a52222; font-weight: 700; }
-      #fritz-switch-student {
-        position: fixed;
-        z-index: 99999;
-        top: 12px;
-        right: 12px;
-        background: #f6c744;
-        color: #102342;
-        box-shadow: 0 4px 16px rgba(0,0,0,.3);
-      }
-      @media (max-width: 600px) {
-        .fritz-profile-panel { padding: 20px 16px; }
-        #fritz-switch-student { top: 8px; right: 8px; padding: 10px 12px; font-size: 14px; }
-      }
+      .fritz-profile-overlay { position:fixed; inset:0; z-index:100000; display:grid; place-items:center; padding:18px; background:rgba(7,20,38,.92); }
+      .fritz-profile-panel { width:min(720px,94vw); max-height:90vh; overflow:auto; box-sizing:border-box; padding:28px; border:5px solid #f6c744; border-radius:24px; background:#fffdf5; color:#102342; box-shadow:0 24px 70px rgba(0,0,0,.45); font-family:Arial,sans-serif; }
+      .fritz-profile-panel h1 { margin:0 0 8px; text-align:center; font-size:clamp(30px,6vw,46px); }
+      .fritz-profile-subtitle { margin:0 0 22px; text-align:center; font-size:19px; line-height:1.45; }
+      .fritz-profile-list { display:grid; gap:12px; margin-bottom:22px; }
+      .fritz-profile-card { display:grid; gap:5px; width:100%; padding:16px 18px; border:3px solid #c8d2df; border-radius:15px; background:white; color:#102342; text-align:left; cursor:pointer; }
+      .fritz-profile-card strong { font-size:24px; } .fritz-profile-card span { font-size:16px; }
+      .fritz-profile-card:hover,.fritz-profile-card:focus,.fritz-profile-card.is-active { border-color:#174ea6; background:#eef5ff; outline:none; }
+      .fritz-profile-actions { display:flex; flex-wrap:wrap; justify-content:center; gap:12px; margin-top:18px; }
+      .fritz-profile-primary,.fritz-profile-secondary,#fritz-switch-student { border:0; border-radius:13px; padding:13px 18px; font-weight:700; font-size:17px; cursor:pointer; }
+      .fritz-profile-primary { background:#f6c744; color:#102342; } .fritz-profile-secondary { background:#174ea6; color:white; }
+      .fritz-profile-form { display:grid; gap:9px; } .fritz-profile-form label { margin-top:8px; font-weight:700; font-size:17px; }
+      .fritz-profile-form input { box-sizing:border-box; width:100%; padding:13px; border:2px solid #aab7c8; border-radius:10px; font-size:18px; }
+      .fritz-profile-error { min-height:22px; margin:6px 0 0; color:#a52222; font-weight:700; }
+      #fritz-switch-student { position:fixed; z-index:99999; top:12px; right:12px; background:#f6c744; color:#102342; box-shadow:0 4px 16px rgba(0,0,0,.3); }
+      @media (max-width:600px) { .fritz-profile-panel { padding:20px 16px; } #fritz-switch-student { top:8px; right:8px; padding:10px 12px; font-size:14px; } }
     `;
 
     document.head.appendChild(style);
