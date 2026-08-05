@@ -1,4 +1,4 @@
-/* Fritz Academy 52.9 — clean classroom adventure renderer using approved cast assets */
+/* Fritz Academy 53.0 — stable classroom adventure layout using approved cast assets */
 (function(){
 'use strict';
 const CAST={
@@ -36,30 +36,31 @@ const SCENES={
  ]
 };
 function css(){
- if(document.getElementById('fa529css')) return;
+ if(document.getElementById('fa530css')) return;
+ ['fa529css','fa527css','fa526css'].forEach(id=>{const old=document.getElementById(id);if(old)old.remove();});
  const s=document.createElement('style');
- s.id='fa529css';
+ s.id='fa530css';
  s.textContent=`
- .fa529{position:fixed;inset:0;z-index:1000005;background:#071426;display:grid;place-items:center;font-family:Arial,sans-serif;padding:8px}
- .fa529game{width:min(1240px,99vw);height:min(850px,98vh);border:6px solid #f3c54b;border-radius:24px;overflow:hidden;background:#fffdf4;display:grid;grid-template-rows:auto 1fr auto auto;box-shadow:0 24px 70px #0009}
- .fa529hud{display:flex;align-items:center;justify-content:space-between;padding:10px 18px;background:linear-gradient(#fff6c9,#f4d86f);border-bottom:4px solid #174ea6;color:#102342}.fa529hud h2{margin:0;font-size:24px}.fa529badge{background:#174ea6;color:#fff;border-radius:999px;padding:7px 13px;font-weight:900}
- .fa529body{min-height:0;display:grid;grid-template-columns:1fr 270px;background:#d9efff}
- .fa529scene{position:relative;min-width:0;overflow:hidden;background:url('assets/academy.png') center 42%/cover no-repeat}
- .fa529scene:after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(6,24,44,.08) 50%,rgba(6,24,44,.38));pointer-events:none}
- .fa529bubble{position:absolute;z-index:2;left:50%;top:18px;transform:translateX(-50%);width:min(680px,86%);background:#ffffffee;border:5px solid #174ea6;border-radius:22px;padding:12px 16px;text-align:center;color:#102342;font-size:22px;font-weight:900;box-shadow:0 8px 20px #0004}
- .fa529gate{position:absolute;z-index:1;left:50%;top:31%;transform:translateX(-50%);width:290px;height:130px;border:8px solid #e4b63d;border-radius:28px;background:rgba(20,40,68,.72);box-shadow:0 0 0 4px #fff4b2,0 10px 30px #0007;display:grid;place-items:center;color:#fff;font-size:35px;font-weight:900;letter-spacing:8px}
- .fa529stones{position:absolute;z-index:2;left:50%;top:59%;transform:translateX(-50%);display:flex;gap:8px}.fa529stone{width:46px;height:46px;border-radius:12px;background:linear-gradient(#ffe887,#e4a72c);border:4px solid #6f4318;display:grid;place-items:center;font-size:27px;font-weight:900;box-shadow:0 6px 12px #0005}
- .fa529clue{position:absolute;z-index:2;left:50%;bottom:18px;transform:translateX(-50%);width:min(640px,82%);background:#fff8d9ee;border:4px solid #d49a18;border-radius:16px;padding:10px 14px;text-align:center;color:#102342;font-size:17px;font-weight:850;box-shadow:0 8px 20px #0005}.fa529clue b{color:#174ea6;margin-right:8px}
- .fa529focus{background:linear-gradient(#17325a,#0e203d);border-left:4px solid #174ea6;display:grid;grid-template-rows:auto 1fr auto;align-items:center;padding:10px;color:#fff;min-width:0}
- .fa529focus h3{text-align:center;margin:2px 0 6px;font-size:20px}.fa529portrait{align-self:center;justify-self:center;width:220px;height:330px;background:#fff;border:5px solid #f3c54b;border-radius:22px;overflow:hidden;display:grid;place-items:end center;box-shadow:0 10px 24px #0008}.fa529portrait img{max-width:100%;max-height:100%;object-fit:contain;display:block}.fa529role{text-align:center;background:#f3c54b;color:#102342;border-radius:12px;padding:7px 9px;font-size:15px;font-weight:900}
- .fa529text{padding:13px 28px;text-align:center;color:#102342;background:#fffdf4;border-top:4px solid #174ea6;font-size:24px;line-height:1.25;font-weight:850}
- .fa529team{height:92px;background:#eaf2fb;border-top:3px solid #102342;display:flex;align-items:center;justify-content:center;gap:12px;padding:6px 12px;overflow:hidden}.fa529mini{width:86px;height:76px;background:#fff;border:3px solid #102342;border-radius:12px;display:grid;grid-template-rows:1fr auto;place-items:center;overflow:hidden}.fa529mini.active{border-color:#f0b51d;box-shadow:0 0 0 4px #ffe48a}.fa529mini img{max-width:72px;max-height:54px;object-fit:contain}.fa529mini span{font-size:11px;font-weight:900;color:#102342;padding-bottom:2px}
- .fa529controls{display:flex;justify-content:center;gap:18px;padding:10px;background:#102342}.fa529controls button{padding:11px 23px;border:3px solid #fff;border-radius:13px;font-size:19px;font-weight:900;cursor:pointer}.fa529controls .read{background:#fff;color:#102342}.fa529controls .next{background:#ffc63d;color:#102342}
- @media(max-width:850px){.fa529body{grid-template-columns:1fr 205px}.fa529portrait{width:165px;height:250px}.fa529stones{gap:4px}.fa529stone{width:36px;height:36px;font-size:21px}.fa529text{font-size:19px}.fa529bubble{font-size:18px}.fa529team{gap:5px}.fa529mini{width:65px}}
+ .fa530{position:fixed;inset:0;z-index:1000010;background:#071426;display:grid;place-items:center;font-family:Arial,sans-serif;padding:6px;box-sizing:border-box}
+ .fa530 *{box-sizing:border-box}
+ .fa530game{width:min(1240px,99vw);height:min(850px,98vh);border:6px solid #f3c54b;border-radius:22px;overflow:hidden;background:#fffdf4;display:grid;grid-template-rows:58px minmax(0,1fr) 88px 70px 66px;box-shadow:0 24px 70px #0009}
+ .fa530hud{display:flex;align-items:center;justify-content:space-between;padding:8px 18px;background:linear-gradient(#fff6c9,#f4d86f);border-bottom:4px solid #174ea6;color:#102342;overflow:hidden}.fa530hud h2{margin:0;font-size:23px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.fa530badge{background:#174ea6;color:#fff;border-radius:999px;padding:7px 13px;font-weight:900;white-space:nowrap}
+ .fa530body{min-height:0;overflow:hidden;display:grid;grid-template-columns:minmax(0,1fr) 245px;background:#d9efff}
+ .fa530scene{position:relative;min-width:0;min-height:0;overflow:hidden;background:url('assets/academy.png') center 42%/cover no-repeat}
+ .fa530scene:after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(6,24,44,.08) 50%,rgba(6,24,44,.30));pointer-events:none}
+ .fa530bubble{position:absolute;z-index:3;left:50%;top:14px;transform:translateX(-50%);width:min(690px,88%);background:#fffffff2;border:4px solid #174ea6;border-radius:19px;padding:9px 14px;text-align:center;color:#102342;font-size:20px;font-weight:900;box-shadow:0 6px 16px #0004}
+ .fa530gate{position:absolute;z-index:1;left:50%;top:31%;transform:translateX(-50%);width:260px;height:105px;border:7px solid #e4b63d;border-radius:24px;background:rgba(20,40,68,.72);box-shadow:0 0 0 4px #fff4b2,0 10px 25px #0007;display:grid;place-items:center;color:#fff;font-size:31px;font-weight:900;letter-spacing:7px}
+ .fa530stones{position:absolute;z-index:3;left:50%;top:58%;transform:translateX(-50%);display:flex;gap:6px}.fa530stone{width:42px;height:42px;border-radius:10px;background:linear-gradient(#ffe887,#e4a72c);border:3px solid #6f4318;display:grid;place-items:center;font-size:24px;font-weight:900;box-shadow:0 5px 10px #0005}
+ .fa530clue{position:absolute;z-index:3;left:50%;bottom:12px;transform:translateX(-50%);width:min(650px,84%);background:#fff8d9f5;border:3px solid #d49a18;border-radius:15px;padding:8px 12px;text-align:center;color:#102342;font-size:16px;font-weight:850;box-shadow:0 6px 16px #0005}.fa530clue b{color:#174ea6;margin-right:8px}
+ .fa530focus{min-width:0;min-height:0;overflow:hidden;background:linear-gradient(#17325a,#0e203d);border-left:4px solid #174ea6;display:grid;grid-template-rows:38px minmax(0,1fr) 38px;align-items:center;padding:7px;color:#fff}.fa530focus h3{text-align:center;margin:0;font-size:19px}.fa530portrait{align-self:stretch;justify-self:stretch;min-height:0;background:#fff;border:4px solid #f3c54b;border-radius:18px;overflow:hidden;display:grid;place-items:center;box-shadow:0 8px 18px #0007}.fa530portrait img{width:100%;height:100%;object-fit:contain;display:block}.fa530role{text-align:center;background:#f3c54b;color:#102342;border-radius:10px;padding:5px 7px;font-size:14px;font-weight:900}
+ .fa530text{overflow:hidden;padding:10px 24px;display:grid;place-items:center;text-align:center;color:#102342;background:#fffdf4;border-top:4px solid #174ea6;font-size:21px;line-height:1.2;font-weight:850}
+ .fa530team{overflow:hidden;background:#eaf2fb;border-top:3px solid #102342;display:flex;align-items:center;justify-content:center;gap:9px;padding:5px 10px}.fa530mini{width:78px;height:58px;background:#fff;border:2px solid #102342;border-radius:10px;display:grid;grid-template-columns:38px 1fr;align-items:center;overflow:hidden;padding:2px}.fa530mini.active{border-color:#f0b51d;box-shadow:0 0 0 3px #ffe48a}.fa530mini img{width:36px;height:50px;object-fit:contain}.fa530mini span{font-size:10px;font-weight:900;color:#102342;line-height:1.05;text-align:center}
+ .fa530controls{display:flex;justify-content:center;align-items:center;gap:18px;padding:7px;background:#102342}.fa530controls button{padding:9px 22px;border:3px solid #fff;border-radius:12px;font-size:18px;font-weight:900;cursor:pointer}.fa530controls .read{background:#fff;color:#102342}.fa530controls .next{background:#ffc63d;color:#102342}
+ @media(max-width:850px){.fa530game{grid-template-rows:52px minmax(0,1fr) 80px 62px 60px}.fa530body{grid-template-columns:minmax(0,1fr) 190px}.fa530hud h2{font-size:19px}.fa530bubble{font-size:16px}.fa530gate{width:210px;height:85px;font-size:25px}.fa530stone{width:32px;height:32px;font-size:19px}.fa530stones{gap:3px}.fa530text{font-size:18px}.fa530mini{width:62px;grid-template-columns:28px 1fr}.fa530mini img{width:27px;height:43px}}
  `;
  document.head.appendChild(s);
 }
-function clear(){document.querySelectorAll('.fa529,.fa527,.fa526').forEach(n=>n.remove())}
+function clear(){document.querySelectorAll('.fa530,.fa529,.fa527,.fa526').forEach(n=>n.remove())}
 function page(raw){return typeof raw==='string'?{text:raw}:{text:(raw&&raw.text)||''}}
 function render(engine,collection,type,index,next,label){
  css();clear();
@@ -67,21 +68,20 @@ function render(engine,collection,type,index,next,label){
  const raw=page(collection.pages[index]);
  const focus=CAST[scene.focus]||CAST.fritz;
  const order=['fritz','tony','bear','bash','nola','rascal'];
- const o=document.createElement('div');o.className='fa529';
- o.innerHTML=`<section class="fa529game"><header class="fa529hud"><h2>${collection.title} — Page ${index+1} of ${collection.pages.length}</h2><span class="fa529badge">Adventure Mode</span></header><div class="fa529body"><main class="fa529scene"><div class="fa529bubble"></div><div class="fa529gate">A B C D</div><div class="fa529stones">${'ABCDEFGH'.split('').map(x=>`<span class="fa529stone">${x}</span>`).join('')}</div><div class="fa529clue"><b>CLUE</b><span></span></div></main><aside class="fa529focus"><h3></h3><div class="fa529portrait"><img></div><div class="fa529role">Academy Team</div></aside></div><div class="fa529text"></div><div class="fa529team"></div><footer class="fa529controls"><button class="read">🔊 Read Aloud</button><button class="next">${label} ➜</button></footer></section>`;
- o.querySelector('.fa529bubble').textContent=scene.prompt;
- o.querySelector('.fa529clue span').textContent=scene.clue;
- o.querySelector('.fa529focus h3').textContent=focus.name;
- o.querySelector('.fa529portrait img').src=focus.src;
- o.querySelector('.fa529portrait img').alt=focus.name;
- o.querySelector('.fa529text').textContent=engine.lessonEngine.replaceName(raw.text);
- const team=o.querySelector('.fa529team');
- order.forEach(id=>{const c=CAST[id],d=document.createElement('div');d.className='fa529mini '+(id===scene.focus?'active':'');d.innerHTML=`<img src="${c.src}" alt="${c.name}"><span>${c.name}</span>`;team.appendChild(d)});
+ const o=document.createElement('div');o.className='fa530';
+ o.innerHTML=`<section class="fa530game"><header class="fa530hud"><h2>${collection.title} — Page ${index+1} of ${collection.pages.length}</h2><span class="fa530badge">Adventure Mode</span></header><div class="fa530body"><main class="fa530scene"><div class="fa530bubble"></div><div class="fa530gate">A B C D</div><div class="fa530stones">${'ABCDEFGH'.split('').map(x=>`<span class="fa530stone">${x}</span>`).join('')}</div><div class="fa530clue"><b>CLUE</b><span></span></div></main><aside class="fa530focus"><h3></h3><div class="fa530portrait"><img></div><div class="fa530role">Academy Team</div></aside></div><div class="fa530text"></div><div class="fa530team"></div><footer class="fa530controls"><button class="read">🔊 Read Aloud</button><button class="next">${label} ➜</button></footer></section>`;
+ o.querySelector('.fa530bubble').textContent=scene.prompt;
+ o.querySelector('.fa530clue span').textContent=scene.clue;
+ o.querySelector('.fa530focus h3').textContent=focus.name;
+ const portrait=o.querySelector('.fa530portrait img');portrait.src=focus.src;portrait.alt=focus.name;
+ o.querySelector('.fa530text').textContent=engine.lessonEngine.replaceName(raw.text);
+ const team=o.querySelector('.fa530team');
+ order.forEach(id=>{const c=CAST[id],d=document.createElement('div');d.className='fa530mini '+(id===scene.focus?'active':'');d.innerHTML=`<img src="${c.src}" alt="${c.name}"><span>${c.name}</span>`;team.appendChild(d)});
  o.querySelector('.read').onclick=()=>engine.lessonEngine.speakText(engine.lessonEngine.replaceName(raw.text));
  o.querySelector('.next').onclick=()=>{o.remove();next()};
  document.body.appendChild(o);
 }
 if(window.StoryEngine){StoryEngine.prototype.showPage=function(){if(!this.lesson||this.lesson.id!=='2-A')return;if(this.pageIndex>=this.story.pages.length){this.startQuestions();return}const last=this.pageIndex===this.story.pages.length-1;render(this,this.story,'story',this.pageIndex,()=>{this.pageIndex++;this.showPage()},last?'Story Check':'Next Page')}}
 if(window.ReaderEngine){ReaderEngine.prototype.showPage=function(){if(!this.lesson||this.lesson.id!=='2-A')return;if(this.pageIndex>=this.reader.pages.length){this.startCheck();return}const key=this.readerKey||'reader1',last=this.pageIndex===this.reader.pages.length-1;render(this,this.reader,key,this.pageIndex,()=>{this.pageIndex++;this.showPage()},last?'Reader Check':'Next Page')}}
-window.FRITZ_LESSON2A_APPROVED_CAST='52.9';
+window.FRITZ_LESSON2A_APPROVED_CAST='53.0';
 })();
