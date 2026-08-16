@@ -10,10 +10,10 @@ function fritzStudentId(name){
 function fritzSpelling(name){
   return String(name||"").trim().toUpperCase().split("").filter(c=>c!==" ").join("-");
 }
-function fritzNewStudent(name){
+function fritzNewStudent(name,avatar=""){
   return {
     id:fritzStudentId(name),studentName:String(name||"").trim(),studentSpelling:fritzSpelling(name),
-    homeLanguage:"",age:null,avatar:"",puppy:"fritz",
+    homeLanguage:"",age:null,avatar:String(avatar||""),puppy:String(avatar||"")||"fritz",
     currentLevel:"1-A",currentCheckpoint:"opening",reviewMode:false,
     xp:0,stars:0,pack:fritzDefaultPack(),completed:{},collected:{},
     unlockedLevels:["1-A"],lessonProgress:{},academyBuilds:{},placedBuilds:{},builderWorlds:{},
@@ -27,15 +27,11 @@ function fritzLoadProfiles(){
   }catch(e){ console.warn("Fritz Academy clean save could not be read.",e); }
   return {activeStudentId:"",students:{}};
 }
-function fritzStoreProfiles(data){
-  localStorage.setItem(FRITZ_PROFILES_KEY,JSON.stringify(data));
-}
-function listStudents(){
-  return Object.values(fritzLoadProfiles().students||{}).sort((a,b)=>(a.createdAt||"").localeCompare(b.createdAt||""));
-}
-function getActiveStudentId(){ return fritzLoadProfiles().activeStudentId||""; }
+function fritzStoreProfiles(data){localStorage.setItem(FRITZ_PROFILES_KEY,JSON.stringify(data));}
+function listStudents(){return Object.values(fritzLoadProfiles().students||{}).sort((a,b)=>(a.createdAt||"").localeCompare(b.createdAt||""));}
+function getActiveStudentId(){return fritzLoadProfiles().activeStudentId||"";}
 function getSave(){
-  const data=fritzLoadProfiles(), id=data.activeStudentId;
+  const data=fritzLoadProfiles(),id=data.activeStudentId;
   if(id&&data.students[id]) return JSON.parse(JSON.stringify(data.students[id]));
   return fritzNewStudent("");
 }
@@ -48,9 +44,10 @@ function saveGame(student){
   fritzStoreProfiles(data);
   return student;
 }
-function createStudent(name){
-  const data=fritzLoadProfiles(), student=fritzNewStudent(name);
-  let id=student.id, n=2;
+function createStudent(name,spelling="",avatar=""){
+  const data=fritzLoadProfiles(),student=fritzNewStudent(name,avatar);
+  if(spelling) student.studentSpelling=String(spelling);
+  let id=student.id,n=2;
   while(data.students[id]) id=`${student.id}-${n++}`;
   student.id=id;
   data.students[id]=student;
@@ -61,13 +58,22 @@ function createStudent(name){
 function selectStudent(studentId){
   const data=fritzLoadProfiles();
   if(!data.students[studentId]) return null;
-  data.activeStudentId=studentId; fritzStoreProfiles(data);
+  data.activeStudentId=studentId;fritzStoreProfiles(data);
+  return JSON.parse(JSON.stringify(data.students[studentId]));
+}
+function updateStudentAvatar(studentId,avatarId){
+  const data=fritzLoadProfiles();
+  if(!data.students[studentId]) return null;
+  data.students[studentId].avatar=String(avatarId||"");
+  data.students[studentId].puppy=String(avatarId||"")||"fritz";
+  data.students[studentId].updatedAt=new Date().toISOString();
+  fritzStoreProfiles(data);
   return JSON.parse(JSON.stringify(data.students[studentId]));
 }
 function deleteStudent(studentId){
   const data=fritzLoadProfiles();
   delete data.students[studentId];
   if(data.activeStudentId===studentId) data.activeStudentId=Object.keys(data.students)[0]||"";
-  fritzStoreProfiles(data); return true;
+  fritzStoreProfiles(data);return true;
 }
-window.FRITZ_SAVE_VERSION="55.0-clean-v3";
+window.FRITZ_SAVE_VERSION="60.0-clean-avatar-compatible";
