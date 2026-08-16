@@ -1,15 +1,15 @@
-/* Fritz Academy 53.9 — layered Lesson 6 story presentation */
+/* Fritz Academy 53.10 — layered Lesson 6 story presentation */
 (function(){
 'use strict';
 
 const LEVEL_ID='2-B';
 const APPROVED={
-  captainFritz:'assets/characters/approved/captain-fritz/sweatsuit-idle.png',
+  captainFritz:'assets/characters/approved/captain-fritz/nautical-idle.webp',
   bash:'assets/characters/approved/bash/sweatsuit-idle.webp',
   bear:'assets/characters/approved/bear/sweatsuit-idle.webp',
-  nola:'assets/characters/approved/nola/sweatsuit-idle.png',
-  rascal:'assets/characters/approved/rascal/sweatsuit-idle.png',
-  tony:'assets/characters/approved/tony/sweatsuit-idle.png'
+  nola:'assets/characters/approved/nola/sweatsuit-idle.webp',
+  rascal:'assets/characters/approved/rascal/sweatsuit-idle.webp',
+  tony:'assets/characters/approved/tony/sweatsuit-idle.webp'
 };
 
 const scenes=[
@@ -77,5 +77,5 @@ if(window.StoryEngine){
  };
 }
 
-window.FRITZ_LESSON6_LAYERED='53.9';
+window.FRITZ_LESSON6_LAYERED='53.10';
 })();
