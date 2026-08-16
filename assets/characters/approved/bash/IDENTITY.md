@@ -1,0 +1,1 @@
+Bash is the younger German Shepherd brother and the actual puppy leader. He is the largest character but must retain a young puppy face. Fur is black-dominant with tan markings, eyes are brown, and exactly one ear is floppy. Do not substitute an adult shepherd, a tan-dominant shepherd, or any generic dog.
