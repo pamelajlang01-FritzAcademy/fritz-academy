@@ -1,236 +1,145 @@
-const LEVELS = [
-{
- id:"1-A", chapter:"Week 1", title:"Welcome to the Academy", unlocked:true,
- reward:"Welcome Garden — First Path", buildArea:"welcome-garden", buildStage:1,
- objectives:{speaking:["Say your name.","Say how you feel."],listening:["Understand hello, name, happy, fine, sad."],reading:["Recognize A and short-a words."],phonics:["A/a and short /a/."]},
- vocabulary:[{word:"hello",display:"Hello!",picture:"👋"},{word:"name",display:"My name is...",picture:"🏷️"},{word:"happy",display:"I am happy.",picture:"😀"},{word:"friend",display:"friend",picture:"🐾"}],
- intro:[{speaker:"Captain Fritz",text:"Hello! I am Captain Fritz."},{speaker:"Captain Fritz",text:"What is your name?",responseType:"name"},{speaker:"Captain Fritz",text:"How are you today?",responseType:"feeling"}],
- feelingChoices:[{id:"happy",label:"I am happy.",emoji:"😀"},{id:"fine",label:"I am fine.",emoji:"🙂"},{id:"sad",label:"I am sad.",emoji:"😢"}],
- feelingsActivity:{title:"How Do You Feel?",instructions:"Match the face and sentence.",questions:[
-  {emoji:"😀",answer:"I am happy.",options:["I am happy.","I am sad.","I am fine."]},
-  {emoji:"🙂",answer:"I am fine.",options:["I am sad.","I am fine.","I am happy."]},
-  {emoji:"😢",answer:"I am sad.",options:["I am fine.","I am happy.","I am sad."]}
- ],rewardPiece:{id:"welcome-flowers",name:"Welcome Flowers",icon:"🌼",area:"welcome-garden",lesson:"1-A"}},
- story:{title:"The New Academy Builder",pages:[
-  {text:"Captain Fritz waits at the Academy gate. A new student is coming up the path.",image:"assets/fritz_academy_world_map.png"},
-  {text:"Tony is the first puppy to notice. “Someone is here!” he calls.",image:"assets/tony.png"},
-  {text:"Bash walks over with Bear, Nola, and Rascal. Bash smiles and waits beside Captain Fritz.",image:"assets/bash.png"},
-  {text:"Captain Fritz says, “Hello! Welcome to Fritz Academy. What is your name?”",image:"assets/captain_fritz.png"},
-  {text:"The puppies show {studentName} the Welcome Garden. Rascal runs ahead, but Bash reminds him to wait.",image:"assets/academy.png"},
-  {text:"Captain Fritz points to an empty place beside the path. “Every Academy Builder adds something here. What will you build first?”",image:"assets/academy.png"}
- ],questions:[
-  {prompt:"Who welcomes the new student?",options:["Captain Fritz","A cat","A teacher at another school"],answer:"Captain Fritz"},
-  {prompt:"Who runs ahead?",options:["Rascal","Tony","Nola"],answer:"Rascal"},
-  {prompt:"Where do the friends go?",options:["The Welcome Garden","The beach","A store"],answer:"The Welcome Garden"}
- ],rewardPiece:{id:"stone-path",name:"Stone Garden Path",icon:"🪨",area:"welcome-garden",lesson:"1-A"}},
- alphabetSong:{title:"Fritz Academy Alphabet Song",rewardMessage:"Listen for A.",assetPath:"assets/alphabet-song-small.mp4",videoPath:"assets/alphabet-song-small.mp4"},
- phonics:{letterUpper:"A",letterLower:"a",soundLabel:"short a",teacherCue:"Say: a, a, apple.",examples:[{word:"apple",icon:"🍎"},{word:"ant",icon:"🐜"},{word:"map",icon:"🗺️"}],
-  recognitionQuestion:{prompt:"Choose uppercase A.",options:["A","B","D"],answer:"A"},
-  lowercaseQuestion:{prompt:"Choose lowercase a.",options:["e","a","o"],answer:"a"},
-  wordQuestion:{prompt:"Which word has short a?",options:["apple","moon","tree"],answer:"apple"},
-  rewardPiece:{id:"reading-bench",name:"Garden Reading Bench",icon:"🪑",area:"welcome-garden",lesson:"1-A"}},
- reader1:{title:"Reader 1: Tony Says Hello",level:"Easy",pages:[
-  {text:"Tony is by the gate.",image:"assets/tony.png"},{text:"He sees {studentName}.",image:"assets/academy.png"},{text:"Tony says, “Hello!”",image:"assets/tony.png"},{text:"The new friend waves.",image:"assets/academy.png"},{text:"Tony is happy.",image:"assets/tony.png"}
- ],check:{prompt:"How does Tony feel?",options:["Happy","Sad","Angry"],answer:"Happy"},rewardPiece:{id:"welcome-tree",name:"Welcome Tree",icon:"🌳",area:"welcome-garden",lesson:"1-A"}},
- reader2:{title:"Reader 2: A Place for a Friend",level:"Easy Plus",pages:[
-  {text:"The garden has a path.",image:"assets/academy.png"},{text:"Nola brings flowers.",image:"assets/nola.png"},{text:"Bear carries a small tree.",image:"assets/bear.png"},{text:"Bash asks, “Where should it go?”",image:"assets/bash.png"},{text:"{studentName} helps the friends choose a place.",image:"assets/academy.png"}
- ],check:{prompt:"What does Bear carry?",options:["A small tree","A kite","A book"],answer:"A small tree"},rewardPiece:{id:"garden-fence",name:"Garden Fence",icon:"🪵",area:"welcome-garden",lesson:"1-A"}},
- build:{areaId:"welcome-garden",stage:1,title:"Build Your First Garden Corner",requiredPieces:["welcome-flowers","stone-path","reading-bench","welcome-tree","garden-fence"],completionMessage:"Your first Academy garden corner is saved."},
- closingSong:{title:"Academy Celebration",rewardMessage:"Great work. Your Academy has grown!",assetPath:"",videoPath:""},
- completion:{xp:25,stars:1,unlocks:"1-B",message:"Your first Academy adventure is complete."}
-},
-{
- id:"1-B",chapter:"Week 1",title:"Bear's Missing Ball",unlocked:false,reward:"Welcome Garden — Play Corner",buildArea:"welcome-garden",buildStage:2,
- objectives:{speaking:["Answer: What did you do?","Use I played / I read / I helped."],listening:["Follow simple action words."],reading:["Recognize B/b and /b/."],phonics:["B/b and /b/."]},
- vocabulary:[{word:"ball",display:"ball",picture:"⚽"},{word:"book",display:"book",picture:"📘"},{word:"played",display:"I played.",picture:"🎮"},{word:"helped",display:"I helped.",picture:"🤝"}],
- intro:[{speaker:"Captain Fritz",text:"Welcome back, {studentName}! How are you today?",responseType:"feeling"},{speaker:"Captain Fritz",text:"What did you do today?"},{speaker:"Captain Fritz",text:"Bear cannot find his ball. The puppies need your help."}],
- feelingChoices:[{id:"great",label:"I am great.",emoji:"😄"},{id:"fine",label:"I am fine.",emoji:"🙂"},{id:"tired",label:"I am tired.",emoji:"😴"}],
- feelingsActivity:{title:"Feelings Check",instructions:"Match each face.",questions:[
-  {emoji:"😄",answer:"I am great.",options:["I am great.","I am tired.","I am fine."]},
-  {emoji:"🙂",answer:"I am fine.",options:["I am tired.","I am fine.","I am great."]},
-  {emoji:"😴",answer:"I am tired.",options:["I am fine.","I am great.","I am tired."]}
- ],rewardPiece:{id:"playground-sign",name:"Play Corner Sign",icon:"🪧",area:"welcome-garden",lesson:"1-B"}},
- story:{title:"Bear's Missing Ball",pages:[
-  {text:"Bear brings his blue ball to the garden. Rascal asks if they can play.",image:"assets/bear.png"},
-  {text:"Bear rolls the ball to Rascal. Rascal kicks it too hard, and the ball disappears behind the bushes.",image:"assets/rascal.png"},
-  {text:"Nola looks under the bench and beside the flowers. She cannot see it, so she gets Bash and Tony.",image:"assets/nola.png"},
-  {text:"Tony starts giving directions. “Look left! Look right! Look under everything!” Bash studies the ground instead.",image:"assets/tony.png"},
-  {text:"Bash sees a small track in the dirt. “The ball rolled downhill,” he says. The group follows the track.",image:"assets/bash.png"},
-  {text:"They find the ball beside a birdhouse. Bear lets Rascal try again, but this time they stand closer together.",image:"assets/academy.png"}
- ],questions:[
-  {prompt:"What did Rascal kick?",options:["Bear's ball","A book","A box"],answer:"Bear's ball"},
-  {prompt:"Who notices the track?",options:["Bash","Tony","Captain Fritz"],answer:"Bash"},
-  {prompt:"Where is the ball?",options:["Beside a birdhouse","In a classroom","Under a bed"],answer:"Beside a birdhouse"}
- ],rewardPiece:{id:"birdhouse",name:"Garden Birdhouse",icon:"🐦",area:"welcome-garden",lesson:"1-B"}},
- alphabetSong:{title:"Fritz Academy Alphabet Song",rewardMessage:"Listen for B.",assetPath:"assets/alphabet-song-small.mp4",videoPath:"assets/alphabet-song-small.mp4"},
- phonics:{letterUpper:"B",letterLower:"b",soundLabel:"/b/",teacherCue:"Say: b, b, ball.",examples:[{word:"ball",icon:"⚽"},{word:"book",icon:"📘"},{word:"bag",icon:"🎒"}],
-  recognitionQuestion:{prompt:"Choose uppercase B.",options:["P","B","D"],answer:"B"},lowercaseQuestion:{prompt:"Choose lowercase b.",options:["d","p","b"],answer:"b"},wordQuestion:{prompt:"Which word begins with /b/?",options:["ball","map","fish"],answer:"ball"},
-  rewardPiece:{id:"ball-rack",name:"Ball Rack",icon:"⚽",area:"welcome-garden",lesson:"1-B"}},
- reader1:{title:"Reader 1: The Blue Ball",level:"Easy",pages:[
-  {text:"Bear has a blue ball.",image:"assets/bear.png"},{text:"Rascal wants to play.",image:"assets/rascal.png"},{text:"The ball rolls away.",image:"assets/academy.png"},{text:"Bash sees the track.",image:"assets/bash.png"},{text:"They find the ball.",image:"assets/academy.png"}
- ],check:{prompt:"What color is the ball?",options:["Blue","Red","Green"],answer:"Blue"},rewardPiece:{id:"play-bench",name:"Play Bench",icon:"🪑",area:"welcome-garden",lesson:"1-B"}},
- reader2:{title:"Reader 2: Play Together",level:"Easy Plus",pages:[
-  {text:"Bear rolls the ball to Rascal.",image:"assets/bear.png"},{text:"Rascal rolls it to Nola.",image:"assets/rascal.png"},{text:"Nola rolls it to Tony.",image:"assets/nola.png"},{text:"Tony says, “Bash, your turn!”",image:"assets/tony.png"},{text:"The friends play together.",image:"assets/bash.png"}
- ],check:{prompt:"Who gets the ball after Nola?",options:["Tony","Captain Fritz","Bear"],answer:"Tony"},rewardPiece:{id:"play-flowers",name:"Play Corner Flowers",icon:"🌻",area:"welcome-garden",lesson:"1-B"}},
- build:{areaId:"welcome-garden",stage:2,title:"Build the Play Corner",requiredPieces:["playground-sign","birdhouse","ball-rack","play-bench","play-flowers"],completionMessage:"The Play Corner is saved in your Academy."},
- closingSong:{title:"Academy Celebration",rewardMessage:"Great work. Your Academy has grown!",assetPath:"",videoPath:""},
- completion:{xp:25,stars:1,unlocks:"1-C",message:"The Play Corner is ready."}
-},
-{
- id:"1-C",chapter:"Week 1",title:"The Garden Map",unlocked:false,reward:"Welcome Garden — Map Corner",buildArea:"welcome-garden",buildStage:3,
- objectives:{speaking:["Use left, right, stop.","Answer where questions."],listening:["Follow simple directions."],reading:["Recognize C, D and their sounds."],phonics:["C/c hard /k/ and D/d /d/."]},
- vocabulary:[{word:"map",display:"map",picture:"🗺️"},{word:"left",display:"left",picture:"⬅️"},{word:"right",display:"right",picture:"➡️"},{word:"door",display:"door",picture:"🚪"}],
- intro:[{speaker:"Captain Fritz",text:"How are you today, {studentName}?",responseType:"feeling"},{speaker:"Captain Fritz",text:"Tony found an old garden map. What do you think it shows?"}],
- feelingChoices:[{id:"excited",label:"I am excited.",emoji:"🤩"},{id:"worried",label:"I am worried.",emoji:"😟"},{id:"calm",label:"I am calm.",emoji:"😌"}],
- feelingsActivity:{title:"Feelings Check",instructions:"Match each face.",questions:[
-  {emoji:"🤩",answer:"I am excited.",options:["I am excited.","I am worried.","I am calm."]},
-  {emoji:"😟",answer:"I am worried.",options:["I am calm.","I am worried.","I am excited."]},
-  {emoji:"😌",answer:"I am calm.",options:["I am worried.","I am excited.","I am calm."]}
- ],rewardPiece:{id:"map-post",name:"Garden Map Post",icon:"🗺️",area:"welcome-garden",lesson:"1-C"}},
- story:{title:"The Map Under the Tree",pages:[
-  {text:"Tony finds a folded map under the reading bench. He wants to follow every arrow at once.",image:"assets/tony.png"},
-  {text:"Bear and Rascal race toward the first arrow. They reach two paths and stop.",image:"assets/bear.png"},
-  {text:"Nola notices a tiny C beside the left path and a D beside the right path. She calls Bash.",image:"assets/nola.png"},
-  {text:"Tony says they should take the shortest path. Bash asks everyone to read the map first.",image:"assets/bash.png"},
-  {text:"The map says, “C means continue left. D marks the little door.” The puppies follow the directions together.",image:"assets/alphabet-blocks.png"},
-  {text:"Behind the little door is a box of old Academy garden markers. Captain Fritz asks, “How did the map help you?”",image:"assets/captain_fritz.png"}
- ],questions:[
-  {prompt:"Who finds the map?",options:["Tony","Rascal","Nola"],answer:"Tony"},
-  {prompt:"What does Bash want everyone to do first?",options:["Read the map","Run faster","Go home"],answer:"Read the map"},
-  {prompt:"What is behind the little door?",options:["Garden markers","A car","A cake"],answer:"Garden markers"}
- ],rewardPiece:{id:"clue-door",name:"Little Clue Door",icon:"🚪",area:"welcome-garden",lesson:"1-C"}},
- alphabetSong:{title:"Fritz Academy Alphabet Song",rewardMessage:"Listen for C and D.",assetPath:"assets/alphabet-song-small.mp4",videoPath:"assets/alphabet-song-small.mp4"},
- phonics:{letterUpper:"C D",letterLower:"c d",soundLabel:"/k/ and /d/",teacherCue:"Say: c, c, cat. d, d, dog.",examples:[{word:"cat",icon:"🐱"},{word:"cup",icon:"🥤"},{word:"dog",icon:"🐶"},{word:"door",icon:"🚪"}],
-  recognitionQuestion:{prompt:"Choose C and D.",options:["C D","A B","E F"],answer:"C D"},lowercaseQuestion:{prompt:"Choose c and d.",options:["e f","c d","a b"],answer:"c d"},wordQuestion:{prompt:"Which pair begins with C and D sounds?",options:["cat and dog","apple and ball","fish and gate"],answer:"cat and dog"},
-  rewardPiece:{id:"letter-stones-cd",name:"C and D Letter Stones",icon:"🔤",area:"welcome-garden",lesson:"1-C"}},
- reader1:{title:"Reader 1: Cat by the Door",level:"Easy",pages:[
-  {text:"A cat is by the door.",image:"assets/academy.png"},{text:"The cat sees Bear.",image:"assets/bear.png"},{text:"Bear does not run.",image:"assets/bear.png"},{text:"He waits by the door.",image:"assets/academy.png"},{text:"The cat stays calm.",image:"assets/academy.png"}
- ],check:{prompt:"Where is the cat?",options:["By the door","In a bus","On a bed"],answer:"By the door"},rewardPiece:{id:"cat-statue",name:"Friendly Cat Statue",icon:"🐱",area:"welcome-garden",lesson:"1-C"}},
- reader2:{title:"Reader 2: The Right Turn",level:"Easy Plus",pages:[
-  {text:"Nola reads the map.",image:"assets/nola.png"},{text:"Tony points left.",image:"assets/tony.png"},{text:"Bash says, “Check the map.”",image:"assets/bash.png"},{text:"The map says right.",image:"assets/alphabet-blocks.png"},{text:"The friends turn right together.",image:"assets/academy.png"}
- ],check:{prompt:"Which way does the map say?",options:["Right","Left","Back"],answer:"Right"},rewardPiece:{id:"direction-arrows",name:"Garden Direction Arrows",icon:"↔️",area:"welcome-garden",lesson:"1-C"}},
- build:{areaId:"welcome-garden",stage:3,title:"Build the Map Corner",requiredPieces:["map-post","clue-door","letter-stones-cd","cat-statue","direction-arrows"],completionMessage:"The Map Corner is saved."},
- closingSong:{title:"Academy Celebration",rewardMessage:"Great work. Your Academy has grown!",assetPath:"",videoPath:""},
- completion:{xp:30,stars:1,unlocks:"2-A",message:"Week 1 is complete."}
-},
-{
- id:"2-A",chapter:"Week 2",title:"The Garden Circle",unlocked:false,reward:"Welcome Garden — Flower Circle",buildArea:"welcome-garden",buildStage:4,
- objectives:{speaking:["Answer what and how many."],listening:["Follow clue language."],reading:["Recognize E, F and their sounds."],phonics:["E/e short /e/ and F/f /f/."]},
- vocabulary:[{word:"egg",display:"egg",picture:"🥚"},{word:"fish",display:"fish",picture:"🐟"},{word:"flower",display:"flower",picture:"🌸"},{word:"four",display:"four",picture:"4️⃣"}],
- intro:[{speaker:"Captain Fritz",text:"How are you today, {studentName}?",responseType:"feeling"},{speaker:"Captain Fritz",text:"The old garden circle has a new clue. Look carefully."}],
- feelingChoices:[{id:"surprised",label:"I am surprised.",emoji:"😮"},{id:"proud",label:"I am proud.",emoji:"😊"},{id:"confused",label:"I am confused.",emoji:"😕"}],
- feelingsActivity:{title:"Feelings Check",instructions:"Match each face.",questions:[
-  {emoji:"😮",answer:"I am surprised.",options:["I am surprised.","I am proud.","I am confused."]},
-  {emoji:"😊",answer:"I am proud.",options:["I am confused.","I am proud.","I am surprised."]},
-  {emoji:"😕",answer:"I am confused.",options:["I am proud.","I am surprised.","I am confused."]}
- ],rewardPiece:{id:"flower-arch",name:"Flower Arch",icon:"🌸",area:"welcome-garden",lesson:"2-A"}},
- story:{title:"Four Flowers and One Fake",pages:[
-  {text:"Nola finds an envelope marked E beside the garden circle. Inside is a note: “Find four flowers by the fence.”",image:"assets/nola.png"},
-  {text:"Bear counts five flowers and looks confused. Rascal says, “Five is close enough!”",image:"assets/bear.png"},
-  {text:"Tony starts counting again. Bash asks everyone to look at each flower instead.",image:"assets/bash.png"},
-  {text:"Nola touches the fifth flower. It is made of paper. “This one is not real,” she says.",image:"assets/nola.png"},
-  {text:"The four real flowers fit into four empty spaces around the circle. The old cover begins to move.",image:"assets/academy.png"},
-  {text:"The circle opens to a tiny fish pond. Captain Fritz smiles. “What helped you solve the clue?”",image:"assets/captain_fritz.png"}
- ],questions:[
-  {prompt:"How many real flowers are there?",options:["Four","Five","Three"],answer:"Four"},
-  {prompt:"Who discovers the paper flower?",options:["Nola","Rascal","Tony"],answer:"Nola"},
-  {prompt:"What opens?",options:["The garden circle","A car door","A classroom"],answer:"The garden circle"}
- ],rewardPiece:{id:"four-flowers",name:"Four Bright Flowers",icon:"💐",area:"welcome-garden",lesson:"2-A"}},
- alphabetSong:{title:"Fritz Academy Alphabet Song",rewardMessage:"Listen for E and F.",assetPath:"assets/alphabet-song-small.mp4",videoPath:"assets/alphabet-song-small.mp4"},
- phonics:{letterUpper:"E F",letterLower:"e f",soundLabel:"short e and /f/",teacherCue:"Say: e, e, egg. f, f, fish.",examples:[{word:"egg",icon:"🥚"},{word:"elephant",icon:"🐘"},{word:"fish",icon:"🐟"},{word:"flower",icon:"🌸"}],
-  recognitionQuestion:{prompt:"Choose E and F.",options:["E F","C D","G H"],answer:"E F"},lowercaseQuestion:{prompt:"Choose e and f.",options:["e f","c d","g h"],answer:"e f"},wordQuestion:{prompt:"Which pair begins with E and F?",options:["egg and fish","cat and dog","gate and hat"],answer:"egg and fish"},
-  rewardPiece:{id:"letter-stones-ef",name:"E and F Letter Stones",icon:"🔤",area:"welcome-garden",lesson:"2-A"}},
- reader1:{title:"Reader 1: Four Fish",level:"Easy",pages:[
-  {text:"Four fish swim.",image:"assets/academy.png"},{text:"One fish is fast.",image:"assets/academy.png"},{text:"Two fish turn.",image:"assets/academy.png"},{text:"Three fish hide.",image:"assets/academy.png"},{text:"Four fish come back.",image:"assets/academy.png"}
- ],check:{prompt:"How many fish come back?",options:["Four","Two","Five"],answer:"Four"},rewardPiece:{id:"fish-pond",name:"Little Fish Pond",icon:"🐟",area:"welcome-garden",lesson:"2-A"}},
- reader2:{title:"Reader 2: Finish the Circle",level:"Easy Plus",pages:[
-  {text:"Nola plants one flower.",image:"assets/nola.png"},{text:"Bear plants one flower.",image:"assets/bear.png"},{text:"Rascal plants one flower.",image:"assets/rascal.png"},{text:"Tony plants one flower.",image:"assets/tony.png"},{text:"Bash checks all four. The circle is ready.",image:"assets/bash.png"}
- ],check:{prompt:"Who checks the four flowers?",options:["Bash","Rascal","Captain Fritz"],answer:"Bash"},rewardPiece:{id:"garden-circle",name:"Garden Circle",icon:"⭕",area:"welcome-garden",lesson:"2-A"}},
- build:{areaId:"welcome-garden",stage:4,title:"Build the Flower Circle",requiredPieces:["flower-arch","four-flowers","letter-stones-ef","fish-pond","garden-circle"],completionMessage:"The Flower Circle is saved."},
- closingSong:{title:"Academy Celebration",rewardMessage:"Great work. Your Academy has grown!",assetPath:"",videoPath:""},
- completion:{xp:30,stars:1,unlocks:"2-B",message:"The Flower Circle is complete."}
-},
-{
- id:"2-B",chapter:"Week 2",title:"The Locked Alphabet Gate",unlocked:false,reward:"Alphabet Gate",buildArea:"academy-world",buildStage:1,
- objectives:{speaking:["Ask who, what, where."],listening:["Follow letter clues."],reading:["Recognize G and H and review A-H."],phonics:["G/g hard /g/ and H/h /h/."]},
- vocabulary:[{word:"gate",display:"gate",picture:"🚪"},{word:"green",display:"green",picture:"🟢"},{word:"hat",display:"hat",picture:"🎩"},{word:"help",display:"help",picture:"🤝"}],
- intro:[{speaker:"Captain Fritz",text:"How are you today, {studentName}?",responseType:"feeling"},{speaker:"Captain Fritz",text:"The old Alphabet Gate is locked. Eight letter stones are missing."}],
- feelingChoices:[{id:"ready",label:"I am ready.",emoji:"😄"},{id:"curious",label:"I am curious.",emoji:"🤔"},{id:"nervous",label:"I am nervous.",emoji:"😟"}],
- feelingsActivity:{title:"Feelings Check",instructions:"Match each face.",questions:[
-  {emoji:"😄",answer:"I am ready.",options:["I am ready.","I am curious.","I am nervous."]},
-  {emoji:"🤔",answer:"I am curious.",options:["I am nervous.","I am curious.","I am ready."]},
-  {emoji:"😟",answer:"I am nervous.",options:["I am curious.","I am ready.","I am nervous."]}
- ],rewardPiece:{id:"gate-lantern",name:"Alphabet Gate Lantern",icon:"🏮",area:"academy-world",lesson:"2-B"}},
- story:{title:"The Locked Alphabet Gate",pages:[
-  {text:"Bear and Rascal find an old gate behind the garden. Eight empty spaces run across the stone arch.",image:"assets/academy.png"},
-  {text:"Rascal pushes the gate. Nothing happens. Bear notices an A carved beside the first empty space.",image:"assets/bear.png"},
-  {text:"Nola gets Bash and Tony. Tony says they should search everywhere. Bash asks, “What do we know first?”",image:"assets/bash.png"},
-  {text:"The group realizes the spaces need A through H in order. They search the path, garden, bench, and fountain.",image:"assets/alphabet-blocks.png"},
-  {text:"Nola finds G under the green gate sign. Rascal finds H beside Captain Fritz's old hat box.",image:"assets/nola.png"},
-  {text:"The group places A through H in order. The gate opens. Captain Fritz asks, “How did you know what came next?”",image:"assets/captain_fritz.png"}
- ],questions:[
-  {prompt:"What is missing from the gate?",options:["Eight letter stones","Six books","Three balls"],answer:"Eight letter stones"},
-  {prompt:"Where does Nola find G?",options:["Under the green gate sign","In a classroom","On a boat"],answer:"Under the green gate sign"},
-  {prompt:"How does the team open the gate?",options:["Put A-H in order","Push harder","Ask Fritz for a key"],answer:"Put A-H in order"}
- ],rewardPiece:{id:"alphabet-gate",name:"Alphabet Gate",icon:"🚪",area:"academy-world",lesson:"2-B"}},
- alphabetSong:{title:"Fritz Academy Alphabet Song",rewardMessage:"Review A through H.",assetPath:"assets/alphabet-song-small.mp4",videoPath:"assets/alphabet-song-small.mp4"},
- phonics:{letterUpper:"G H",letterLower:"g h",soundLabel:"/g/ and /h/",teacherCue:"Say: g, g, gate. h, h, hat.",examples:[{word:"gate",icon:"🚪"},{word:"green",icon:"🟢"},{word:"hat",icon:"🎩"},{word:"help",icon:"🤝"}],
-  recognitionQuestion:{prompt:"Choose G and H.",options:["G H","E F","I J"],answer:"G H"},lowercaseQuestion:{prompt:"Choose g and h.",options:["g h","e f","i j"],answer:"g h"},wordQuestion:{prompt:"Which pair begins with G and H?",options:["gate and hat","egg and fish","cat and dog"],answer:"gate and hat"},
-  rewardPiece:{id:"letter-stones-gh",name:"G and H Letter Stones",icon:"🔤",area:"academy-world",lesson:"2-B"}},
- reader1:{title:"Reader 1: G by the Gate",level:"Easy",pages:[
-  {text:"G is by the gate.",image:"assets/academy.png"},{text:"Nola sees G.",image:"assets/nola.png"},{text:"She gets Bash.",image:"assets/bash.png"},{text:"Bash carries G.",image:"assets/bash.png"},{text:"G goes in the gate.",image:"assets/alphabet-blocks.png"}
- ],check:{prompt:"Who sees G?",options:["Nola","Bear","Tony"],answer:"Nola"},rewardPiece:{id:"gate-sign",name:"Green Gate Sign",icon:"🪧",area:"academy-world",lesson:"2-B"}},
- reader2:{title:"Reader 2: H by the Hat",level:"Easy Plus",pages:[
-  {text:"Rascal sees a hat box.",image:"assets/rascal.png"},{text:"H is beside the box.",image:"assets/alphabet-blocks.png"},{text:"Rascal calls Bear.",image:"assets/rascal.png"},{text:"They carry H together.",image:"assets/bear.png"},{text:"H goes after G.",image:"assets/alphabet-blocks.png"}
- ],check:{prompt:"What comes before H?",options:["G","F","I"],answer:"G"},rewardPiece:{id:"question-fountain",name:"Question Fountain",icon:"⛲",area:"academy-world",lesson:"2-B"}},
- build:{areaId:"academy-world",stage:1,title:"Open the Alphabet Gate",requiredPieces:["gate-lantern","alphabet-gate","letter-stones-gh","gate-sign","question-fountain"],completionMessage:"The Alphabet Gate is now part of your Academy."},
- closingSong:{title:"Academy Celebration",rewardMessage:"Great work. Your Academy has grown!",assetPath:"",videoPath:""},
- completion:{xp:35,stars:2,unlocks:"2-C",message:"The Alphabet Gate is open."}
-},
-{
- id:"2-C",chapter:"Week 2",title:"The Great Kite Problem",unlocked:false,reward:"Kite Field and Workshop",buildArea:"academy-world",buildStage:2,
- objectives:{speaking:["Use who, what, where, why, how.","Use simple action words."],listening:["Follow a connected story and building directions."],reading:["Recognize I through P and read two connected readers."],phonics:["Review names and beginning sounds I-P."]},
- vocabulary:[{word:"kite",display:"kite",picture:"🪁"},{word:"run",display:"run",picture:"🏃"},{word:"stop",display:"stop",picture:"🛑"},{word:"help",display:"help",picture:"🤝"},{word:"together",display:"together",picture:"🐾"}],
- intro:[{speaker:"Captain Fritz",text:"How are you today, {studentName}?",responseType:"feeling"},{speaker:"Captain Fritz",text:"What did you do today?"},{speaker:"Captain Fritz",text:"There is a lot of wind at the Academy. I wonder what the puppies are doing."}],
- feelingChoices:[{id:"happy",label:"I am happy.",emoji:"😀"},{id:"excited",label:"I am excited.",emoji:"🤩"},{id:"tired",label:"I am tired.",emoji:"😴"}],
- feelingsActivity:{title:"Feelings Check",instructions:"Match each face.",questions:[
-  {emoji:"😀",answer:"I am happy.",options:["I am happy.","I am excited.","I am tired."]},
-  {emoji:"🤩",answer:"I am excited.",options:["I am tired.","I am excited.","I am happy."]},
-  {emoji:"😴",answer:"I am tired.",options:["I am excited.","I am happy.","I am tired."]}
- ],rewardPiece:{id:"kite-field-sign",name:"Kite Field Sign",icon:"🪧",area:"academy-world",lesson:"2-C"}},
- story:{title:"The Great Kite Problem",pages:[
-  {text:"Bear is flying his favorite kite on the Academy field. The wind lifts it high above the trees.",image:"assets/bear.png"},
-  {text:"Rascal wants a turn. He grabs for the string, and Bear runs away laughing. Rascal chases him across the field.",image:"assets/rascal.png"},
-  {text:"Nola sees Bear running backward toward a bench. She races to find Bash and Tony.",image:"assets/nola.png"},
-  {text:"Tony starts shouting instructions, but Bash looks at the field first. “They need to stop before they crash,” Bash says.",image:"assets/bash.png"},
-  {text:"Bash steps between the two paths and gets Bear and Rascal to stop. Bear still has the kite, but now both puppies are upset.",image:"assets/bash.png"},
-  {text:"Tony says, “We can make more kites!” Everyone looks at Bash. Bash thinks, then says, “Yes. We can make one for each of us and one for {studentName}.”",image:"assets/tony.png"},
-  {text:"Captain Fritz arrives with a box of old kite plans. “Interesting solution,” he says. “What will you need, and how will you build them?”",image:"assets/captain_fritz.png"}
- ],questions:[
-  {prompt:"Why does Rascal chase Bear?",options:["He wants the kite","He lost a book","He is going home"],answer:"He wants the kite"},
-  {prompt:"Who notices the danger first?",options:["Nola","Tony","Captain Fritz"],answer:"Nola"},
-  {prompt:"Who decides the group should make more kites?",options:["Bash","Tony","Rascal"],answer:"Bash"},
-  {prompt:"What does Captain Fritz bring?",options:["Old kite plans","A new ball","A lunch box"],answer:"Old kite plans"}
- ],rewardPiece:{id:"kite-workshop-sign",name:"Kite Workshop Sign",icon:"🛠️",area:"academy-world",lesson:"2-C"}},
- alphabetSong:{title:"Fritz Academy Alphabet Song",rewardMessage:"Listen for I through P.",assetPath:"assets/alphabet-song-small.mp4",videoPath:"assets/alphabet-song-small.mp4"},
- phonics:{letterUpper:"I J K L M N O P",letterLower:"i j k l m n o p",soundLabel:"I through P",teacherCue:"Say each letter and one word: insect, jar, kite, leaf, moon, nest, orange, puppy.",examples:[
-  {word:"insect",icon:"🐞"},{word:"kite",icon:"🪁"},{word:"puppy",icon:"🐶"}],
-  recognitionQuestion:{prompt:"Which set is I through P?",options:["I J K L M N O P","A B C D","Q R S T"],answer:"I J K L M N O P"},
-  lowercaseQuestion:{prompt:"Which set matches in lowercase?",options:["i j k l m n o p","a b c d","q r s t"],answer:"i j k l m n o p"},
-  wordQuestion:{prompt:"Which word begins with K?",options:["kite","orange","nest"],answer:"kite"},
-  rewardPiece:{id:"ip-letter-stones",name:"I-P Letter Stones",icon:"🔤",area:"academy-world",lesson:"2-C"}},
- reader1:{title:"Reader 1: Bear's Kite",level:"Easy",pages:[
-  {text:"Bear has a kite.",image:"assets/bear.png"},{text:"The kite is high.",image:"assets/academy.png"},{text:"Rascal wants a turn.",image:"assets/rascal.png"},{text:"Bear runs. Rascal runs.",image:"assets/academy.png"},{text:"Bash says, “Stop.”",image:"assets/bash.png"},{text:"The puppies stop in time.",image:"assets/bash.png"}
- ],check:{prompt:"Who tells the puppies to stop?",options:["Bash","Tony","Captain Fritz"],answer:"Bash"},rewardPiece:{id:"safe-path-marker",name:"Safe Path Marker",icon:"🛑",area:"academy-world",lesson:"2-C"}},
- reader2:{title:"Reader 2: Tony's Plan",level:"Easy Plus",pages:[
-  {text:"Tony puts the kite plan on a table.",image:"assets/tony.png"},{text:"He points to sticks, paper, string, and tails.",image:"assets/academy.png"},{text:"Bash brings the pieces to the table.",image:"assets/bash.png"},{text:"Bear and Rascal work on two kites together.",image:"assets/bear.png"},{text:"Nola helps make a kite for {studentName}.",image:"assets/nola.png"},{text:"The team makes six kites. Captain Fritz asks, “Which kite will you fly first?”",image:"assets/captain_fritz.png"}
- ],check:{prompt:"How many kites does the team make?",options:["Six","Two","Eight"],answer:"Six"},rewardPiece:{id:"six-kite-display",name:"Six-Kite Display",icon:"🪁",area:"academy-world",lesson:"2-C"}},
- build:{areaId:"academy-world",stage:2,title:"Build the Kite Field",requiredPieces:["kite-field-sign","kite-workshop-sign","ip-letter-stones","safe-path-marker","six-kite-display"],completionMessage:"Your Kite Field is saved in your Academy."},
- closingSong:{title:"Academy Celebration",rewardMessage:"Great work. Your Academy has grown!",assetPath:"",videoPath:""},
- completion:{xp:40,stars:2,unlocks:[],message:"Week 2 is complete. More Academy adventures are coming next."}
-}
+/* Fritz Academy production curriculum v56.1
+   Alphabet Foundation Arc: 3 weeks / 9 game sessions.
+   Letter pacing: ABC, DEF, GHI, JKL, MNO, PQR, STU, VWX, YZ + full review. */
+
+const WELCOME_SONG={title:"Fritz Academy Welcome Song",assetPath:"assets/welcome-song-small.mp4",videoPath:"assets/welcome-song-small.mp4"};
+const ALPHABET_SONG={title:"Fritz Academy Alphabet Song",assetPath:"assets/alphabet-song-small.mp4",videoPath:"assets/alphabet-song-small.mp4"};
+
+const FEELING_CHOICES=[
+  {id:"happy",label:"I am happy.",emoji:"😀"},
+  {id:"tired",label:"I am tired.",emoji:"😴"},
+  {id:"excited",label:"I am excited.",emoji:"🤩"}
 ];
 
-function findLevel(id){ return LEVELS.find(level => level.id === id); }
-function replaceStudentName(text,studentName){ return String(text||"").replaceAll("{studentName}",studentName||"Academy Student"); }
-window.FRITZ_COURSE_VERSION = "55.0-clean-six";
+function reward(id,name,icon,lesson){return {id,name,icon,area:"academy-world",lesson};}
+function feelingActivity(lesson){return {
+  title:"How Are You Today?",
+  questions:[
+    {emoji:"😀",prompt:"How does this face feel?",options:["I am happy.","I am tired.","I am excited."],answer:"I am happy."},
+    {emoji:"😴",prompt:"How does this face feel?",options:["I am excited.","I am tired.","I am happy."],answer:"I am tired."},
+    {emoji:"🤩",prompt:"How does this face feel?",options:["I am tired.","I am happy.","I am excited."],answer:"I am excited."}
+  ],
+  rewardPiece:reward(`${lesson}-welcome-flag`,"Welcome Flag","🚩",lesson)
+};}
+function reader(title,level,pages,check,piece){return {title,level,pages,check,rewardPiece:piece};}
+function makePhonics(lesson,letters,examples,questions,pieceName){return {
+  title:"Alphabet Gate Challenge",
+  letters:letters.map(([upper,lower])=>({upper,lower})),
+  soundLabel:`Today: ${letters.map(x=>`${x[0]} ${x[1]}`).join(" • ")}`,
+  teacherCue:`Listen and repeat: ${examples.map(x=>x.word).join(", ")}.`,
+  examples,
+  questions,
+  rewardPiece:reward(`${lesson}-letter-stones`,pieceName,"🔤",lesson)
+};}
+function makeLesson(cfg){return {
+  id:cfg.id,chapter:cfg.chapter,title:cfg.title,unlocked:cfg.id==="1-A",
+  mission:cfg.mission,reward:cfg.buildTitle,buildArea:"academy-world",buildStage:cfg.stage,
+  objectives:cfg.objectives,
+  vocabulary:cfg.vocabulary,
+  intro:cfg.intro,
+  feelingChoices:FEELING_CHOICES,
+  feelingsActivity:feelingActivity(cfg.id),
+  languageGame:cfg.languageGame,
+  story:{title:cfg.storyTitle,pages:cfg.storyPages,questions:cfg.storyQuestions,rewardPiece:reward(`${cfg.id}-story-piece`,cfg.storyReward.name,cfg.storyReward.icon,cfg.id)},
+  welcomeSong:WELCOME_SONG,
+  alphabetSong:{...ALPHABET_SONG,rewardMessage:`Sing the alphabet and listen carefully for ${cfg.letterLabel}.`},
+  phonics:makePhonics(cfg.id,cfg.letters,cfg.examples,cfg.phonicsQuestions,cfg.letterReward),
+  reader1:reader(cfg.reader1.title,"Easy",cfg.reader1.pages,cfg.reader1.check,reward(`${cfg.id}-reader1-piece`,cfg.reader1.reward.name,cfg.reader1.reward.icon,cfg.id)),
+  reader2:reader(cfg.reader2.title,"Easy Plus",cfg.reader2.pages,cfg.reader2.check,reward(`${cfg.id}-reader2-piece`,cfg.reader2.reward.name,cfg.reader2.reward.icon,cfg.id)),
+  build:{areaId:"academy-world",stage:cfg.stage,title:cfg.buildTitle,requiredPieces:[`${cfg.id}-welcome-flag`,`${cfg.id}-story-piece`,`${cfg.id}-letter-stones`,`${cfg.id}-reader1-piece`,`${cfg.id}-reader2-piece`],completionMessage:cfg.buildMessage},
+  completion:{xp:30,stars:1,unlocks:cfg.unlocks,message:cfg.completeMessage}
+};}
+
+const LEVELS=[
+makeLesson({
+ id:"1-A",chapter:"Week 1",stage:1,title:"The New Academy Builder",letterLabel:"A, B, and C",letters:[["A","a"],["B","b"],["C","c"]],letterReward:"A–C Letter Stones",unlocks:"1-B",
+ mission:"Captain Fritz is waiting at the gate. Meet the Academy team, learn how the Builder works, and help choose the first pieces for your school.",
+ objectives:{phonics:["A/a, B/b, C/c"],language:["Hello. My name is… How are you?"],reading:["Read very short connected sentences."]},
+ vocabulary:["hello","name","academy","friend","apple","ball","cat"],
+ intro:[{speaker:"Captain Fritz",text:"Hello! I am Captain Fritz."},{speaker:"Captain Fritz",text:"What is your name?",responseType:"spoken"},{speaker:"Captain Fritz",text:"How are you today?",responseType:"feeling"},{speaker:"Captain Fritz",text:"Welcome, {studentName}. The puppies are waiting to meet you."}],
+ languageGame:{title:"Say Hello at the Gate",questions:[{prompt:"Captain Fritz says, “Hello!” What can you say?",options:["Hello!","Good night.","No."],answer:"Hello!"},{prompt:"What answer tells your name?",options:["My name is {studentName}.","I am a ball.","Where is it?"],answer:"My name is {studentName}."}]},
+ storyTitle:"The New Builder Arrives",storyPages:[
+  {text:"Captain Fritz waits at the Academy gate. He has heard that a new Builder is coming today.",image:"assets/captain_fritz.png"},
+  {text:"Tony spots {studentName} first. He runs to tell Bash, Bear, Nola, and Rascal.",image:"assets/tony.png"},
+  {text:"Rascal races toward the gate. Bear follows, but Bash tells them to slow down so they do not knock over the apple basket.",image:"assets/bash.png"},
+  {text:"Captain Fritz says, “Hello, {studentName}. This Academy grows when we learn and build together.”",image:"assets/academy.png"},
+  {text:"Nola shows the empty Welcome Garden. Bear finds a ball beside the path, and Tony notices a cat watching from the wall.",image:"assets/nola.png"},
+  {text:"Captain Fritz asks, “What should our new Builder add first?” Everyone looks to Bash, and Bash looks at {studentName}. The choice belongs to the team.",image:"assets/academy.png"}
+ ],
+ storyQuestions:[{prompt:"Who waits at the gate?",options:["Captain Fritz","A cat","A farmer"],answer:"Captain Fritz"},{prompt:"Who tells the puppies that the new Builder arrived?",options:["Tony","Bear","Rascal"],answer:"Tony"},{prompt:"What place is empty?",options:["The Welcome Garden","The beach","The kitchen"],answer:"The Welcome Garden"}],storyReward:{name:"Welcome Garden Sign",icon:"🪧"},
+ examples:[{word:"apple",icon:"🍎"},{word:"ball",icon:"⚽"},{word:"cat",icon:"🐱"}],phonicsQuestions:[{prompt:"Choose A.",options:["A","D","P"],answer:"A"},{prompt:"Which word begins with B?",options:["ball","cat","apple"],answer:"ball"},{prompt:"Which word begins with C?",options:["cat","ball","apple"],answer:"cat"}],
+ reader1:{title:"Tony Says Hello",pages:[{text:"Tony is at the gate.",image:"assets/tony.png"},{text:"He sees {studentName}.",image:"assets/academy.png"},{text:"Tony says, “Hello!”",image:"assets/tony.png"},{text:"{studentName} says hello.",image:"assets/academy.png"},{text:"Tony is happy.",image:"assets/tony.png"}],check:{prompt:"What does Tony say?",options:["Hello!","Stop!","Good night!"],answer:"Hello!"},reward:{name:"Gate Bench",icon:"🪑"}},
+ reader2:{title:"A Ball and a Cat",pages:[{text:"Bear has a ball.",image:"assets/bear.png"},{text:"A cat is by the wall.",image:"assets/academy.png"},{text:"The cat sees the ball.",image:"assets/academy.png"},{text:"Bear rolls the ball slowly.",image:"assets/bear.png"},{text:"The cat stays by the wall.",image:"assets/academy.png"}],check:{prompt:"Who has the ball?",options:["Bear","Tony","Nola"],answer:"Bear"},reward:{name:"Apple Tree",icon:"🌳"}},
+ buildTitle:"Build the Welcome Corner",buildMessage:"Your first Academy corner is saved.",completeMessage:"You joined Fritz Academy and built your first corner."
+}),
+makeLesson({
+ id:"1-B",chapter:"Week 1",stage:2,title:"Bear's Missing Backpack",letterLabel:"D, E, and F",letters:[["D","d"],["E","e"],["F","f"]],letterReward:"D–F Letter Stones",unlocks:"1-C",
+ mission:"Bear cannot find his backpack before the puppies leave for the garden. Search the Academy, follow clues, and help the team decide where to look next.",
+ objectives:{phonics:["D/d, E/e, F/f"],language:["Where is…? It is in/on/under…"],reading:["Read location sentences."]},vocabulary:["door","desk","egg","fish","find","where","under"],
+ intro:[{speaker:"Captain Fritz",text:"Welcome back, {studentName}. How are you today?",responseType:"feeling"},{speaker:"Bear",text:"I cannot find my backpack."},{speaker:"Captain Fritz",text:"Where did you see it last?"}],
+ languageGame:{title:"Where Is It?",questions:[{prompt:"The book is under the desk. Where is the book?",options:["Under the desk","On the roof","In the pond"],answer:"Under the desk"},{prompt:"Which question asks about a place?",options:["Where is it?","Who are you?","How old is it?"],answer:"Where is it?"}]},
+ storyTitle:"The Backpack by the Door",storyPages:[{text:"Bear checks beside his desk, but his backpack is not there.",image:"assets/bear.png"},{text:"Rascal looks under every chair and almost knocks over a box of eggs from the kitchen project.",image:"assets/rascal.png"},{text:"Nola finds a little feather near the garden door. She gets Bash and Tony.",image:"assets/nola.png"},{text:"Tony says, “Follow the feather!” Bash asks Bear to remember where he walked that morning.",image:"assets/tony.png"},{text:"Bear remembers stopping to watch fish in the pond. The team walks back toward the door by the pond.",image:"assets/bash.png"},{text:"The backpack is hanging on the door handle. Bear laughs. “I put it there so it would stay dry.”",image:"assets/bear.png"}],storyQuestions:[{prompt:"What is missing?",options:["Bear's backpack","Tony's glasses","A kite"],answer:"Bear's backpack"},{prompt:"Who finds the feather?",options:["Nola","Rascal","Captain Fritz"],answer:"Nola"},{prompt:"Where is the backpack?",options:["On the door handle","Under a bed","In the pond"],answer:"On the door handle"}],storyReward:{name:"Pond Door",icon:"🚪"},
+ examples:[{word:"dog",icon:"🐶"},{word:"egg",icon:"🥚"},{word:"fish",icon:"🐟"}],phonicsQuestions:[{prompt:"Which word begins with D?",options:["dog","fish","egg"],answer:"dog"},{prompt:"Choose lowercase e.",options:["a","e","o"],answer:"e"},{prompt:"Which word begins with F?",options:["fish","dog","egg"],answer:"fish"}],
+ reader1:{title:"Find the Bag",pages:[{text:"Bear has a bag.",image:"assets/bear.png"},{text:"The bag is not by the desk.",image:"assets/academy.png"},{text:"It is not under the chair.",image:"assets/academy.png"},{text:"The bag is by the door.",image:"assets/bear.png"},{text:"Bear finds it.",image:"assets/bear.png"}],check:{prompt:"Where is the bag?",options:["By the door","In the pond","On the roof"],answer:"By the door"},reward:{name:"Garden Desk",icon:"🪑"}},
+ reader2:{title:"Fish by the Door",pages:[{text:"The fish swim in the pond.",image:"assets/academy.png"},{text:"Bear stops by the door.",image:"assets/bear.png"},{text:"He looks at the fish.",image:"assets/bear.png"},{text:"He puts his bag on the hook.",image:"assets/academy.png"},{text:"Now he remembers.",image:"assets/bear.png"}],check:{prompt:"Why does Bear stop?",options:["To look at the fish","To eat an egg","To run home"],answer:"To look at the fish"},reward:{name:"Fish Pond",icon:"🐟"}},buildTitle:"Build the Pond Corner",buildMessage:"The pond corner is now part of your Academy.",completeMessage:"You followed location clues and found Bear's backpack."
+}),
+makeLesson({
+ id:"1-C",chapter:"Week 1",stage:3,title:"The Garden Map",letterLabel:"G, H, and I",letters:[["G","g"],["H","h"],["I","i"]],letterReward:"G–I Letter Stones",unlocks:"1-D",
+ mission:"Tony finds an old garden map with missing directions. Read the clues, choose the safe path, and uncover a hidden part of the Academy grounds.",objectives:{phonics:["G/g, H/h, I/i"],language:["Go, stop, left, right, here."],reading:["Read simple directions."]},vocabulary:["go","gate","hat","here","in","left","right"],
+ intro:[{speaker:"Captain Fritz",text:"How are you today, {studentName}?",responseType:"feeling"},{speaker:"Tony",text:"I found a map!"},{speaker:"Captain Fritz",text:"A map is useful only if we read it carefully."}],languageGame:{title:"Follow the Map",questions:[{prompt:"The map says, “Go left.” What do you do?",options:["Go left","Go right","Sit down"],answer:"Go left"},{prompt:"Which word tells us to stop moving?",options:["Stop","Go","Here"],answer:"Stop"}]},
+ storyTitle:"The Map Under the Hat",storyPages:[{text:"Tony finds a folded map under Captain Fritz's old sun hat on the garden table.",image:"assets/tony.png"},{text:"Bear and Rascal want to run straight to the gate marked on the map.",image:"assets/bear.png"},{text:"Nola notices a note: “Go left at the gate. Stop at the hill.” She calls Bash.",image:"assets/nola.png"},{text:"Tony points right and says it looks faster. Everyone looks to Bash.",image:"assets/tony.png"},{text:"Bash says, “The map says left. We follow the clue.” The group goes left and stops at the hill.",image:"assets/bash.png"},{text:"Inside a little box at the hill is an old Academy sign. Captain Fritz says, “Good builders read before they rush.”",image:"assets/captain_fritz.png"}],storyQuestions:[{prompt:"Where is the map?",options:["Under a hat","In the pond","On a bus"],answer:"Under a hat"},{prompt:"Who notices the note?",options:["Nola","Rascal","Bear"],answer:"Nola"},{prompt:"Which way does Bash choose?",options:["Left","Right","Back home"],answer:"Left"}],storyReward:{name:"Old Academy Sign",icon:"🪧"},
+ examples:[{word:"gate",icon:"🚪"},{word:"hat",icon:"🎩"},{word:"ink",icon:"🖋️"}],phonicsQuestions:[{prompt:"Which word begins with G?",options:["gate","hat","ink"],answer:"gate"},{prompt:"Which word begins with H?",options:["hat","gate","ink"],answer:"hat"},{prompt:"Which word begins with I?",options:["ink","hat","gate"],answer:"ink"}],
+ reader1:{title:"Go to the Gate",pages:[{text:"Tony has a map.",image:"assets/tony.png"},{text:"The map says go.",image:"assets/academy.png"},{text:"The friends go to the gate.",image:"assets/academy.png"},{text:"They turn left.",image:"assets/bash.png"},{text:"They stop at the hill.",image:"assets/academy.png"}],check:{prompt:"Where do they stop?",options:["At the hill","At the pond","At home"],answer:"At the hill"},reward:{name:"Map Post",icon:"🗺️"}},reader2:{title:"Here Is the Sign",pages:[{text:"A box is in the grass.",image:"assets/academy.png"},{text:"Bear opens the box.",image:"assets/bear.png"},{text:"An old sign is inside.",image:"assets/academy.png"},{text:"Tony says, “Here it is!”",image:"assets/tony.png"},{text:"The team carries it home.",image:"assets/bash.png"}],check:{prompt:"What is inside the box?",options:["An old sign","A fish","A backpack"],answer:"An old sign"},reward:{name:"Hill Marker",icon:"⛰️"}},buildTitle:"Build the Map Trail",buildMessage:"Your Academy now has a map trail.",completeMessage:"Week 1 is complete: you learned A through I."
+}),
+makeLesson({
+ id:"1-D",chapter:"Week 2",stage:4,title:"Bear's Kite",letterLabel:"J, K, and L",letters:[["J","j"],["K","k"],["L","l"]],letterReward:"J–L Letter Stones",unlocks:"1-E",
+ mission:"Bear brings a new kite to the field. Rascal wants a turn, but one excited chase sends the kite toward the trees.",objectives:{phonics:["J/j, K/k, L/l"],language:["Can I…? Yes, you can. No, wait."],reading:["Read action sentences."]},vocabulary:["jump","kite","look","run","wait","can"],
+ intro:[{speaker:"Captain Fritz",text:"Welcome back. How are you today?",responseType:"feeling"},{speaker:"Bear",text:"Look! I have a new kite."},{speaker:"Rascal",text:"Can I fly it?"}],languageGame:{title:"Ask Before You Act",questions:[{prompt:"Rascal wants the kite. What can he ask?",options:["Can I fly it?","Where is breakfast?","I am a kite."],answer:"Can I fly it?"},{prompt:"Bash needs everyone to stop. What can he say?",options:["Wait!","Jump!","Good night!"],answer:"Wait!"}]},
+ storyTitle:"The Kite Chase",storyPages:[{text:"Bear runs across the field with his bright kite. The tail lifts into the wind.",image:"assets/bear.png"},{text:"Rascal asks for a turn, but before Bear answers, Rascal reaches for the string and Bear runs faster.",image:"assets/rascal.png"},{text:"Nola sees both puppies racing toward the trees. She hurries to find Bash and Tony.",image:"assets/nola.png"},{text:"Tony starts shouting directions. Bash looks at the path and sees that Bear and Rascal are about to meet at the same narrow opening.",image:"assets/tony.png"},{text:"Bash calls, “Wait!” Bear stops. Rascal stops. The kite drops safely into the long grass instead of the trees.",image:"assets/bash.png"},{text:"Captain Fritz walks over and asks, “What could we do so everyone gets a turn without chasing one kite?” Tony's eyes get big. He has an idea.",image:"assets/captain_fritz.png"}],storyQuestions:[{prompt:"Who owns the kite?",options:["Bear","Rascal","Tony"],answer:"Bear"},{prompt:"Who notices the danger?",options:["Nola","Captain Fritz","A cat"],answer:"Nola"},{prompt:"What does Bash say?",options:["Wait!","Jump!","Go home!"],answer:"Wait!"}],storyReward:{name:"Kite Field Sign",icon:"🪁"},
+ examples:[{word:"jump",icon:"🦘"},{word:"kite",icon:"🪁"},{word:"leaf",icon:"🍃"}],phonicsQuestions:[{prompt:"Which word begins with J?",options:["jump","kite","leaf"],answer:"jump"},{prompt:"Which word begins with K?",options:["kite","leaf","jump"],answer:"kite"},{prompt:"Which word begins with L?",options:["leaf","jump","kite"],answer:"leaf"}],
+ reader1:{title:"Bear Has a Kite",pages:[{text:"Bear has a kite.",image:"assets/bear.png"},{text:"The kite is high.",image:"assets/academy.png"},{text:"Rascal wants a turn.",image:"assets/rascal.png"},{text:"Bear runs.",image:"assets/bear.png"},{text:"Bash says, “Wait!”",image:"assets/bash.png"}],check:{prompt:"Who says wait?",options:["Bash","Bear","Tony"],answer:"Bash"},reward:{name:"Kite Bench",icon:"🪑"}},reader2:{title:"Look at the Path",pages:[{text:"Nola looks at the path.",image:"assets/nola.png"},{text:"Bear runs from one side.",image:"assets/bear.png"},{text:"Rascal runs from the other side.",image:"assets/rascal.png"},{text:"Bash sees the problem.",image:"assets/bash.png"},{text:"The puppies stop safely.",image:"assets/academy.png"}],check:{prompt:"What does Nola look at?",options:["The path","A book","A fish"],answer:"The path"},reward:{name:"Safe Path Marker",icon:"➡️"}},buildTitle:"Build the Kite Field",buildMessage:"Your Academy now has the beginning of a kite field.",completeMessage:"The kite is safe, and Tony has an idea for tomorrow."
+}),
+makeLesson({
+ id:"1-E",chapter:"Week 2",stage:5,title:"Tony's Kite Plan",letterLabel:"M, N, and O",letters:[["M","m"],["N","n"],["O","o"]],letterReward:"M–O Letter Stones",unlocks:"1-F",
+ mission:"Tony wants to build enough kites for everyone. The team must count materials, choose a plan, and make sure the idea actually works.",objectives:{phonics:["M/m, N/n, O/o"],language:["How many…? We need… I have…"],reading:["Read counting and materials sentences."]},vocabulary:["make","many","need","one","paper","string","stick"],
+ intro:[{speaker:"Captain Fritz",text:"How are you today?",responseType:"feeling"},{speaker:"Tony",text:"I have a plan. We can make more kites!"},{speaker:"Bash",text:"How many do we need?"}],languageGame:{title:"Count the Materials",questions:[{prompt:"The team needs six kites. Which question asks for the number?",options:["How many kites?","Where is the kite?","Who is a kite?"],answer:"How many kites?"},{prompt:"Tony has one roll of string. Which sentence is correct?",options:["I have one roll.","I am one roll.","Where roll?"],answer:"I have one roll."}]},
+ storyTitle:"Tony's Workshop Plan",storyPages:[{text:"Tony spreads paper, sticks, string, and markers across the workshop table.",image:"assets/tony.png"},{text:"He says they need five kites for the puppies and one for Captain Fritz.",image:"assets/academy.png"},{text:"Nola pauses. “What about {studentName}?” Everyone looks at the empty space beside the table.",image:"assets/nola.png"},{text:"Tony counts again. “Then we need seven!” Bash quietly checks the group and the plan.",image:"assets/bash.png"},{text:"Bash says, “Seven is right if everyone gets one. But we should build one kite first and test it before we use all the paper.”",image:"assets/bash.png"},{text:"Captain Fritz smiles. “That sounds like a captain's plan: test, learn, then build the fleet.”",image:"assets/captain_fritz.png"}],storyQuestions:[{prompt:"What does Tony want to make?",options:["Kites","Boats","Books"],answer:"Kites"},{prompt:"Who remembers the student needs a kite?",options:["Nola","Rascal","Bear"],answer:"Nola"},{prompt:"What does Bash want to do first?",options:["Build and test one kite","Use all the paper","Go home"],answer:"Build and test one kite"}],storyReward:{name:"Workshop Table",icon:"🛠️"},
+ examples:[{word:"map",icon:"🗺️"},{word:"nest",icon:"🪺"},{word:"orange",icon:"🍊"}],phonicsQuestions:[{prompt:"Which word begins with M?",options:["map","nest","orange"],answer:"map"},{prompt:"Which word begins with N?",options:["nest","map","orange"],answer:"nest"},{prompt:"Which word begins with O?",options:["orange","nest","map"],answer:"orange"}],
+ reader1:{title:"Make One Kite",pages:[{text:"Tony has a plan.",image:"assets/tony.png"},{text:"The team needs paper.",image:"assets/academy.png"},{text:"They need sticks and string.",image:"assets/academy.png"},{text:"Bash says, “Make one first.”",image:"assets/bash.png"},{text:"The team makes one kite.",image:"assets/academy.png"}],check:{prompt:"How many kites do they make first?",options:["One","Seven","Ten"],answer:"One"},reward:{name:"Paper Rack",icon:"📄"}},reader2:{title:"One More Kite",pages:[{text:"Tony counts six names.",image:"assets/tony.png"},{text:"Nola looks at {studentName}.",image:"assets/nola.png"},{text:"She says, “One more.”",image:"assets/nola.png"},{text:"Tony counts seven.",image:"assets/tony.png"},{text:"Now everyone has a place in the plan.",image:"assets/academy.png"}],check:{prompt:"Why does Tony count again?",options:["The student needs a kite too","He lost the paper","Rascal went home"],answer:"The student needs a kite too"},reward:{name:"String Shelf",icon:"🧵"}},buildTitle:"Build the Kite Workshop",buildMessage:"The Kite Workshop is saved in your Academy.",completeMessage:"The team has a tested plan and enough places for everyone."
+}),
+makeLesson({
+ id:"1-F",chapter:"Week 2",stage:6,title:"The Seven-Kite Build",letterLabel:"P, Q, and R",letters:[["P","p"],["Q","q"],["R","r"]],letterReward:"P–R Letter Stones",unlocks:"1-G",
+ mission:"The test kite works. Now the team must cooperate to build seven kites without mixing up the pieces.",objectives:{phonics:["P/p, Q/q, R/r"],language:["Please pass… Put it here. Ready?"],reading:["Read simple workshop instructions."]},vocabulary:["paper","please","quick","ready","red","put","pass"],
+ intro:[{speaker:"Captain Fritz",text:"How are you today?",responseType:"feeling"},{speaker:"Tony",text:"The test kite works!"},{speaker:"Bash",text:"Now we can build the rest together."}],languageGame:{title:"Workshop Talk",questions:[{prompt:"You need paper from Bash. What can you say?",options:["Please pass the paper.","Paper is a dog.","Where happy?"],answer:"Please pass the paper."},{prompt:"Tony asks, “Ready?” What is a good answer?",options:["Yes, I am ready.","I am under the table.","Seven blue."],answer:"Yes, I am ready."}]},
+ storyTitle:"Seven Kites for the Academy",storyPages:[{text:"Bash hands out sticks while Tony reads the plan. Bear and Rascal work at one end of the table.",image:"assets/bash.png"},{text:"Rascal tries to build quickly and puts two tails on one kite. Bear laughs and starts to copy him.",image:"assets/rascal.png"},{text:"Nola sees the pile of mixed pieces and calls Bash before they run out of string.",image:"assets/nola.png"},{text:"Tony says everyone should follow his plan exactly. Bash looks at the table and divides the work into simple jobs.",image:"assets/tony.png"},{text:"Bash says, “Bear and Rascal, tails. Nola, paper. Tony, read each step. {studentName}, help me check each finished kite.”",image:"assets/bash.png"},{text:"By the end, seven kites stand in a row. Captain Fritz's is the biggest. He says, “You built them because everyone had a job.”",image:"assets/captain_fritz.png"}],storyQuestions:[{prompt:"What mistake does Rascal make?",options:["He puts two tails on one kite","He loses the map","He breaks the table"],answer:"He puts two tails on one kite"},{prompt:"Who notices the mixed pieces?",options:["Nola","Captain Fritz","Bear"],answer:"Nola"},{prompt:"Who decides the jobs?",options:["Bash","Tony","Rascal"],answer:"Bash"}],storyReward:{name:"Seven-Kite Rack",icon:"🪁"},
+ examples:[{word:"paper",icon:"📄"},{word:"queen",icon:"👑"},{word:"red",icon:"🔴"}],phonicsQuestions:[{prompt:"Which word begins with P?",options:["paper","queen","red"],answer:"paper"},{prompt:"Which word begins with Q?",options:["queen","red","paper"],answer:"queen"},{prompt:"Which word begins with R?",options:["red","paper","queen"],answer:"red"}],
+ reader1:{title:"Pass the Paper",pages:[{text:"Nola has the paper.",image:"assets/nola.png"},{text:"Bash says, “Please pass the paper.”",image:"assets/bash.png"},{text:"Nola passes it.",image:"assets/nola.png"},{text:"Tony reads the next step.",image:"assets/tony.png"},{text:"The team is ready.",image:"assets/academy.png"}],check:{prompt:"What does Nola pass?",options:["Paper","A fish","A hat"],answer:"Paper"},reward:{name:"Build Cart",icon:"🛒"}},reader2:{title:"Ready to Fly",pages:[{text:"Seven kites are ready.",image:"assets/academy.png"},{text:"Bear has a red kite.",image:"assets/bear.png"},{text:"Rascal has a yellow kite.",image:"assets/rascal.png"},{text:"Captain Fritz has a big kite.",image:"assets/captain_fritz.png"},{text:"{studentName} has a kite too.",image:"assets/academy.png"}],check:{prompt:"How many kites are ready?",options:["Seven","Two","Ten"],answer:"Seven"},reward:{name:"Kite Festival Banner",icon:"🎏"}},buildTitle:"Complete the Kite Workshop",buildMessage:"The workshop and seven-kite display are saved.",completeMessage:"Week 2 is complete: you learned J through R and built the Academy kite workshop."
+}),
+makeLesson({
+ id:"1-G",chapter:"Week 3",stage:7,title:"The Stormy Morning",letterLabel:"S, T, and U",letters:[["S","s"],["T","t"],["U","u"]],letterReward:"S–U Letter Stones",unlocks:"1-H",
+ mission:"A nighttime storm scatters signs and small objects around the Academy. Help the team sort what belongs where before the grounds open.",objectives:{phonics:["S/s, T/t, U/u"],language:["This is… That is… It goes…"],reading:["Read sorting sentences."]},vocabulary:["storm","sign","table","tree","under","up","this"],
+ intro:[{speaker:"Captain Fritz",text:"How are you today?",responseType:"feeling"},{speaker:"Nola",text:"The storm moved things all over the Academy."},{speaker:"Bash",text:"We can put everything back one area at a time."}],languageGame:{title:"Where Does It Go?",questions:[{prompt:"A book belongs on the table. Which sentence works?",options:["It goes on the table.","It is a storm.","Who table?"],answer:"It goes on the table."},{prompt:"You point to a nearby sign. What can you say?",options:["This is the sign.","I am the sign.","When sign?"],answer:"This is the sign."}]},
+ storyTitle:"After the Storm",storyPages:[{text:"The puppies step outside and see branches, signs, and garden tools scattered across the path.",image:"assets/academy.png"},{text:"Rascal starts grabbing everything at once. Bear joins him and carries a sign toward the wrong garden.",image:"assets/rascal.png"},{text:"Nola finds a small tag under a tree. The tag tells which area each object belongs to.",image:"assets/nola.png"},{text:"Tony wants to sort by size. Bash says the tags give better information than guessing.",image:"assets/bash.png"},{text:"The team reads each tag, puts tools in the shed, signs by the paths, and chairs at the tables.",image:"assets/academy.png"},{text:"Captain Fritz says, “A storm makes a mess quickly. A good team fixes it carefully.”",image:"assets/captain_fritz.png"}],storyQuestions:[{prompt:"What happened at night?",options:["A storm","A picnic","A parade"],answer:"A storm"},{prompt:"Who finds the tags?",options:["Nola","Bear","Tony"],answer:"Nola"},{prompt:"What does Bash use to decide where things go?",options:["The tags","A guess","A song"],answer:"The tags"}],storyReward:{name:"Storm-Safe Shed",icon:"🏠"},
+ examples:[{word:"sun",icon:"☀️"},{word:"tree",icon:"🌳"},{word:"umbrella",icon:"☂️"}],phonicsQuestions:[{prompt:"Which word begins with S?",options:["sun","tree","umbrella"],answer:"sun"},{prompt:"Which word begins with T?",options:["tree","sun","umbrella"],answer:"tree"},{prompt:"Which word begins with U?",options:["umbrella","tree","sun"],answer:"umbrella"}],
+ reader1:{title:"Under the Tree",pages:[{text:"A tag is under the tree.",image:"assets/academy.png"},{text:"Nola sees the tag.",image:"assets/nola.png"},{text:"She picks it up.",image:"assets/nola.png"},{text:"The tag says, “Tools.”",image:"assets/academy.png"},{text:"The tools go to the shed.",image:"assets/academy.png"}],check:{prompt:"Where is the tag?",options:["Under the tree","In the pond","On the roof"],answer:"Under the tree"},reward:{name:"Tool Shed",icon:"🧰"}},reader2:{title:"This Sign Goes Here",pages:[{text:"Bear has a sign.",image:"assets/bear.png"},{text:"He asks, “Where does it go?”",image:"assets/bear.png"},{text:"Bash reads the tag.",image:"assets/bash.png"},{text:"The sign goes by the path.",image:"assets/academy.png"},{text:"Bear puts it there.",image:"assets/bear.png"}],check:{prompt:"Where does the sign go?",options:["By the path","Under the pond","In a box"],answer:"By the path"},reward:{name:"Path Sign",icon:"🪧"}},buildTitle:"Build the Storm-Safe Corner",buildMessage:"Your Academy now has a storm-safe storage corner.",completeMessage:"The Academy is organized again."
+}),
+makeLesson({
+ id:"1-H",chapter:"Week 3",stage:8,title:"The Windmill Problem",letterLabel:"V, W, and X",letters:[["V","v"],["W","w"],["X","x"]],letterReward:"V–X Letter Stones",unlocks:"1-I",
+ mission:"The storm damaged the little garden windmill. Figure out what is wrong, test ideas, and repair it without rushing.",objectives:{phonics:["V/v, W/w, X/x"],language:["What is wrong? It can/can't… Let's try…"],reading:["Read simple problem-solution sentences."]},vocabulary:["van","wind","water","box","fix","wrong","try"],
+ intro:[{speaker:"Captain Fritz",text:"How are you today?",responseType:"feeling"},{speaker:"Bear",text:"The windmill will not turn."},{speaker:"Captain Fritz",text:"What is wrong with it?"}],languageGame:{title:"Solve the Problem",questions:[{prompt:"The wheel does not move. Which question helps?",options:["What is wrong?","How old is lunch?","Who is blue?"],answer:"What is wrong?"},{prompt:"You have an idea to test. What can you say?",options:["Let's try it.","I am under it.","Good night."],answer:"Let's try it."}]},
+ storyTitle:"Why Won't the Windmill Turn?",storyPages:[{text:"Bear pushes the windmill blade, but it barely moves. Rascal pushes harder.",image:"assets/bear.png"},{text:"The windmill makes a squeak. Nola tells Rascal to stop before something breaks.",image:"assets/nola.png"},{text:"Tony says the axle needs oil. Bash looks at the base and sees a small wooden box wedged beside the wheel.",image:"assets/bash.png"},{text:"Everyone looks to Bash. He says, “First we remove the box. Then we test the wheel before we change anything else.”",image:"assets/bash.png"},{text:"They pull out the box. A strong gust of wind turns the blades. The windmill works again.",image:"assets/academy.png"},{text:"Inside the box are old weather cards from Captain Fritz's sailing days. He says, “Good fixing starts with finding the real problem.”",image:"assets/captain_fritz.png"}],storyQuestions:[{prompt:"What will not turn?",options:["The windmill","The kite","The door"],answer:"The windmill"},{prompt:"What is blocking it?",options:["A wooden box","A fish","A book"],answer:"A wooden box"},{prompt:"What does Bash do first?",options:["Remove the box and test","Add oil immediately","Push harder"],answer:"Remove the box and test"}],storyReward:{name:"Garden Windmill",icon:"🌬️"},
+ examples:[{word:"van",icon:"🚐"},{word:"wind",icon:"💨"},{word:"box",icon:"📦"}],phonicsQuestions:[{prompt:"Which word begins with V?",options:["van","wind","box"],answer:"van"},{prompt:"Which word begins with W?",options:["wind","box","van"],answer:"wind"},{prompt:"Which word ends with X?",options:["box","wind","van"],answer:"box"}],
+ reader1:{title:"The Box by the Wheel",pages:[{text:"The wheel will not turn.",image:"assets/academy.png"},{text:"Bash looks down.",image:"assets/bash.png"},{text:"A box is by the wheel.",image:"assets/academy.png"},{text:"They move the box.",image:"assets/academy.png"},{text:"The wheel turns.",image:"assets/academy.png"}],check:{prompt:"What blocks the wheel?",options:["A box","A van","A kite"],answer:"A box"},reward:{name:"Weather Vane",icon:"🧭"}},reader2:{title:"Wind Makes It Move",pages:[{text:"The wind is strong.",image:"assets/academy.png"},{text:"The blades begin to move.",image:"assets/academy.png"},{text:"Bear watches the wheel.",image:"assets/bear.png"},{text:"Tony watches the weather cards.",image:"assets/tony.png"},{text:"The windmill works.",image:"assets/academy.png"}],check:{prompt:"What makes the blades move?",options:["Wind","A fish","A book"],answer:"Wind"},reward:{name:"Weather Box",icon:"📦"}},buildTitle:"Build the Weather Corner",buildMessage:"The repaired windmill and weather corner are saved.",completeMessage:"You found the real problem and repaired the windmill."
+}),
+makeLesson({
+ id:"1-I",chapter:"Week 3",stage:9,title:"The Alphabet Festival",letterLabel:"Y, Z, and the whole alphabet",letters:[["Y","y"],["Z","z"]],letterReward:"Y–Z & Alphabet Gate",unlocks:"2-A",
+ mission:"The first Academy festival is today. Finish Y and Z, then use everything from A to Z to prepare the grounds and open the completed Alphabet Gate.",objectives:{phonics:["Y/y, Z/z and A–Z review"],language:["Who, what, where, how review"],reading:["Read a connected festival story and two readers."]},vocabulary:["yellow","zebra","who","what","where","how","festival"],
+ intro:[{speaker:"Captain Fritz",text:"Three weeks already! How are you today?",responseType:"feeling"},{speaker:"Tony",text:"Today is the Alphabet Festival!"},{speaker:"Captain Fritz",text:"Before the gate opens, the team has one final challenge."}],languageGame:{title:"Question Word Review",questions:[{prompt:"Which question asks for a person?",options:["Who?","Where?","How?"],answer:"Who?"},{prompt:"Which question asks for a place?",options:["Where?","What?","Who?"],answer:"Where?"},{prompt:"Which question asks about the way something is done?",options:["How?","Who?","What?"],answer:"How?"}]},
+ storyTitle:"The Alphabet Festival",storyPages:[{text:"The Academy grounds are decorated with letters from A to X. Only Y and Z are missing from the Alphabet Gate.",image:"assets/academy.png"},{text:"Bear carries a yellow banner while Rascal tries to hang it from the wrong side of the gate.",image:"assets/bear.png"},{text:"Nola finds the Y tile near the workshop, but the Z tile is nowhere to be seen. She gets Bash and Tony.",image:"assets/nola.png"},{text:"Tony asks everyone questions at once. Bash asks one at a time: “Who used it last? What were they doing? Where were they?”",image:"assets/bash.png"},{text:"Bear remembers using the Z tile to hold down a stack of festival cards near the windmill. The team finds it there.",image:"assets/bear.png"},{text:"{studentName} places the final tile. Captain Fritz opens the Alphabet Gate and says, “You did not just learn letters. You used English to solve problems together.”",image:"assets/captain_fritz.png"}],storyQuestions:[{prompt:"Which letters are missing at first?",options:["Y and Z","A and B","M and N"],answer:"Y and Z"},{prompt:"Who organizes the questions?",options:["Bash","Rascal","Bear"],answer:"Bash"},{prompt:"Where is the Z tile?",options:["Near the windmill","In the pond","Under a bed"],answer:"Near the windmill"}],storyReward:{name:"Alphabet Festival Arch",icon:"🎉"},
+ examples:[{word:"yellow",icon:"🟡"},{word:"zebra",icon:"🦓"},{word:"A to Z",icon:"🔤"}],phonicsQuestions:[{prompt:"Which word begins with Y?",options:["yellow","zebra","apple"],answer:"yellow"},{prompt:"Which word begins with Z?",options:["zebra","yellow","kite"],answer:"zebra"},{prompt:"What comes after X?",options:["Y","M","B"],answer:"Y"},{prompt:"What is the last letter of the alphabet?",options:["Z","T","P"],answer:"Z"}],
+ reader1:{title:"The Yellow Banner",pages:[{text:"Bear has a yellow banner.",image:"assets/bear.png"},{text:"The banner is for the festival.",image:"assets/academy.png"},{text:"Rascal tries one side.",image:"assets/rascal.png"},{text:"Bear points to the gate.",image:"assets/bear.png"},{text:"They hang it together.",image:"assets/academy.png"}],check:{prompt:"What color is the banner?",options:["Yellow","Blue","Black"],answer:"Yellow"},reward:{name:"Festival Banner",icon:"🎏"}},reader2:{title:"A to Z at the Academy",pages:[{text:"A is at the start.",image:"assets/alphabet-blocks.png"},{text:"M is near the middle.",image:"assets/alphabet-blocks.png"},{text:"Y is near the end.",image:"assets/alphabet-blocks.png"},{text:"Z is last.",image:"assets/alphabet-blocks.png"},{text:"The Alphabet Gate is complete.",image:"assets/academy.png"}],check:{prompt:"Which letter is last?",options:["Z","A","M"],answer:"Z"},reward:{name:"Completed Alphabet Gate",icon:"🏛️"}},buildTitle:"Open the Alphabet Gate",buildMessage:"Your three-week Alphabet Foundation area is complete and saved in your Academy.",completeMessage:"Alphabet Foundation complete: A through Z. The next Academy adventure is unlocked."
+})
+];
+
+function findLevel(id){return LEVELS.find(level=>level.id===id);}
+function replaceStudentName(text,studentName){return String(text||"").replaceAll("{studentName}",studentName||"Academy Student");}
