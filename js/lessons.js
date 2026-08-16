@@ -36,6 +36,7 @@ const LEVELS = [
   {text:"The garden has a path.",image:"assets/academy.png"},{text:"Nola brings flowers.",image:"assets/nola.png"},{text:"Bear carries a small tree.",image:"assets/bear.png"},{text:"Bash asks, “Where should it go?”",image:"assets/bash.png"},{text:"{studentName} helps the friends choose a place.",image:"assets/academy.png"}
  ],check:{prompt:"What does Bear carry?",options:["A small tree","A kite","A book"],answer:"A small tree"},rewardPiece:{id:"garden-fence",name:"Garden Fence",icon:"🪵",area:"welcome-garden",lesson:"1-A"}},
  build:{areaId:"welcome-garden",stage:1,title:"Build Your First Garden Corner",requiredPieces:["welcome-flowers","stone-path","reading-bench","welcome-tree","garden-fence"],completionMessage:"Your first Academy garden corner is saved."},
+ closingSong:{title:"Academy Celebration",rewardMessage:"Great work. Your Academy has grown!",assetPath:"",videoPath:""},
  completion:{xp:25,stars:1,unlocks:"1-B",message:"Your first Academy adventure is complete."}
 },
 {
@@ -72,6 +73,7 @@ const LEVELS = [
   {text:"Bear rolls the ball to Rascal.",image:"assets/bear.png"},{text:"Rascal rolls it to Nola.",image:"assets/rascal.png"},{text:"Nola rolls it to Tony.",image:"assets/nola.png"},{text:"Tony says, “Bash, your turn!”",image:"assets/tony.png"},{text:"The friends play together.",image:"assets/bash.png"}
  ],check:{prompt:"Who gets the ball after Nola?",options:["Tony","Captain Fritz","Bear"],answer:"Tony"},rewardPiece:{id:"play-flowers",name:"Play Corner Flowers",icon:"🌻",area:"welcome-garden",lesson:"1-B"}},
  build:{areaId:"welcome-garden",stage:2,title:"Build the Play Corner",requiredPieces:["playground-sign","birdhouse","ball-rack","play-bench","play-flowers"],completionMessage:"The Play Corner is saved in your Academy."},
+ closingSong:{title:"Academy Celebration",rewardMessage:"Great work. Your Academy has grown!",assetPath:"",videoPath:""},
  completion:{xp:25,stars:1,unlocks:"1-C",message:"The Play Corner is ready."}
 },
 {
@@ -108,6 +110,7 @@ const LEVELS = [
   {text:"Nola reads the map.",image:"assets/nola.png"},{text:"Tony points left.",image:"assets/tony.png"},{text:"Bash says, “Check the map.”",image:"assets/bash.png"},{text:"The map says right.",image:"assets/alphabet-blocks.png"},{text:"The friends turn right together.",image:"assets/academy.png"}
  ],check:{prompt:"Which way does the map say?",options:["Right","Left","Back"],answer:"Right"},rewardPiece:{id:"direction-arrows",name:"Garden Direction Arrows",icon:"↔️",area:"welcome-garden",lesson:"1-C"}},
  build:{areaId:"welcome-garden",stage:3,title:"Build the Map Corner",requiredPieces:["map-post","clue-door","letter-stones-cd","cat-statue","direction-arrows"],completionMessage:"The Map Corner is saved."},
+ closingSong:{title:"Academy Celebration",rewardMessage:"Great work. Your Academy has grown!",assetPath:"",videoPath:""},
  completion:{xp:30,stars:1,unlocks:"2-A",message:"Week 1 is complete."}
 },
 {
@@ -144,6 +147,7 @@ const LEVELS = [
   {text:"Nola plants one flower.",image:"assets/nola.png"},{text:"Bear plants one flower.",image:"assets/bear.png"},{text:"Rascal plants one flower.",image:"assets/rascal.png"},{text:"Tony plants one flower.",image:"assets/tony.png"},{text:"Bash checks all four. The circle is ready.",image:"assets/bash.png"}
  ],check:{prompt:"Who checks the four flowers?",options:["Bash","Rascal","Captain Fritz"],answer:"Bash"},rewardPiece:{id:"garden-circle",name:"Garden Circle",icon:"⭕",area:"welcome-garden",lesson:"2-A"}},
  build:{areaId:"welcome-garden",stage:4,title:"Build the Flower Circle",requiredPieces:["flower-arch","four-flowers","letter-stones-ef","fish-pond","garden-circle"],completionMessage:"The Flower Circle is saved."},
+ closingSong:{title:"Academy Celebration",rewardMessage:"Great work. Your Academy has grown!",assetPath:"",videoPath:""},
  completion:{xp:30,stars:1,unlocks:"2-B",message:"The Flower Circle is complete."}
 },
 {
@@ -180,6 +184,7 @@ const LEVELS = [
   {text:"Rascal sees a hat box.",image:"assets/rascal.png"},{text:"H is beside the box.",image:"assets/alphabet-blocks.png"},{text:"Rascal calls Bear.",image:"assets/rascal.png"},{text:"They carry H together.",image:"assets/bear.png"},{text:"H goes after G.",image:"assets/alphabet-blocks.png"}
  ],check:{prompt:"What comes before H?",options:["G","F","I"],answer:"G"},rewardPiece:{id:"question-fountain",name:"Question Fountain",icon:"⛲",area:"academy-world",lesson:"2-B"}},
  build:{areaId:"academy-world",stage:1,title:"Open the Alphabet Gate",requiredPieces:["gate-lantern","alphabet-gate","letter-stones-gh","gate-sign","question-fountain"],completionMessage:"The Alphabet Gate is now part of your Academy."},
+ closingSong:{title:"Academy Celebration",rewardMessage:"Great work. Your Academy has grown!",assetPath:"",videoPath:""},
  completion:{xp:35,stars:2,unlocks:"2-C",message:"The Alphabet Gate is open."}
 },
 {
@@ -209,7 +214,7 @@ const LEVELS = [
  ],rewardPiece:{id:"kite-workshop-sign",name:"Kite Workshop Sign",icon:"🛠️",area:"academy-world",lesson:"2-C"}},
  alphabetSong:{title:"Fritz Academy Alphabet Song",rewardMessage:"Listen for I through P.",assetPath:"assets/alphabet-song-small.mp4",videoPath:"assets/alphabet-song-small.mp4"},
  phonics:{letterUpper:"I J K L M N O P",letterLower:"i j k l m n o p",soundLabel:"I through P",teacherCue:"Say each letter and one word: insect, jar, kite, leaf, moon, nest, orange, puppy.",examples:[
-  {word:"insect",icon:"🐞"},{word:"jar",icon:"🫙"},{word:"kite",icon:"🪁"},{word:"leaf",icon:"🍃"},{word:"moon",icon:"🌙"},{word:"nest",icon:"🪺"},{word:"orange",icon:"🍊"},{word:"puppy",icon:"🐶"}],
+  {word:"insect",icon:"🐞"},{word:"kite",icon:"🪁"},{word:"puppy",icon:"🐶"}],
   recognitionQuestion:{prompt:"Which set is I through P?",options:["I J K L M N O P","A B C D","Q R S T"],answer:"I J K L M N O P"},
   lowercaseQuestion:{prompt:"Which set matches in lowercase?",options:["i j k l m n o p","a b c d","q r s t"],answer:"i j k l m n o p"},
   wordQuestion:{prompt:"Which word begins with K?",options:["kite","orange","nest"],answer:"kite"},
@@ -221,6 +226,7 @@ const LEVELS = [
   {text:"Tony puts the kite plan on a table.",image:"assets/tony.png"},{text:"He points to sticks, paper, string, and tails.",image:"assets/academy.png"},{text:"Bash brings the pieces to the table.",image:"assets/bash.png"},{text:"Bear and Rascal work on two kites together.",image:"assets/bear.png"},{text:"Nola helps make a kite for {studentName}.",image:"assets/nola.png"},{text:"The team makes six kites. Captain Fritz asks, “Which kite will you fly first?”",image:"assets/captain_fritz.png"}
  ],check:{prompt:"How many kites does the team make?",options:["Six","Two","Eight"],answer:"Six"},rewardPiece:{id:"six-kite-display",name:"Six-Kite Display",icon:"🪁",area:"academy-world",lesson:"2-C"}},
  build:{areaId:"academy-world",stage:2,title:"Build the Kite Field",requiredPieces:["kite-field-sign","kite-workshop-sign","ip-letter-stones","safe-path-marker","six-kite-display"],completionMessage:"Your Kite Field is saved in your Academy."},
+ closingSong:{title:"Academy Celebration",rewardMessage:"Great work. Your Academy has grown!",assetPath:"",videoPath:""},
  completion:{xp:40,stars:2,unlocks:[],message:"Week 2 is complete. More Academy adventures are coming next."}
 }
 ];
