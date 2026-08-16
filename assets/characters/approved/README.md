@@ -1,0 +1,2 @@
+# Approved Fritz Academy character assets
+Only user-approved canonical character renders belong in this directory. Bash and Bear physical identity follows the locked brother reference: Bash is the oversized younger German Shepherd puppy, mostly black with tan, brown eyes, one floppy ear; Bear is the older, smaller, tan-dominant German Shepherd brother with brown eyes.
