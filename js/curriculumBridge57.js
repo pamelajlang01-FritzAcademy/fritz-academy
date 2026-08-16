@@ -1,8 +1,11 @@
 /* Fritz Academy curriculum bridge v57.0 */
 (function(){
   try{
-    window.FRITZ_LEVELS = (typeof LEVELS !== 'undefined' && Array.isArray(LEVELS)) ? LEVELS : [];
+    const catalog=(typeof LEVELS !== 'undefined' && Array.isArray(LEVELS)) ? LEVELS : [];
+    window.FRITZ_LEVELS=catalog;
+    window.LEVELS=catalog;
   }catch(_e){
-    window.FRITZ_LEVELS = [];
+    window.FRITZ_LEVELS=[];
+    window.LEVELS=[];
   }
 })();
