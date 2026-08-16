@@ -54,6 +54,14 @@ function world(engine){
  return save.builderWorlds.personalAcademy;
 }
 function save(engine){if(typeof saveGame==='function')saveGame(engine.scene.save);}
+function syncCompletion(engine,required,placed){
+ const saveData=engine.scene.save;
+ saveData.placedBuilds=saveData.placedBuilds||{};
+ saveData.placedBuilds[engine.build.areaId]=saveData.placedBuilds[engine.build.areaId]||{};
+ const stage={};required.forEach((id,index)=>{if(placed[id])stage[id]=index;});
+ saveData.placedBuilds[engine.build.areaId][engine.build.stage]=stage;
+ save(engine);
+}
 
 BuilderEngine.prototype.showBuilder=function(){
  css();
@@ -84,8 +92,8 @@ BuilderEngine.prototype.showBuilder=function(){
  stage.onclick=e=>{if(!selected||e.target!==stage)return;const r=stage.getBoundingClientRect();placed[selected]={x:Math.max(5,Math.min(95,(e.clientX-r.left)/r.width*100)),y:Math.max(8,Math.min(93,(e.clientY-r.top)/r.height*100))};save(this);render()};
  render.call(this);
  overlay.querySelector('[data-close]').onclick=()=>{save(this);overlay.remove()};
- overlay.querySelector('[data-reset]').onclick=()=>{required.forEach(id=>delete placed[id]);save(this);render.call(this)};
- overlay.querySelector('[data-finish]').onclick=()=>{const missing=required.filter(id=>!placed[id]);if(missing.length){alert('Place each reward piece from this lesson before finishing.');return;}save(this);overlay.remove();if(typeof this.completeBuild==='function')this.completeBuild();};
+ overlay.querySelector('[data-reset]').onclick=()=>{required.forEach(id=>delete placed[id]);syncCompletion(this,required,placed);render.call(this)};
+ overlay.querySelector('[data-finish]').onclick=()=>{const missing=required.filter(id=>!placed[id]);if(missing.length){alert('Place each reward piece from this lesson before finishing.');return;}syncCompletion(this,required,placed);overlay.remove();if(typeof this.completeBuild==='function')this.completeBuild();};
  document.body.appendChild(overlay);
 };
 window.FRITZ_PERSISTENT_BUILDER='53.6';
