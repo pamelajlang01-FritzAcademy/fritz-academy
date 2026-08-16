@@ -1,12 +1,12 @@
-/* Fritz Academy 53.5 — layered Lesson 6 story presentation */
+/* Fritz Academy 53.9 — layered Lesson 6 story presentation */
 (function(){
 'use strict';
 
 const LEVEL_ID='2-B';
 const APPROVED={
   captainFritz:'assets/characters/approved/captain-fritz/sweatsuit-idle.png',
-  bash:'assets/characters/approved/bash/sweatsuit-idle.png',
-  bear:'assets/characters/approved/bear/sweatsuit-idle.png',
+  bash:'assets/characters/approved/bash/sweatsuit-idle.webp',
+  bear:'assets/characters/approved/bear/sweatsuit-idle.webp',
   nola:'assets/characters/approved/nola/sweatsuit-idle.png',
   rascal:'assets/characters/approved/rascal/sweatsuit-idle.png',
   tony:'assets/characters/approved/tony/sweatsuit-idle.png'
@@ -19,8 +19,8 @@ const scenes=[
   {env:'assets/environments/question-garden-premium.svg',chars:[['nola','24%','63%','17','runRight'],['bash','58%','61%','21','idle'],['tony','78%','68%','13','idle']],props:[],focus:'nola'},
   {env:'assets/environments/question-garden-premium.svg',chars:[['bear','35%','65%','18','skid'],['bash','50%','60%','21','stop'],['rascal','65%','65%','16','skid']],props:['kite'],focus:'bash'},
   {env:'assets/academy.png',chars:[['tony','23%','68%','13','explain'],['bash','43%','61%','21','carry'],['bear','62%','65%','18','idle'],['rascal','76%','66%','16','idle']],props:['plans'],focus:'tony'},
-  {env:'assets/academy.png',chars:[['captainFritz','18%','61%','17','think'],['tony','38%','68%','13','explain'],['bash','58%','61%','21','idle'],['nola','76%','63%','17','idle']],props:['plans'],focus:'captainFritz'},
-  {env:'assets/academy.png',chars:[['tony','18%','68%','13','explain'],['bash','36%','61%','21','carry'],['nola','54%','63%','17','idle'],['bear','70%','65%','18','work'],['rascal','83%','66%','16','work']],props:['workshop'],focus:'tony'},
+  {env:'assets/academy.png',chars:[['captainFritz','18%','61%','17','think'],['tony','38%','68%','13','explain'],['bash','58%','61%','21','idle'],['nola','76%','63%','17','idle']],props:['plans'],focus:'bash'},
+  {env:'assets/academy.png',chars:[['tony','18%','68%','13','explain'],['bash','36%','61%','21','carry'],['nola','54%','63%','17','idle'],['bear','70%','65%','18','work'],['rascal','83%','66%','16','work']],props:['workshop'],focus:'bash'},
   {env:'assets/academy.png',chars:[['captainFritz','20%','61%','17','celebrate'],['bash','39%','61%','21','celebrate'],['nola','56%','63%','17','celebrate'],['bear','70%','65%','18','celebrate'],['rascal','83%','66%','16','celebrate'],['tony','10%','68%','13','celebrate']],props:['sixKites'],focus:'captainFritz'}
 ];
 
@@ -77,5 +77,5 @@ if(window.StoryEngine){
  };
 }
 
-window.FRITZ_LESSON6_LAYERED='53.5';
+window.FRITZ_LESSON6_LAYERED='53.9';
 })();
