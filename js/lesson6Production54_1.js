@@ -63,7 +63,7 @@ Object.assign(level,{
   recognitionQuestion:{prompt:'Which set is I through P?',options:['I J K L M N O P','A B C D E F G H','Q R S T U V W X'],answer:'I J K L M N O P'},
   lowercaseQuestion:{prompt:'Which set matches in lowercase?',options:['i j k l m n o p','a b c d e f g h','q r s t u v w x'],answer:'i j k l m n o p'},
   wordQuestion:{prompt:'Which word begins with K?',options:['kite','nest','paper'],answer:'kite'},
-  rewardPiece:reward('safe-path-marker','Safe Path Marker')
+  rewardPiece:reward('ip-letter-stones','I–P Letter Stones')
  },
  reader1:{
   title:"Reader 1: Bear's Kite",level:'Easy',
