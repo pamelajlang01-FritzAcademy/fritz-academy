@@ -1,372 +1,234 @@
-/*
-====================================================
-FRITZ ACADEMY
-Builder Engine
-Version 42.0.0
-====================================================
-
-Purpose:
-- Turn earned lesson rewards into a real building activity.
-- Let students select and place every earned piece.
-- Save placements per student, area, and stage.
-- Require the full lesson set before completing the build.
-*/
-
+/* Fritz Academy Persistent Illustrated Academy Builder v57.0
+   Real Academy environment + draggable illustrated rewards + per-student saves. */
 class BuilderEngine {
-  constructor(scene, lessonEngine){
-    this.scene = scene;
-    this.lessonEngine = lessonEngine;
-    this.lesson = null;
-    this.build = null;
-    this.selectedPieceId = "";
-    this.onComplete = null;
+  constructor(scene,lessonEngine){
+    this.scene=scene;
+    this.lessonEngine=lessonEngine;
+    this.lesson=null;
+    this.build=null;
+    this.onComplete=null;
+    this.overlay=null;
+    this.canvas=null;
+    this.selectedId="";
+    this.drag=null;
+    this.boundMove=e=>this.onPointerMove(e);
+    this.boundUp=e=>this.onPointerUp(e);
   }
 
-  start(lesson, onComplete){
-    this.lesson = lesson;
-    this.build = lesson && lesson.build;
-    this.selectedPieceId = "";
-    this.onComplete = onComplete;
-
-    if(
-      !this.build ||
-      !Array.isArray(this.build.requiredPieces) ||
-      this.build.requiredPieces.length === 0
-    ){
-      this.scene.panels.message(
-        "Build Area Missing",
-        "This lesson does not contain a complete build activity."
-      );
+  start(lesson,onComplete){
+    this.lesson=lesson;
+    this.build=lesson&&lesson.build;
+    this.onComplete=onComplete;
+    if(!this.build||!Array.isArray(this.build.requiredPieces)||!this.build.requiredPieces.length){
+      this.scene.panels.message("Build Area Missing","This game session does not contain a complete Academy build.");
       return;
     }
-
     this.lessonEngine.setSection("build");
     this.ensureSaveData();
-    this.showBuilder();
+    this.openBuilder();
   }
 
   ensureSaveData(){
-    const save = this.scene.save;
-
-    if(!save.placedBuilds){
-      save.placedBuilds = {};
-    }
-
-    if(!save.placedBuilds[this.build.areaId]){
-      save.placedBuilds[this.build.areaId] = {};
-    }
-
-    if(!save.placedBuilds[this.build.areaId][this.build.stage]){
-      save.placedBuilds[this.build.areaId][this.build.stage] = {};
-    }
-
-    saveGame(save);
+    const s=this.scene.save;
+    s.builderWorlds=s.builderWorlds||{};
+    s.builderWorlds[this.build.areaId]=s.builderWorlds[this.build.areaId]||{};
+    s.academyBuilds=s.academyBuilds||{};
+    saveGame(s);
   }
 
-  placements(){
-    return this.scene.save.placedBuilds[
-      this.build.areaId
-    ][this.build.stage];
+  world(){return this.scene.save.builderWorlds[this.build.areaId];}
+
+  allPieceSources(level){
+    return [level&&level.feelingsActivity,level&&level.story,level&&level.phonics,level&&level.reader1,level&&level.reader2]
+      .filter(Boolean).map(x=>x.rewardPiece).filter(Boolean);
   }
 
-  earnedPieces(){
-    const progress = this.lessonEngine.progress();
-    return progress && Array.isArray(progress.earnedPieces)
-      ? progress.earnedPieces
-      : [];
+  pieceCatalog(){
+    const out={};
+    (Array.isArray(window.LEVELS)?window.LEVELS:[]).forEach(level=>{
+      this.allPieceSources(level).forEach(piece=>{if(piece&&piece.id)out[piece.id]=piece;});
+    });
+    this.allPieceSources(this.lesson).forEach(piece=>{if(piece&&piece.id)out[piece.id]=piece;});
+    return out;
   }
 
-  findPiece(pieceId){
-    const sources = [
-      this.lesson.feelingsActivity,
-      this.lesson.story,
-      this.lesson.phonics,
-      this.lesson.reader1,
-      this.lesson.reader2
-    ];
-
-    for(const source of sources){
-      if(
-        source &&
-        source.rewardPiece &&
-        source.rewardPiece.id === pieceId
-      ){
-        return source.rewardPiece;
-      }
-    }
-
-    return {
-      id: pieceId,
-      name: pieceId,
-      icon: "⭐"
-    };
+  earnedIds(){
+    const ids=new Set();
+    const progress=this.scene.save.lessonProgress||{};
+    Object.values(progress).forEach(p=>{
+      (p&&Array.isArray(p.earnedPieces)?p.earnedPieces:[]).forEach(id=>ids.add(id));
+    });
+    const current=this.lessonEngine.progress();
+    (current&&Array.isArray(current.earnedPieces)?current.earnedPieces:[]).forEach(id=>ids.add(id));
+    return [...ids];
   }
 
-  pieceInSlot(slotIndex){
-    const placements = this.placements();
-
-    return Object.keys(placements).find(
-      pieceId => placements[pieceId] === slotIndex
-    ) || "";
+  piece(id){
+    const p=this.pieceCatalog()[id];
+    return p||{id,name:id,icon:""};
   }
 
-  isPlaced(pieceId){
-    return Object.prototype.hasOwnProperty.call(
-      this.placements(),
-      pieceId
-    );
+  art(piece){
+    return window.FRITZ_BUILDER_ART&&typeof window.FRITZ_BUILDER_ART.resolve==="function"
+      ? window.FRITZ_BUILDER_ART.resolve(piece)
+      : "assets/alphabet-blocks.png";
   }
 
-  showBuilder(){
-    const earned = this.earnedPieces();
-    const required = this.build.requiredPieces;
-    const allEarned = required.every(
-      pieceId => earned.includes(pieceId)
-    );
+  isPlaced(id){return Boolean(this.world()[id]);}
+  isComplete(){return this.build.requiredPieces.every(id=>this.isPlaced(id));}
 
-    const objects = [];
+  injectStyles(){
+    if(document.getElementById("fritz-builder57-style"))return;
+    const style=document.createElement("style");
+    style.id="fritz-builder57-style";
+    style.textContent=`
+      .fa-builder57{position:fixed;inset:0;z-index:10050;background:rgba(3,12,24,.94);display:flex;flex-direction:column;color:#102342;font-family:Arial,sans-serif}
+      .fa-builder57 *{box-sizing:border-box}
+      .fa-builder57-head{height:76px;display:flex;align-items:center;gap:18px;padding:10px 18px;background:#f8f1dd;border-bottom:4px solid #d6ad43;flex:0 0 auto}
+      .fa-builder57-title{font-size:24px;font-weight:900;flex:1}.fa-builder57-sub{font-size:14px;color:#46566f;margin-top:3px}
+      .fa-builder57-btn{border:2px solid #183b68;border-radius:13px;background:#fff;padding:11px 17px;font-weight:900;color:#102342;cursor:pointer;font-size:15px}
+      .fa-builder57-btn.primary{background:#f3c84b}.fa-builder57-btn:disabled{opacity:.42;cursor:not-allowed}
+      .fa-builder57-main{position:relative;flex:1;min-height:0;overflow:hidden;background:#8fc477}
+      .fa-builder57-world{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.03),rgba(255,255,255,.03)),url('assets/fritz_academy_world_map.png');background-size:cover;background-position:center;overflow:hidden;touch-action:none}
+      .fa-builder57-world:after{content:'YOUR FRITZ ACADEMY';position:absolute;left:18px;top:18px;padding:8px 13px;border-radius:12px;background:rgba(248,241,221,.88);border:2px solid rgba(214,173,67,.9);font-weight:900;font-size:13px;letter-spacing:.6px;pointer-events:none}
+      .fa-builder57-piece{position:absolute;width:112px;height:112px;object-fit:contain;transform:translate(-50%,-50%);filter:drop-shadow(0 6px 5px rgba(0,0,0,.28));cursor:grab;user-select:none;-webkit-user-drag:none;touch-action:none;transition:filter .12s,outline .12s}
+      .fa-builder57-piece.sel{outline:4px solid #f3c84b;outline-offset:4px;border-radius:10px;filter:drop-shadow(0 7px 7px rgba(0,0,0,.4))}
+      .fa-builder57-piece.drag{cursor:grabbing;transition:none;z-index:999!important}
+      .fa-builder57-foot{height:158px;background:#f8f1dd;border-top:4px solid #d6ad43;display:flex;gap:14px;padding:10px 16px;align-items:stretch;flex:0 0 auto}
+      .fa-builder57-pack{flex:1;display:flex;gap:10px;overflow-x:auto;overflow-y:hidden;padding:4px 3px 8px;align-items:center}
+      .fa-builder57-card{width:112px;min-width:112px;height:126px;background:#fff;border:2px solid #d6c18a;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:6px;cursor:pointer;box-shadow:0 3px 7px rgba(0,0,0,.12)}
+      .fa-builder57-card img{width:72px;height:72px;object-fit:contain}.fa-builder57-card strong{font-size:12px;text-align:center;line-height:1.05}.fa-builder57-card.current{border-color:#174ea6}.fa-builder57-card.placed{opacity:.48}
+      .fa-builder57-side{width:210px;border-left:1px solid #cdbb91;padding-left:14px;display:flex;flex-direction:column;justify-content:center;gap:8px}
+      .fa-builder57-status{font-size:13px;font-weight:800;line-height:1.35}.fa-builder57-hint{font-size:12px;color:#46566f;line-height:1.25}
+      @media(max-width:700px){.fa-builder57-head{height:68px;padding:8px}.fa-builder57-title{font-size:18px}.fa-builder57-sub{display:none}.fa-builder57-foot{height:146px;padding:7px}.fa-builder57-side{width:150px}.fa-builder57-card{min-width:98px;width:98px}.fa-builder57-piece{width:94px;height:94px}}
+    `;
+    document.head.appendChild(style);
+  }
 
-    const title = this.scene.add.text(
-      0,
-      -255,
-      this.build.title || "Build Your Academy",
-      {
-        fontSize: "31px",
-        fontStyle: "bold",
-        color: "#102342",
-        align: "center",
-        wordWrap: { width: 720 }
-      }
-    ).setOrigin(0.5);
+  openBuilder(){
+    this.closeBuilder(false);
+    this.injectStyles();
+    if(this.scene.panels&&this.scene.panels.close)this.scene.panels.close();
+    if(this.scene.physics&&this.scene.physics.world)this.scene.physics.pause();
 
-    const directions = this.scene.add.text(
-      0,
-      -215,
-      allEarned
-        ? "Choose an earned piece, then choose where to place it."
-        : "Finish the lesson activities to earn every building piece.",
-      {
-        fontSize: "19px",
-        fontStyle: "bold",
-        color: allEarned ? "#174ea6" : "#b5462d",
-        align: "center",
-        wordWrap: { width: 700 }
-      }
-    ).setOrigin(0.5);
+    const root=document.createElement("div"); root.className="fa-builder57";
+    const head=document.createElement("div"); head.className="fa-builder57-head";
+    const titleWrap=document.createElement("div"); titleWrap.style.flex="1";
+    const title=document.createElement("div"); title.className="fa-builder57-title"; title.textContent=this.build.title||"Build Your Fritz Academy";
+    const sub=document.createElement("div"); sub.className="fa-builder57-sub"; sub.textContent="Place, move, and save the pieces you earn. Your Academy stays this way for this student.";
+    titleWrap.append(title,sub);
+    const reset=document.createElement("button"); reset.className="fa-builder57-btn"; reset.textContent="Return Selected to Pack"; reset.onclick=()=>this.returnSelected();
+    const finish=document.createElement("button"); finish.className="fa-builder57-btn primary"; finish.id="fa-builder57-finish"; finish.onclick=()=>this.finishBuild();
+    head.append(titleWrap,reset,finish);
 
-    objects.push(title, directions);
+    const main=document.createElement("div"); main.className="fa-builder57-main";
+    const world=document.createElement("div"); world.className="fa-builder57-world"; main.appendChild(world); this.canvas=world;
 
-    const slotPositions = [
-      [-240, -85],
-      [0, -85],
-      [240, -85],
-      [-120, 65],
-      [120, 65]
-    ];
+    const foot=document.createElement("div"); foot.className="fa-builder57-foot";
+    const pack=document.createElement("div"); pack.className="fa-builder57-pack"; pack.id="fa-builder57-pack";
+    const side=document.createElement("div"); side.className="fa-builder57-side";
+    const status=document.createElement("div"); status.className="fa-builder57-status"; status.id="fa-builder57-status";
+    const hint=document.createElement("div"); hint.className="fa-builder57-hint"; hint.textContent="Click a piece in the pack to place it. Drag anything already in the Academy to move it. Placements save automatically.";
+    side.append(status,hint); foot.append(pack,side);
 
-    required.forEach((pieceId, index) => {
-      const position = slotPositions[index] || [
-        -240 + (index % 3) * 240,
-        -85 + Math.floor(index / 3) * 150
-      ];
+    root.append(head,main,foot); document.body.appendChild(root); this.overlay=root;
+    window.addEventListener("pointermove",this.boundMove,{passive:false});
+    window.addEventListener("pointerup",this.boundUp);
+    this.render();
+  }
 
-      const placedPieceId = this.pieceInSlot(index);
-      const placedPiece = placedPieceId
-        ? this.findPiece(placedPieceId)
-        : null;
+  render(){
+    if(!this.overlay||!this.canvas)return;
+    this.canvas.querySelectorAll(".fa-builder57-piece").forEach(n=>n.remove());
+    const pack=this.overlay.querySelector("#fa-builder57-pack"); pack.innerHTML="";
+    const catalog=this.pieceCatalog();
+    const earned=this.earnedIds().filter(id=>catalog[id]);
+    const world=this.world();
 
-      const slot = this.scene.panels.makeButton(
-        position[0],
-        position[1],
-        placedPiece
-          ? `${placedPiece.icon}\n${placedPiece.name}`
-          : `Build Spot ${index + 1}\n➕`,
-        () => this.placeSelected(index),
-        {
-          fontSize: "18px",
-          backgroundColor: placedPiece ? "#dff3df" : "#ffffff",
-          padding: { x: 18, y: 12 }
-        }
-      );
-
-      objects.push(slot);
+    Object.keys(world).forEach((id,index)=>{
+      const piece=this.piece(id); const pos=world[id];
+      const img=document.createElement("img"); img.className="fa-builder57-piece"+(this.selectedId===id?" sel":"");
+      img.src=this.art(piece); img.alt=piece.name; img.title=piece.name; img.dataset.id=id;
+      img.style.left=`${Math.max(.03,Math.min(.97,Number(pos.x)||.5))*100}%`;
+      img.style.top=`${Math.max(.06,Math.min(.94,Number(pos.y)||.5))*100}%`;
+      img.style.zIndex=String(pos.z||20+index);
+      img.addEventListener("pointerdown",e=>this.beginDrag(e,id,img));
+      img.addEventListener("click",()=>{this.selectedId=id;this.render();});
+      this.canvas.appendChild(img);
     });
 
-    const unplaced = required.filter(pieceId => {
-      return earned.includes(pieceId) && !this.isPlaced(pieceId);
+    earned.forEach(id=>{
+      const piece=this.piece(id); const card=document.createElement("button"); card.className="fa-builder57-card";
+      if(this.build.requiredPieces.includes(id))card.classList.add("current");
+      if(world[id])card.classList.add("placed");
+      const img=document.createElement("img"); img.src=this.art(piece); img.alt="";
+      const label=document.createElement("strong"); label.textContent=piece.name;
+      card.append(img,label); card.title=world[id]?"Already placed — click to select":"Place in Academy";
+      card.onclick=()=>{ if(world[id]){this.selectedId=id;this.render();} else this.placeNew(id); };
+      pack.appendChild(card);
     });
-
-    if(unplaced.length > 0){
-      const packLabel = this.scene.add.text(
-        0,
-        155,
-        "Builder Pack",
-        {
-          fontSize: "20px",
-          fontStyle: "bold",
-          color: "#102342"
-        }
-      ).setOrigin(0.5);
-
-      objects.push(packLabel);
-
-      const packX = unplaced.length === 1
-        ? [0]
-        : unplaced.length === 2
-          ? [-150, 150]
-          : [-240, -120, 0, 120, 240];
-
-      unplaced.forEach((pieceId, index) => {
-        const piece = this.findPiece(pieceId);
-        const selected = this.selectedPieceId === pieceId;
-
-        const button = this.scene.panels.makeButton(
-          packX[index] || 0,
-          210,
-          `${piece.icon} ${piece.name}`,
-          () => {
-            this.selectedPieceId = pieceId;
-            this.showBuilder();
-          },
-          {
-            fontSize: "16px",
-            backgroundColor: selected ? "#f6c744" : "#ffffff",
-            padding: { x: 12, y: 8 }
-          }
-        );
-
-        objects.push(button);
-      });
-    }
-
-    const complete = this.isComplete();
-
-    const action = this.scene.panels.makeButton(
-      0,
-      275,
-      complete ? "Finish This Build" : "Place Every Piece",
-      () => {
-        if(complete){
-          this.completeBuild();
-        }
-      },
-      {
-        fontSize: "21px",
-        backgroundColor: complete ? "#f6c744" : "#e6e6e6"
-      }
-    );
-
-    objects.push(action);
-
-    this.scene.panels.open(
-      objects,
-      {
-        width: 900,
-        height: 680
-      }
-    );
+    this.updateStatus();
   }
 
-  placeSelected(slotIndex){
-    if(!this.selectedPieceId){
-      return;
-    }
+  placeNew(id){
+    if(this.world()[id])return;
+    const offset=(Object.keys(this.world()).length%7)*.035;
+    this.world()[id]={x:.48+offset,y:.55+((Object.keys(this.world()).length%3)-1)*.08,z:50+Object.keys(this.world()).length};
+    this.selectedId=id; saveGame(this.scene.save); this.render();
+  }
 
-    const placements = this.placements();
-    const occupyingPiece = this.pieceInSlot(slotIndex);
+  beginDrag(e,id,img){
+    e.preventDefault(); this.selectedId=id; img.classList.add("drag","sel");
+    const rect=this.canvas.getBoundingClientRect();
+    this.drag={id,img,rect};
+    try{img.setPointerCapture(e.pointerId);}catch(_e){}
+  }
 
-    if(occupyingPiece){
-      delete placements[occupyingPiece];
-    }
+  onPointerMove(e){
+    if(!this.drag)return; e.preventDefault();
+    const r=this.drag.rect;
+    const x=Math.max(.025,Math.min(.975,(e.clientX-r.left)/r.width));
+    const y=Math.max(.05,Math.min(.95,(e.clientY-r.top)/r.height));
+    this.drag.img.style.left=`${x*100}%`; this.drag.img.style.top=`${y*100}%`;
+    const p=this.world()[this.drag.id]||{}; p.x=x;p.y=y;p.z=999;this.world()[this.drag.id]=p;
+  }
 
-    placements[this.selectedPieceId] = slotIndex;
-    this.selectedPieceId = "";
+  onPointerUp(){
+    if(!this.drag)return;
+    const p=this.world()[this.drag.id]; if(p)p.z=50+Object.keys(this.world()).indexOf(this.drag.id);
+    this.drag=null; saveGame(this.scene.save); this.render();
+  }
+
+  returnSelected(){
+    if(!this.selectedId||!this.world()[this.selectedId])return;
+    delete this.world()[this.selectedId]; this.selectedId=""; saveGame(this.scene.save); this.render();
+  }
+
+  updateStatus(){
+    if(!this.overlay)return;
+    const placed=this.build.requiredPieces.filter(id=>this.isPlaced(id)).length;
+    const total=this.build.requiredPieces.length;
+    const complete=placed===total;
+    const el=this.overlay.querySelector("#fa-builder57-status");
+    el.textContent=complete?`All ${total} new pieces are placed. Your Academy is ready to save.`:`This session: ${placed} of ${total} new pieces placed.`;
+    const btn=this.overlay.querySelector("#fa-builder57-finish"); btn.disabled=!complete; btn.textContent=complete?"Save Build & Finish":"Place All New Pieces";
+  }
+
+  finishBuild(){
+    if(!this.isComplete())return;
+    this.scene.save.academyBuilds[this.build.areaId]=Math.max(this.scene.save.academyBuilds[this.build.areaId]||0,this.build.stage||1);
     saveGame(this.scene.save);
-    this.showBuilder();
+    const cb=this.onComplete; this.onComplete=null;
+    this.closeBuilder(true);
+    if(typeof cb==="function")cb();
   }
 
-  isComplete(){
-    const placements = this.placements();
-
-    return this.build.requiredPieces.every(pieceId => {
-      return Object.prototype.hasOwnProperty.call(
-        placements,
-        pieceId
-      );
-    });
-  }
-
-  completeBuild(){
-    if(!this.isComplete()){
-      return;
-    }
-
-    if(!this.scene.save.academyBuilds){
-      this.scene.save.academyBuilds = {};
-    }
-
-    this.scene.save.academyBuilds[
-      this.build.areaId
-    ] = Math.max(
-      this.scene.save.academyBuilds[this.build.areaId] || 0,
-      this.build.stage
-    );
-
-    saveGame(this.scene.save);
-
-    const title = this.scene.add.text(
-      0,
-      -145,
-      "Build Complete!",
-      {
-        fontSize: "38px",
-        fontStyle: "bold",
-        color: "#2f7d32"
-      }
-    ).setOrigin(0.5);
-
-    const icon = this.scene.add.text(
-      0,
-      -60,
-      "🏡✨",
-      { fontSize: "60px" }
-    ).setOrigin(0.5);
-
-    const body = this.scene.add.text(
-      0,
-      45,
-      this.build.completionMessage ||
-        "Your new Academy section has been saved.",
-      {
-        fontSize: "25px",
-        fontStyle: "bold",
-        color: "#102342",
-        align: "center",
-        wordWrap: { width: 650 }
-      }
-    ).setOrigin(0.5);
-
-    const continueButton = this.scene.panels.makeButton(
-      0,
-      165,
-      "Celebrate",
-      () => this.finish()
-    );
-
-    this.scene.panels.open(
-      [title, icon, body, continueButton],
-      { width: 760, height: 500 }
-    );
-  }
-
-  finish(){
-    const callback = this.onComplete;
-    this.onComplete = null;
-
-    if(typeof callback === "function"){
-      callback();
-    }
+  closeBuilder(resume=true){
+    window.removeEventListener("pointermove",this.boundMove);
+    window.removeEventListener("pointerup",this.boundUp);
+    if(this.overlay){this.overlay.remove();this.overlay=null;}
+    this.canvas=null;this.drag=null;
+    if(resume&&this.scene&&this.scene.physics&&this.scene.physics.world)this.scene.physics.resume();
   }
 }
-
-window.BuilderEngine = BuilderEngine;
+window.BuilderEngine=BuilderEngine;
