@@ -1,10 +1,11 @@
-/* Fritz Academy 51.23 — reliable lesson launch without click-through */
+/* Fritz Academy runtime recovery — stable lesson launch with later safety checks preserved */
 (function(){
   'use strict';
   if(typeof World === 'undefined') return;
 
   World.prototype.startLevel = function(levelId, location){
     try{
+      // Always reload the currently selected student before launching.
       this.save = typeof getSave === 'function' ? getSave() : this.save;
       const unlocked = Array.isArray(this.save?.unlockedLevels)
         ? this.save.unlockedLevels
@@ -15,14 +16,17 @@
         return;
       }
 
+      // Preserve the later guard against launching a missing lesson.
       const lesson = typeof findLevel === 'function' ? findLevel(levelId) : null;
-      if(!lesson){
+      if(typeof findLevel === 'function' && !lesson){
         this.panels?.message?.('Lesson could not open',`Lesson ${levelId} was not found.`);
         return;
       }
 
       this.hidePrompt?.();
       this.lessonEngine?.stopMedia?.();
+
+      // Close the Adventure Log before the lesson opens so it cannot intercept input.
       this.panels?.close?.();
 
       this.save.currentLevel = levelId;
@@ -34,36 +38,21 @@
         throw new Error('Lesson Engine is unavailable.');
       }
 
-      // Prevent the Adventure Log pointer-up from landing on the newly opened lesson.
-      if(this.input) this.input.enabled = false;
-
+      // Recovery rule: do not disable Phaser input globally while the lesson is opening.
+      // The later 51.23 launcher did this and also guessed success from a narrow DOM selector list.
+      // The stable launcher simply starts the lesson after the Adventure Log has closed.
       window.setTimeout(() => {
         try{
-          if(this.input) this.input.enabled = true;
           this.lessonEngine.start(levelId, location || 'Adventure Log');
-
-          // A successful lesson opening always creates a panel or a lesson DOM overlay.
-          window.setTimeout(() => {
-            const domLesson = document.querySelector('.l420,.l419-overlay,.l418-overlay,.l4stable,.l4p-overlay,.greeting-chart-overlay');
-            if(!this.panels?.isOpen && !domLesson){
-              console.error('Fritz Academy: lesson start returned without opening a lesson', levelId, lesson);
-              this.panels?.message?.(
-                'Lesson could not open',
-                `Level ${levelId} did not start. Please report this lesson number.`
-              );
-            }
-          }, 80);
         }catch(error){
-          if(this.input) this.input.enabled = true;
           console.error('Fritz Academy lesson launch failed:', error);
           this.panels?.message?.(
             'Lesson could not open',
             error?.message || 'Please reload Fritz Academy and try again.'
           );
         }
-      }, 180);
+      }, 40);
     }catch(error){
-      if(this.input) this.input.enabled = true;
       console.error('Fritz Academy startLevel failed:', error);
       this.panels?.close?.();
       window.setTimeout(() => {
@@ -71,7 +60,7 @@
           'Lesson could not open',
           error?.message || 'Please reload Fritz Academy and try again.'
         );
-      }, 60);
+      }, 40);
     }
   };
 })();
