@@ -1,59 +1,16 @@
 /* Episode 3 production adventure overlay: The Mystery Gate.
-   Keeps Lesson 3 G/H/I + WHAT/WHO + yes/no curriculum and unlock identity intact. */
+   Keeps Lesson 3 G/H/I + WHAT/WHO + yes/no curriculum and routes directly into Episode 4. */
 (function(){
   if(typeof LEVELS==='undefined'||!Array.isArray(LEVELS)) return;
   const lesson=LEVELS.find(x=>x&&x.id==='1-C'); if(!lesson) return;
   lesson.title='The Mystery Gate';
   lesson.episode={estimatedMinutes:20,beats:['hook','characterProblem','discoveryPlay','miniGame','storyTurn','readerMission','builderPayoff','tag'],miniGames:['G/H/I gate-slot repair','yes-or-no clue check'],readerPurpose:'Read the gate keeper card and identify which G/H/I marker belongs in each slot.',builderPayoff:'Repair and open the Welcome Garden gate to reveal the next Academy trail.',hook:'Immediately after the flag returns, the Welcome Garden gate locks itself with three mixed-up letter markers.',tag:'Beyond the open gate is a trail of tiny key-shaped signs. Nola whispers, “Were those here before?” Bash picks up the first one. It is marked J.'};
-  lesson.intro=[
-    {speaker:'Tony',text:'Excellent work, team. As your leader, I officially declare the Welcome Garden—'},
-    {speaker:'SFX',text:'CLUNK!'},
-    {speaker:'Nola',text:'The gate! It locked! What if we are locked out forever? What if the opening is ruined? What if—'},
-    {speaker:'Bash',text:'Nola, look. Three markers fell out: G, H and I. We can fix this.'},
-    {speaker:'Rascal',text:'Before anyone asks, I did not touch the gate.'},
-    {speaker:'Bear',text:'You touched the gate.'},
-    {speaker:'Rascal',text:'I touched it earlier.'},
-    {speaker:'Captain Fritz',text:'Then we have a mystery. Ask WHAT to identify a thing, WHO to identify a friend, and use YES or NO to test a clue. I think Bash has a plan.'}
-  ];
-  lesson.feelingsActivity.title='Yes-or-No Gate Check';
-  lesson.feelingsActivity.instructions='Test each gate clue. Choose YES when the clue matches and NO when it does not. Each correct check lights one part of the lock.';
-  lesson.story={title:'The Mystery Gate',pages:[
-    {text:'Bash examines three empty slots in the gate. Each slot has a picture scratched beside it.',image:'assets/bash.png'},
-    {text:'The first picture is a goat. “What is this?” asks Bash. The player identifies the goat and matches G.',image:'assets/alphabet-blocks.png'},
-    {text:'The second picture is a hat. Tony grabs the I marker. Bash stops him. “Is I for hat?”',image:'assets/bash.png'},
-    {text:'No. H is for hat. Tony quietly puts I back. “A strategic test,” he says.',image:'assets/alphabet-blocks.png'},
-    {text:'The third picture is an igloo. Bear reaches for the I marker, but Rascal reaches too. Bash catches Bear before both dogs jam two markers into one slot.',image:'assets/bear.png'},
-    {text:'“Who has the I marker?” asks Captain Fritz. Bear does. The player identifies Bear and confirms the correct marker.',image:'assets/captain_fritz.png'},
-    {text:'G, H and I click into place. The lock glows—but one final panel asks three questions.',image:'assets/alphabet-blocks.png'},
-    {text:'WHAT is this? WHO has the marker? Is I for igloo? The player answers and the gate swings open.',image:'assets/academy.png'},
-    {text:'Tony steps through first. “Just as I designed it.” Rascal looks at Bash. “Does he really believe that?” Bash smiles. “Yes.”',image:'assets/bash.png'}
-  ],questions:[
-    {prompt:'What picture matches G?',options:['Goat','Hat','Igloo'],answer:'Goat'},
-    {prompt:'Who has the I marker?',options:['Bear','Tony','Nola'],answer:'Bear'},
-    {prompt:'Is I for igloo?',options:['Yes, it is.','No, it is not.'],answer:'Yes, it is.'}
-  ],rewardPiece:{id:'ghi-path',name:'GHI Gate Lock',icon:'🔐',area:'welcome-garden',lesson:'1-C'}};
+  lesson.intro=[{speaker:'Tony',text:'Excellent work, team. As your leader, I officially declare the Welcome Garden—'},{speaker:'SFX',text:'CLUNK!'},{speaker:'Nola',text:'The gate! It locked! What if we are locked out forever? What if the opening is ruined? What if—'},{speaker:'Bash',text:'Nola, look. Three markers fell out: G, H and I. We can fix this.'},{speaker:'Rascal',text:'Before anyone asks, I did not touch the gate.'},{speaker:'Bear',text:'You touched the gate.'},{speaker:'Rascal',text:'I touched it earlier.'},{speaker:'Captain Fritz',text:'Then we have a mystery. Ask WHAT to identify a thing, WHO to identify a friend, and use YES or NO to test a clue. I think Bash has a plan.'}];
+  lesson.feelingsActivity.title='Yes-or-No Gate Check'; lesson.feelingsActivity.instructions='Test each gate clue. Choose YES when the clue matches and NO when it does not. Each correct check lights one part of the lock.';
+  lesson.story={title:'The Mystery Gate',pages:[{text:'Bash examines three empty slots in the gate. Each slot has a picture scratched beside it.',image:'assets/bash.png'},{text:'The first picture is a goat. “What is this?” asks Bash. The player identifies the goat and matches G.',image:'assets/alphabet-blocks.png'},{text:'The second picture is a hat. Tony grabs the I marker. Bash stops him. “Is I for hat?”',image:'assets/bash.png'},{text:'No. H is for hat. Tony quietly puts I back. “A strategic test,” he says.',image:'assets/alphabet-blocks.png'},{text:'The third picture is an igloo. Bear reaches for the I marker, but Rascal reaches too. Bash catches Bear before both dogs jam two markers into one slot.',image:'assets/bear.png'},{text:'“Who has the I marker?” asks Captain Fritz. Bear does. The player identifies Bear and confirms the correct marker.',image:'assets/captain_fritz.png'},{text:'G, H and I click into place. The lock glows—but one final panel asks three questions.',image:'assets/alphabet-blocks.png'},{text:'WHAT is this? WHO has the marker? Is I for igloo? The player answers and the gate swings open.',image:'assets/academy.png'},{text:'Tony steps through first. “Just as I designed it.” Rascal looks at Bash. “Does he really believe that?” Bash smiles. “Yes.”',image:'assets/bash.png'}],questions:[{prompt:'What picture matches G?',options:['Goat','Hat','Igloo'],answer:'Goat'},{prompt:'Who has the I marker?',options:['Bear','Tony','Nola'],answer:'Bear'},{prompt:'Is I for igloo?',options:['Yes, it is.','No, it is not.'],answer:'Yes, it is.'}],rewardPiece:{id:'ghi-path',name:'GHI Gate Lock',icon:'🔐',area:'welcome-garden',lesson:'1-C'}};
   lesson.phonics.teacherCue='The gate only opens when sound and symbol agree: G—goat, H—hat, I—igloo. Match the sound clue to the correct slot.';
-  lesson.reader1.title='Gate Keeper Card';
-  lesson.reader1.pages=[
-    {text:'I see G.',image:'assets/alphabet-blocks.png'},
-    {text:'G is for goat.',image:'assets/alphabet-blocks.png'},
-    {text:'I see H.',image:'assets/alphabet-blocks.png'},
-    {text:'H is for hat.',image:'assets/alphabet-blocks.png'},
-    {text:'I see I.',image:'assets/alphabet-blocks.png'},
-    {text:'I is for igloo.',image:'assets/alphabet-blocks.png'}
-  ];
-  lesson.reader1.check={prompt:'Which marker goes with igloo?',options:['I','H','G'],answer:'I'};
-  lesson.reader2.title='The Last Lock';
-  lesson.reader2.pages=[
-    {text:'What is this?',image:'assets/alphabet-blocks.png'},
-    {text:'It is a gate.',image:'assets/academy.png'},
-    {text:'Who has I?',image:'assets/bear.png'},
-    {text:'Bear has I.',image:'assets/bear.png'},
-    {text:'Is I for igloo?',image:'assets/alphabet-blocks.png'},
-    {text:'Yes, it is.',image:'assets/alphabet-blocks.png'}
-  ];
-  lesson.reader2.check={prompt:'Does the last clue say I is for igloo?',options:['Yes','No'],answer:'Yes'};
-  lesson.build.title='Open the Welcome Garden Gate';
-  lesson.build.completionMessage='The G/H/I lock is repaired and the Welcome Garden is open. Week 1 ends with a new trail waiting beyond the gate.';
-  lesson.completion.message='The gate is open! Bash found a tiny key-shaped sign marked J on the trail beyond it.';
+  lesson.reader1.title='Gate Keeper Card'; lesson.reader1.pages=[{text:'I see G.',image:'assets/alphabet-blocks.png'},{text:'G is for goat.',image:'assets/alphabet-blocks.png'},{text:'I see H.',image:'assets/alphabet-blocks.png'},{text:'H is for hat.',image:'assets/alphabet-blocks.png'},{text:'I see I.',image:'assets/alphabet-blocks.png'},{text:'I is for igloo.',image:'assets/alphabet-blocks.png'}]; lesson.reader1.check={prompt:'Which marker goes with igloo?',options:['I','H','G'],answer:'I'};
+  lesson.reader2.title='The Last Lock'; lesson.reader2.pages=[{text:'What is this?',image:'assets/alphabet-blocks.png'},{text:'It is a gate.',image:'assets/academy.png'},{text:'Who has I?',image:'assets/bear.png'},{text:'Bear has I.',image:'assets/bear.png'},{text:'Is I for igloo?',image:'assets/alphabet-blocks.png'},{text:'Yes, it is.',image:'assets/alphabet-blocks.png'}]; lesson.reader2.check={prompt:'Does the last clue say I is for igloo?',options:['Yes','No'],answer:'Yes'};
+  lesson.build.title='Open the Welcome Garden Gate'; lesson.build.completionMessage='The G/H/I lock is repaired and the Welcome Garden is open. A new trail waits beyond the gate.';
+  lesson.completion.unlocks='2-A'; lesson.completion.message='The gate is open! Bash found a tiny key-shaped sign marked J. The Lost Key Trail is unlocked.';
 })();
